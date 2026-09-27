@@ -33,14 +33,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NODE_ENV=production \
     PORT=3000
 
-# Dependências de sistema: R, kinship2, Pandoc e fontes Liberation
+# Dependências de sistema: R, quadprog, Matrix, knitr, Pandoc e fontes Liberation
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pandoc \
     ca-certificates \
     fonts-liberation \
     r-base-core \
-    r-cran-kinship2 \
-    && rm -rf /var/lib/apt/lists/*
+    r-cran-matrix \
+    r-cran-quadprog \
+    r-cran-knitr \
+    && rm -rf /var/lib/apt/lists/* \
+    && Rscript -e "install.packages('kinship2', repos='https://cloud.r-project.org')"
 
 # Copia binário estático do Typst compilado
 COPY --from=typst-downloader /usr/local/bin/typst /usr/local/bin/typst

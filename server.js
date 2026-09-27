@@ -119,8 +119,9 @@ async function preprocessDiagrams(markdown, sessionId) {
     }
 
     try {
-      // Requisição ao gateway Kroki na rede Docker interna
-      const response = await fetch('http://kroki:8000/mermaid/png', {
+      const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
+      // Requisição ao gateway Kroki (local ou configurado)
+      const response = await fetch(`${krokiHost}/mermaid/png`, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: code

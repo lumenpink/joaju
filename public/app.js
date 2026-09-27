@@ -12,26 +12,25 @@ id,pai,mae,sex,fenotipo,label
 const SAMPLE_MERMAID = `\`\`\`mermaid
 %% width=85% max-width=600pt
 graph TD
-    A[Amostra Clínica] --> B[Sequenciamento NGS]
-    B --> C{Variante Patogênica?}
-    C -->|Sim| D[Aconselhamento Genético]
-    C -->|Não| E[Seguimento Ambulatorial]
-    D --> F[Laudo Molecular Definitivo]
+    A[Coleta de Dados / Amostragem] --> B[Processamento & Limpeza]
+    B --> C{Validação dos Dados}
+    C -->|Válido| D[Análise Estatística & Modelagem]
+    C -->|Inconsistente| E[Filtragem de Ruído / Descarte]
+    D --> F[Visualização & Relatório Final]
 \`\`\``;
 
 const LOCALES = {
   pt: {
     lang_code: 'pt-BR',
     direction: 'ltr',
-    tagline: 'Playground de diagramas e heredogramas clínicos',
+    tagline: 'Playground de diagramas acadêmicos e gráficos científicos',
     btn_pedigree: 'Heredograma',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'Diagramas (Mermaid)',
     btn_render: 'Renderizar',
     editor_label: 'Código Fonte',
     auto_render: 'Auto-render',
     btn_clear: 'Limpar',
-    placeholder:
-      'Cole aqui seu bloco ```heredograma ou ```mermaid (ou apenas os dados internos)...',
+    placeholder: 'Cole aqui seu bloco ```mermaid, diagramas ou ```heredograma...',
     characters_singular: 'caractere',
     characters_plural: 'caracteres',
     shortcut_tip: 'Atalho:',
@@ -40,21 +39,21 @@ const LOCALES = {
     empty_state: 'Digite ou escolha um exemplo acima para visualizar o gráfico instantaneamente.',
     status_ready: 'Pronto.',
     status_rendering: 'Renderizando...',
-    status_rendered: 'Gráfico renderizado com sucesso ({format}).',
-    status_cleared: 'Pronto.',
-    error_title: 'Erro ao renderizar'
+    status_rendered: 'Renderizado com sucesso ({format}, {type}).',
+    status_cleared: 'Editor limpo.',
+    error_title: 'Erro na renderização'
   },
   en: {
     lang_code: 'en',
     direction: 'ltr',
-    tagline: 'Playground for clinical pedigrees and diagrams',
+    tagline: 'Playground for academic diagrams and scientific graphics',
     btn_pedigree: 'Pedigree',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'Diagrams (Mermaid)',
     btn_render: 'Render',
     editor_label: 'Source Code',
     auto_render: 'Auto-render',
     btn_clear: 'Clear',
-    placeholder: 'Paste your ```heredograma or ```mermaid block here (or raw tabular data)...',
+    placeholder: 'Paste your ```mermaid, diagrams or ```heredograma block here...',
     characters_singular: 'character',
     characters_plural: 'characters',
     shortcut_tip: 'Shortcut:',
@@ -63,21 +62,21 @@ const LOCALES = {
     empty_state: 'Type or select an example above to preview the chart instantly.',
     status_ready: 'Ready.',
     status_rendering: 'Rendering...',
-    status_rendered: 'Chart successfully rendered ({format}, {type}).',
+    status_rendered: 'Rendered successfully ({format}, {type}).',
     status_cleared: 'Editor cleared.',
-    error_title: 'Rendering Error'
+    error_title: 'Rendering error'
   },
   es: {
     lang_code: 'es',
     direction: 'ltr',
-    tagline: 'Espacio de pruebas para diagramas y pedigríes clínicos',
+    tagline: 'Espacio de pruebas para diagramas académicos y gráficos científicos',
     btn_pedigree: 'Pedigrí',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'Diagramas (Mermaid)',
     btn_render: 'Renderizar',
     editor_label: 'Código Fuente',
     auto_render: 'Auto-render',
     btn_clear: 'Limpiar',
-    placeholder: 'Pegue aquí su bloque ```heredograma o ```mermaid (o datos sin formato)...',
+    placeholder: 'Pegue aquí su bloque ```mermaid, diagramas o ```heredograma...',
     characters_singular: 'carácter',
     characters_plural: 'caracteres',
     shortcut_tip: 'Atajo:',
@@ -86,21 +85,21 @@ const LOCALES = {
     empty_state: 'Escriba o elija un ejemplo arriba para ver el gráfico instantáneamente.',
     status_ready: 'Listo.',
     status_rendering: 'Renderizando...',
-    status_rendered: 'Gráfico renderizado con éxito ({format}, {type}).',
+    status_rendered: 'Renderizado con éxito ({format}, {type}).',
     status_cleared: 'Editor limpio.',
-    error_title: 'Error de Renderización'
+    error_title: 'Error en la renderización'
   },
   fr: {
     lang_code: 'fr',
     direction: 'ltr',
-    tagline: "Espace d'expérimentation pour diagrammes et arbres généalogiques cliniques",
+    tagline: "Espace d'expérimentation pour diagrammes académiques et graphiques scientifiques",
     btn_pedigree: 'Arbre généalogique',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'Diagrammes (Mermaid)',
     btn_render: 'Rendre',
     editor_label: 'Code Source',
     auto_render: 'Rendu auto',
     btn_clear: 'Effacer',
-    placeholder: 'Collez ici votre bloc ```heredograma ou ```mermaid (ou données brutes)...',
+    placeholder: 'Collez ici votre bloc ```mermaid, diagrammes ou ```heredograma...',
     characters_singular: 'caractère',
     characters_plural: 'caractères',
     shortcut_tip: 'Raccourci :',
@@ -109,21 +108,21 @@ const LOCALES = {
     empty_state: 'Saisissez ou choisissez un exemple ci-dessus pour prévisualiser instantanément.',
     status_ready: 'Prêt.',
     status_rendering: 'Rendu en cours...',
-    status_rendered: 'Graphique rendu avec succès ({format}, {type}).',
+    status_rendered: 'Rendu effectué avec succès ({format}, {type}).',
     status_cleared: 'Éditeur effacé.',
-    error_title: 'Erreur de Rendu'
+    error_title: 'Erreur de rendu'
   },
   de: {
     lang_code: 'de',
     direction: 'ltr',
-    tagline: 'Spielwiese für klinische Stammbäume und Diagramme',
+    tagline: 'Playground für akademische Diagramme und wissenschaftliche Grafiken',
     btn_pedigree: 'Stammbaum',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'Diagramme (Mermaid)',
     btn_render: 'Rendern',
     editor_label: 'Quellcode',
     auto_render: 'Auto-Rendern',
     btn_clear: 'Löschen',
-    placeholder: 'Fügen Sie hier Ihren ```heredograma- oder ```mermaid-Block ein...',
+    placeholder: 'Fügen Sie hier Ihren ```mermaid-, Diagramm- oder ```heredograma-Block ein...',
     characters_singular: 'Zeichen',
     characters_plural: 'Zeichen',
     shortcut_tip: 'Tastenkürzel:',
@@ -132,21 +131,21 @@ const LOCALES = {
     empty_state: 'Geben Sie Code ein oder wählen Sie ein Beispiel aus.',
     status_ready: 'Bereit.',
     status_rendering: 'Wird gerendert...',
-    status_rendered: 'Diagramm erfolgreich gerendert ({format}, {type}).',
+    status_rendered: 'Erfolgreich gerendert ({format}, {type}).',
     status_cleared: 'Editor geleert.',
     error_title: 'Rendering-Fehler'
   },
   it: {
     lang_code: 'it',
     direction: 'ltr',
-    tagline: 'Playground per diagrammi e alberi genealogici clinici',
+    tagline: 'Playground per diagrammi accademici e grafici scientifici',
     btn_pedigree: 'Albero genealogico',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'Diagrammi (Mermaid)',
     btn_render: 'Renderizza',
     editor_label: 'Codice Sorgente',
     auto_render: 'Auto-render',
     btn_clear: 'Cancella',
-    placeholder: 'Incolla qui il tuo blocco ```heredograma o ```mermaid...',
+    placeholder: 'Incolla qui il tuo blocco ```mermaid, diagrammi o ```heredograma...',
     characters_singular: 'carattere',
     characters_plural: 'caratteri',
     shortcut_tip: 'Scorciatoia:',
@@ -155,21 +154,21 @@ const LOCALES = {
     empty_state: 'Scrivi o scegli un esempio sopra per visualizzare il grafico istantaneamente.',
     status_ready: 'Pronto.',
     status_rendering: 'Renderizzazione in corso...',
-    status_rendered: 'Grafico renderizzato con successo ({format}, {type}).',
+    status_rendered: 'Renderizzato con successo ({format}, {type}).',
     status_cleared: 'Editor pulito.',
-    error_title: 'Errore di Renderizzazione'
+    error_title: 'Errore di renderizzazione'
   },
   ru: {
     lang_code: 'ru',
     direction: 'ltr',
-    tagline: 'Интерактивная среда для клинических родословных и диаграмм',
+    tagline: 'Интерактивная среда для академических диаграмм и научных графиков',
     btn_pedigree: 'Родословная',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'Диаграммы (Mermaid)',
     btn_render: 'Рендерить',
     editor_label: 'Исходный Код',
     auto_render: 'Авто-рендер',
     btn_clear: 'Очистить',
-    placeholder: 'Вставьте сюда блок ```heredograma или ```mermaid...',
+    placeholder: 'Вставьте сюда блок ```mermaid, диаграммы или ```heredograma...',
     characters_singular: 'символ',
     characters_plural: 'символов',
     shortcut_tip: 'Горячая клавиша:',
@@ -178,21 +177,21 @@ const LOCALES = {
     empty_state: 'Введите код или выберите пример выше для мгновенного просмотра.',
     status_ready: 'Готово.',
     status_rendering: 'Рендеринг...',
-    status_rendered: 'График успешно сгенерирован ({format}, {type}).',
+    status_rendered: 'Успешно сгенерировано ({format}, {type}).',
     status_cleared: 'Редактор очищен.',
-    error_title: 'Ошибка Рендеринга'
+    error_title: 'Ошибка рендеринга'
   },
   zh: {
     lang_code: 'zh',
     direction: 'ltr',
-    tagline: '临床系谱图与科学图表开发试验场',
+    tagline: '学术图表与科学图形演练场',
     btn_pedigree: '系谱图',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: '图表 (Mermaid)',
     btn_render: '渲染',
     editor_label: '源代码',
     auto_render: '自动渲染',
     btn_clear: '清空',
-    placeholder: '在此处粘贴您的 ```heredograma 或 ```mermaid 代码块...',
+    placeholder: '在此处粘贴您的 ```mermaid、图表或 ```heredograma 代码块...',
     characters_singular: '个字符',
     characters_plural: '个字符',
     shortcut_tip: '快捷键：',
@@ -201,21 +200,22 @@ const LOCALES = {
     empty_state: '在上方输入代码或选择示例以即时预览图表。',
     status_ready: '就绪。',
     status_rendering: '正在渲染...',
-    status_rendered: '图表渲染成功 ({format}, {type})。',
+    status_rendered: '渲染成功 ({format}, {type})。',
     status_cleared: '编辑器已清空。',
     error_title: '渲染错误'
   },
   ja: {
     lang_code: 'ja',
     direction: 'ltr',
-    tagline: '臨床家系図と科学ダイアグラムのプレイグラウンド',
+    tagline: '学術ダイアグラムと科学グラフィックのプレイグラウンド',
     btn_pedigree: '家系図',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'ダイアグラム (Mermaid)',
     btn_render: '描画',
     editor_label: 'ソースコード',
     auto_render: '自動描画',
     btn_clear: 'クリア',
-    placeholder: 'ここに ```heredograma または ```mermaid ブロックを貼り付けてください...',
+    placeholder:
+      'ここに ```mermaid、ダイアグラム、または ```heredograma ブロックを貼り付けてください...',
     characters_singular: '文字',
     characters_plural: '文字',
     shortcut_tip: 'ショートカット:',
@@ -224,21 +224,21 @@ const LOCALES = {
     empty_state: 'コードを入力するか上記の例を選択してプレビューします。',
     status_ready: '準備完了。',
     status_rendering: 'レンダリング中...',
-    status_rendered: '正常に描画されました ({format}, {type})。',
+    status_rendered: '正常にレンダリングされました ({format}, {type})。',
     status_cleared: 'エディタをクリアしました。',
-    error_title: '描画エラー'
+    error_title: 'レンダリングエラー'
   },
   ar: {
     lang_code: 'ar',
     direction: 'rtl',
-    tagline: 'بيئة تفاعلية للمخططات وشجرات النسب السريرية',
+    tagline: 'بيئة تفاعلية للمخططات الأكاديمية والرسومات العلمية',
     btn_pedigree: 'شجرة النسب',
-    btn_mermaid: 'Mermaid',
+    btn_mermaid: 'مخططات (Mermaid)',
     btn_render: 'معالجة وعرض',
     editor_label: 'الرمز المصدري',
     auto_render: 'عرض تلقائي',
     btn_clear: 'مسح',
-    placeholder: 'الصق كتلة ```heredograma أو ```mermaid هنا...',
+    placeholder: 'الصق كتلة ```mermaid أو المخططات أو ```heredograma هنا...',
     characters_singular: 'حرف',
     characters_plural: 'أحرف',
     shortcut_tip: 'اختصار:',
@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Inicialização da língua e dados
   applyLocale(currentLang);
-  codeInput.value = SAMPLE_PEDIGREE;
+  codeInput.value = SAMPLE_MERMAID;
   updateCharCount();
   triggerRender();
 });

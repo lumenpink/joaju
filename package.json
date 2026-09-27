@@ -1,7 +1,7 @@
 {
   "name": "joaju",
   "version": "0.1.0",
-  "description": "Orquestrador declarativo local e compilador acadêmico com suporte a grafos, diagramas e heredogramas clínicos conforme a padronização internacional da NSGC",
+  "description": "Orquestrador declarativo local e compilador acadêmico para diagramas e gráficos científicos, com extensão para heredogramas clínicos",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

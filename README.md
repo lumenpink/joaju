@@ -2,19 +2,19 @@
 
 > **Joaju** (*Guarani*): Elo, união recíproca, conexão, aresta.
 >
-> Orquestrador declarativo local e compilador acadêmico com suporte a grafos, diagramas e heredogramas clínicos conforme a padronização internacional da NSGC.
+> Orquestrador declarativo local e compilador acadêmico para produção de diagramas e gráficos científicos, com extensão para heredogramas clínicos.
 
 ## 📌 Visão Geral
 
-O **Joaju** é um pipeline de diagramação e compilação acadêmica focado em privacidade, soberania de dados (aderência estrita à LGPD) e ergonomia no **Obsidian**. Ele atua como uma ponte entre anotações em Markdown e publicações biomédicas/técnicas no padrão ABNT ou Vancouver.
+O **Joaju** é um pipeline de diagramação e compilação acadêmica focado em privacidade, soberania de dados (aderência estrita à LGPD) e ergonomia no **Obsidian**. Ele atua como uma ponte entre anotações em Markdown e publicações acadêmicas/técnicas no padrão ABNT ou Vancouver.
 
-Em vez de sobrecarregar editores de texto com renderizadores pesados ou depender de serviços externos que violam o sigilo de prontuários, o Joaju encapsula uma stack de microsserviços via Docker que resolve:
+Em vez de sobrecarregar editores de texto com renderizadores pesados ou depender de serviços externos que violam o sigilo de dados, o Joaju encapsula uma stack de microsserviços via Docker que resolve:
 
-1. **Heredogramas Clínicos Padronizados:** Processamento determinístico de árvores genealógicas via script R nativo (`kinship2`), convertendo tabelas simples em SVGs conformes às diretrizes da *National Society of Genetic Counselors* (NSGC) e da *American College of Medical Genetics* (ACMG).
+1. **Diagramas Multimotor & Gráficos Científicos:** Renderização de fluxogramas, arquiteturas e grafos (Mermaid, Graphviz, PlantUML) através de integração transparente com o Kroki, com controle de escala sem injeção de HTML no editor.
 
-2. **Diagramas Multimotor Isolados:** Renderização de fluxogramas e grafos (Mermaid e Graphviz) através de container local do Kroki, com controle de escala sem injeção de HTML no editor.
+2. **Compilação Tipográfica Híbrida:** Uso do Pandoc (`--citeproc`) para resolução bibliográfica robusta integrada ao Zotero, compilando a saída estruturada em alta velocidade com o **Typst** e templates ABNT NBR 14724.
 
-3. **Compilação Tipográfica Híbrida:** Uso do Pandoc (`--citeproc`) para resolução bibliográfica robusta integrada ao Zotero, compilando a saída estruturada em alta velocidade com o **Typst**.
+3. **Módulo Especializado de Heredogramas:** Processamento determinístico de árvores genealógicas clínicas via script R nativo (`kinship2`), convertendo tabelas simples em SVGs conformes às diretrizes da *National Society of Genetic Counselors* (NSGC) e da *American College of Medical Genetics* (ACMG).
 
 ## 🏗️ Arquitetura do Pipeline
 

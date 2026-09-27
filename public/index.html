@@ -9,10 +9,10 @@
 <body>
   <header class="app-header">
     <div class="brand">
-      <span class="logo">🧬</span>
+      <span class="logo">📐</span>
       <div>
         <h1>Joaju</h1>
-        <p class="tagline" data-i18n="tagline">Playground de diagramas e heredogramas clínicos</p>
+        <p class="tagline" data-i18n="tagline">Playground de diagramas acadêmicos e gráficos científicos</p>
       </div>
     </div>
     <div class="actions">
@@ -28,8 +28,8 @@
         <option value="ja">日本語</option>
         <option value="ar">العربية (RTL)</option>
       </select>
+      <button id="btn-example-mermaid" class="btn btn-secondary" type="button" data-i18n="btn_mermaid">Diagramas (Mermaid)</button>
       <button id="btn-example-pedigree" class="btn btn-secondary" type="button" data-i18n="btn_pedigree">Heredograma</button>
-      <button id="btn-example-mermaid" class="btn btn-secondary" type="button" data-i18n="btn_mermaid">Mermaid</button>
       <button id="btn-render" class="btn btn-primary" type="button" data-i18n="btn_render">Renderizar</button>
     </div>
   </header>
@@ -46,7 +46,7 @@
           <button id="btn-clear" class="btn btn-sm btn-ghost" type="button" data-i18n="btn_clear">Limpar</button>
         </div>
       </div>
-      <textarea id="code-input" spellcheck="false" data-i18n-placeholder="placeholder" placeholder="Cole aqui seu bloco ```heredograma ou ```mermaid (ou apenas os dados internos)..."></textarea>
+      <textarea id="code-input" spellcheck="false" data-i18n-placeholder="placeholder" placeholder="Cole aqui seu bloco ```mermaid, diagramas ou ```heredograma..."></textarea>
       <div class="pane-footer">
         <span id="char-count">0 caracteres</span>
         <span class="shortcut-tip"><span data-i18n="shortcut_tip">Atalho:</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
