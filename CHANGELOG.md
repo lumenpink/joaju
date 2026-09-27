@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (docs) implement public documentation site, security headers, and kokorosim banner (closes #14)
   - (api) implement cccp serve, dev, and demo interfaces and health endpoint (closes #13)
   - (ui) implement interactive web playground and preview endpoint (closes #10)
   - (docker) update runtimes to latest and apply multi-stage non-root oci standards (closes #8)
