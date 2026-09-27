@@ -17,17 +17,25 @@ jobs:
         with:
           node-version: 22
 
-      - name: "Install Dependencies"
+      - name: "Install Dependencies (Hermetic Lockfile)"
         run: |
           npm ci
+
+      - name: "Audit Dependencies (Anti-Vulnerability)"
+        run: |
+          npm audit --audit-level=high
+
+      - name: "Lint & Code Quality (Biome Zero Warnings)"
+        run: |
+          npm run lint
 
       - name: "Run Unit Test Suite"
         run: |
           npm test
 
-      - name: "Validate JavaScript Syntax"
+      - name: "Code Coverage Gate (>= 90%)"
         run: |
-          node -c server.js
+          npm run test:coverage
 
       - name: "Validate Docker Compose"
         run: |

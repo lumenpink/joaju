@@ -15,22 +15,22 @@ module.exports = defineConfig({
   reporter: 'list',
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
-    trace: 'on-first-retry',
+    trace: 'on-first-retry'
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'] }
     },
     {
       name: 'mobile-chrome',
-      use: { ...devices['Pixel 5'] },
-    },
+      use: { ...devices['Pixel 5'] }
+    }
   ],
   webServer: {
     command: `PORT=${PORT} node server.js`,
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
-    timeout: 10 * 1000,
-  },
+    timeout: 10 * 1000
+  }
 });

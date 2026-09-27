@@ -1,7 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Joaju Web Playground E2E', () => {
-
   test.beforeEach(async ({ page }) => {
     // Mock do endpoint /render para garantir estabilidade hermética em qualquer ambiente
     await page.route('**/render', async (route) => {
@@ -26,7 +25,8 @@ test.describe('Joaju Web Playground E2E', () => {
           });
         }
 
-        const isMermaid = code.includes('graph ') || code.includes('flowchart') || code.includes('mermaid');
+        const isMermaid =
+          code.includes('graph ') || code.includes('flowchart') || code.includes('mermaid');
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -65,7 +65,9 @@ test.describe('Joaju Web Playground E2E', () => {
     await expect(downloadBtn).toBeEnabled();
   });
 
-  test('alterna entre templates de exemplo (Mermaid, Heredograma) e ação de limpar', async ({ page }) => {
+  test('alterna entre templates de exemplo (Mermaid, Heredograma) e ação de limpar', async ({
+    page
+  }) => {
     await page.goto('/');
 
     // 1. Clicar no botão Mermaid

@@ -13,14 +13,24 @@ PORT="${PORT:-3000}"
 HOST="${HOST:-0.0.0.0}"
 OPEN_BROWSER=0
 
-# Cores ANSI para padronização Gosplan
-BOLD='\033[1m'
-CYAN='\033[0;36m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-GOLD='\033[38;5;220m'
-NC='\033[0m'
+# Cores ANSI para padronização Gosplan (observando NO_COLOR e detecção de TTY - Seção 13.4)
+if [ -z "${NO_COLOR:-}" ] && [ -t 1 ]; then
+    BOLD='\033[1m'
+    CYAN='\033[0;36m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    RED='\033[0;31m'
+    GOLD='\033[38;5;220m'
+    NC='\033[0m'
+else
+    BOLD=''
+    CYAN=''
+    GREEN=''
+    YELLOW=''
+    RED=''
+    GOLD=''
+    NC=''
+fi
 
 print_help() {
     cat << EOF

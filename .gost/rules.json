@@ -19,11 +19,7 @@
         "CC-BY-SA-4.0",
         "CC-BY-ND-4.0"
       ],
-      "satellite_files": [
-        "LICENSE-MEDIA",
-        "LICENSE-LOGO",
-        "LICENSE-APACHE"
-      ]
+      "satellite_files": ["LICENSE-MEDIA", "LICENSE-LOGO", "LICENSE-APACHE"]
     },
     {
       "id": "GOST-02-ANATOMY-ROOT",
@@ -31,7 +27,15 @@
       "title": "Arquivos Básicos da Raiz",
       "severity": "MUST",
       "check": "files_exist",
-      "targets": ["README.md", "VERSION", "CHANGELOG.md", ".gitignore", ".editorconfig", "site/index.html", "site/_headers"]
+      "targets": [
+        "README.md",
+        "VERSION",
+        "CHANGELOG.md",
+        ".gitignore",
+        ".editorconfig",
+        "site/index.html",
+        "site/_headers"
+      ]
     },
     {
       "id": "GOST-03-VERSION-SEMVER",

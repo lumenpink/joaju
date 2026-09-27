@@ -8,8 +8,11 @@
     "dev": "node --watch server.js",
     "serve": "node server.js",
     "demo": "sh scripts/demo.sh",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage",
+    "test:mutation": "stryker run",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -18,6 +21,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.63.0"
   }
 }
