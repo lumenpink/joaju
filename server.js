@@ -3,7 +3,6 @@ const { exec, execSync } = require('child_process');
 const fs = require('fs');
 const uuid = require('uuid');
 const path = require('path');
-const fetch = require('fetch').fetch; // Se a versão do Node for < 18
 
 const app = express();
 app.use(express.json({ limit: '50mb' })); // Suporte a documentos longos
@@ -196,4 +195,9 @@ app.post('/compile', async (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log('✅ Pipeline acadêmico orquestrando na porta 3000...'));
+const PORT = process.env.PORT || 3000;
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`✅ Pipeline acadêmico orquestrando na porta ${PORT}...`));
+}
+
+module.exports = { app, preprocessPedigrees, preprocessDiagrams };
