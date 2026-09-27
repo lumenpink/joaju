@@ -1,0 +1,9 @@
+.git
+.env*
+!*.example
+node_modules/
+tests/
+site/
+*.log
+*.pdf
+.git/act-logs/

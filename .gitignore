@@ -1,0 +1,22 @@
+# Dependências Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Logs do sistema e CI local (act)
+*.log
+.git/act-logs/
+
+# Arquivos temporários e artefatos de compilação
+tmp/
+*.tmp
+*.pdf
+*.svg
+.DS_Store
+Thumbs.db
