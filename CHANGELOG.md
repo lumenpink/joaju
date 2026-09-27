@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 
-- Routine maintenance, documentation updates, and operational improvements.
+### Features
+  - (docker) setup multi-engine container orchestration (closes #2)
 
 ## Previous Releases
 
