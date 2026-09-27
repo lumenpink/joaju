@@ -1,5 +1,5 @@
 const express = require('express');
-const { exec, execSync } = require('child_process');
+const cp = require('child_process');
 const fs = require('fs');
 const uuid = require('uuid');
 const path = require('path');
@@ -59,7 +59,7 @@ async function preprocessPedigrees(markdown, sessionId) {
 
         try {
             const scriptPath = fs.existsSync('/app/plot_pedigree.R') ? '/app/plot_pedigree.R' : path.join(__dirname, 'plot_pedigree.R');
-            execSync(`Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`);
+            cp.execSync(`Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`);
 
             if (fs.existsSync(svgPath)) {
                 // Injeta o layout Typst perfeito com os limites dimensionais
@@ -164,7 +164,7 @@ function renderSinglePedigree(rawContent, sessionId = 'preview') {
     const scriptPath = fs.existsSync('/app/plot_pedigree.R') ? '/app/plot_pedigree.R' : path.join(__dirname, 'plot_pedigree.R');
 
     try {
-        execSync(`Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`);
+        cp.execSync(`Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`);
         if (fs.existsSync(svgPath)) {
             const svgContent = fs.readFileSync(svgPath, 'utf8');
             return svgContent;
@@ -268,7 +268,7 @@ app.post('/compile', async (req, res) => {
     const pandocCmd = `pandoc "${tempMd}" --citeproc --bibliography=/data/referencias.bib --csl=/data/${profile}.csl -t typst -o "${tempTypstOutput}"`;
 
     try {
-        execSync(pandocCmd);
+        cp.execSync(pandocCmd);
 
         // 2️⃣ ETAPA 2: Typst (Diagramação Rápida)
         // Cria um wrapper que envelopa o texto compilado no template master.
@@ -282,7 +282,7 @@ app.post('/compile', async (req, res) => {
 
         // Compila o Typst nativo na porta 3000
         const typstCmd = `typst compile --root /data "${tempWrapperTypst}" "${tempPdf}"`;
-        execSync(typstCmd);
+        cp.execSync(typstCmd);
 
         // Lê o PDF vetorial final
         const pdfBuffer = fs.readFileSync(tempPdf);
