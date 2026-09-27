@@ -8,6 +8,16 @@ const app = express();
 app.use(express.json({ limit: '50mb' })); // Suporte a documentos longos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 🩺 Endpoint de verificação de integridade (Health Check)
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        name: 'joaju',
+        version: process.env.npm_package_version || '0.1.0',
+        uptime: process.uptime()
+    });
+});
+
 // --- Pré-processador 1: Heredogramas Clínicos Avançados (R) ---
 async function preprocessPedigrees(markdown, sessionId) {
     const regex = /```(heredograma|pedigree)\n([\s\S]*?)\n```/g;
@@ -302,8 +312,9 @@ app.post('/compile', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 if (require.main === module) {
-    app.listen(PORT, () => console.log(`✅ Pipeline acadêmico orquestrando na porta ${PORT}...`));
+    app.listen(PORT, HOST, () => console.log(`✅ Pipeline acadêmico orquestrando em http://${HOST}:${PORT}...`));
 }
 
 module.exports = { app, preprocessPedigrees, preprocessDiagrams, renderSinglePedigree, renderSingleMermaid };

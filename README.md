@@ -276,6 +276,52 @@ Recebe o conteúdo Markdown bruto e entrega o PDF diagramado.
 
   * `500 Internal Server Error`: Descrição detalhada dos erros emitidos pelo Pandoc, R ou Typst.
 
+### `GET /health`
+
+Sonda de integridade operacional (Health Check) para Docker, Kubernetes e scripts de orquestração CCCP.
+
+* **Respostas:**
+  * `200 OK`:
+    ```json
+    {
+      "status": "ok",
+      "name": "joaju",
+      "version": "0.1.0",
+      "uptime": 12.34
+    }
+    ```
+
+## 🛠️ Interfaces de Desenvolvimento CCCP (Serve, Dev & Demo)
+
+O Joaju implementa conformidade total com os comandos do ecossistema **CCCP**:
+
+### 1. Servidor de Desenvolvimento com Recarga Contínua
+```bash
+# Via CCCP (delega automaticamente para scripts/dev.sh):
+cccp serve --dev
+
+# Com portas e opções customizadas:
+./scripts/dev.sh --port 3100 --localhost --open
+
+# Ou via npm:
+npm run dev
+```
+
+### 2. Modo Demonstração VDNKh (Exposição de Conquistas)
+```bash
+# Executa rotina de validação e abre o Web Playground com fixtures semeadas em data/demo/:
+cccp serve --demo
+
+# Ou diretamente:
+npm run demo
+```
+
+### 3. Servidor de Pré-visualização Estática
+```bash
+# Serve o Web Playground estático (./public) via Mayak ou Python:
+cccp serve
+```
+
 ## ⚖️ Conformidade GOST
 
 Este repositório adota as diretrizes do padrão **GOST v1.0.0-draft** (perfil `lumen`). A integridade das especificações e regras de automação são gerenciadas via CLI `cccp` através do diretório `.gost/`.

@@ -5,6 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "dev": "node --watch server.js",
+    "serve": "node server.js",
+    "demo": "sh scripts/demo.sh",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage",
     "test:e2e": "playwright test"

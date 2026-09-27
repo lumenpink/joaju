@@ -1,0 +1,7 @@
+id,pai,mae,sex,fenotipo,label
+1,0,0,M,wt,I.1 (Avô)
+2,0,0,F,wt,I.2 (Avó)
+3,1,2,M,het,II.1 (Pai Portador)
+4,0,0,F,wt,II.2 (Mãe Não-Afetada)
+5,3,4,F,hom,III.1 (Probanda Afetada)
+6,3,4,M,wt,III.2 (Irmão Hígido)

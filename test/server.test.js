@@ -412,6 +412,18 @@ perfil: vancouver
         assert.ok(errText.includes('Pandoc filter syntax error'));
     });
 
+    // --- Health Check ---
+    await t.test('retorna 200 e payload json em GET /health', async () => {
+        const res = await fetch(`${baseUrl}/health`);
+        assert.equal(res.status, 200);
+        assert.ok(res.headers.get('content-type').includes('application/json'));
+        const body = await res.json();
+        assert.equal(body.status, 'ok');
+        assert.equal(body.name, 'joaju');
+        assert.ok(typeof body.version === 'string');
+        assert.ok(typeof body.uptime === 'number');
+    });
+
     // --- Ativos Estáticos (Public Playground) ---
     await t.test('serve index.html em GET /', async () => {
         const res = await fetch(`${baseUrl}/`);
