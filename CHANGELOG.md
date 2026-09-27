@@ -16,5 +16,8 @@
   - (pedigree) add r kinship2 pedigree generator (closes #3)
   - (docker) setup multi-engine container orchestration (closes #2)
 
+### Bug Fixes
+  - (pedigree) ajustar proporcoes compactas de geracoes e ampliar simbolos
+
 ## Previous Releases
 

@@ -115,10 +115,31 @@ if ("label" %in% names(df) && is.null(plot_user_args$id)) {
     plot_user_args$id <- df$label
 }
 
-# Configura o renderizador SVG Cairo
-# O Typst prefere SVGs vetoriais limpos
-svg(output_svg, width = 8, height = 5.2, bg = "transparent")
-par(mar = c(1, 1, 1, 1))
+# --- Auto-fit de dimensões e proporções compactas didáticas ---
+plist <- align.pedigree(ped)
+maxlev <- as.integer(nrow(plist$pos))
+xrange <- range(plist$pos[plist$nid > 0])
+n_cols <- as.numeric(diff(xrange)) + 1
+
+# Altura dinâmica proporcional às gerações (evita esticar linhas desnecessariamente)
+calc_h <- max(1.8, min(8.0, maxlev * 0.95 + 0.4))
+# Largura proporcional ao número de colunas
+calc_w <- max(4.0, min(10.0, n_cols * 1.3 + 1.0))
+
+svg_w <- if (!is.null(plot_user_args$plot_width)) as.numeric(plot_user_args$plot_width) else calc_w
+svg_h <- if (!is.null(plot_user_args$plot_height)) as.numeric(plot_user_args$plot_height) else calc_h
+
+plot_user_args$plot_width <- NULL
+plot_user_args$plot_height <- NULL
+
+# Padrões ergonômicos e didáticos para símbolos proeminentes e linhas curtas
+if (is.null(plot_user_args$symbolsize)) plot_user_args$symbolsize <- 2.2
+if (is.null(plot_user_args$cex))        plot_user_args$cex <- 0.85
+if (is.null(plot_user_args$branch))     plot_user_args$branch <- 0.4
+
+# Configura o renderizador SVG Cairo com margens mínimas
+svg(output_svg, width = svg_w, height = svg_h, bg = "transparent")
+par(mar = c(0.3, 0.3, 0.3, 0.3))
 
 # Chamada dinâmica final combinando x=ped com todas as specs visuais declaradas
 final_plot_args <- c(list(x = ped), plot_user_args)
