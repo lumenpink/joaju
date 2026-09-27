@@ -7,6 +7,7 @@ const path = require('path');
 const app = express();
 app.use(express.json({ limit: '50mb' })); // Suporte a documentos longos
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/locales', express.static(path.join(__dirname, 'locales')));
 
 // 🩺 Endpoint de verificação de integridade (Health Check)
 app.get('/health', (req, res) => {

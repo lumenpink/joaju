@@ -143,4 +143,25 @@ test.describe('Joaju Web Playground E2E', () => {
 
     expect(download.suggestedFilename()).toMatch(/^joaju-grafico-\d+\.svg$/);
   });
+
+  test('suporta internacionalização e alternância RTL para o Árabe', async ({ page }) => {
+    await page.goto('/');
+
+    const langSelect = page.locator('#lang-select');
+    await expect(langSelect).toBeVisible();
+
+    // Muda para Inglês
+    await langSelect.selectOption('en');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+    await expect(page.locator('#btn-render')).toHaveText('Render');
+    await expect(page.locator('#btn-example-pedigree')).toHaveText('Pedigree');
+
+    // Muda para Árabe (RTL)
+    await langSelect.selectOption('ar');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    await expect(page.locator('#btn-render')).toHaveText('معالجة وعرض');
+    await expect(page.locator('#btn-example-pedigree')).toHaveText('شجرة النسب');
+  });
 });

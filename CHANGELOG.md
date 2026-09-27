@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (i18n) implement 10 canonical languages and rtl support conforming to gost (closes #15)
   - (docs) implement public documentation site, security headers, and kokorosim banner (closes #14)
   - (api) implement cccp serve, dev, and demo interfaces and health endpoint (closes #13)
   - (ui) implement interactive web playground and preview endpoint (closes #10)

@@ -245,6 +245,41 @@ textarea#code-input {
   color: var(--text-muted);
 }
 
+.lang-select {
+  background-color: var(--bg-pane);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.lang-select:focus {
+  border-color: var(--accent);
+}
+
+/* --- Suporte a Right-to-Left (RTL) para Árabe (Norma GOST Seção 10.3) --- */
+html[dir="rtl"] {
+  direction: rtl;
+}
+
+html[dir="rtl"] body {
+  text-align: right;
+}
+
+html[dir="rtl"] .pane-footer {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] textarea#code-input {
+  direction: ltr; /* Código-fonte (R, CSV, Mermaid) permanece LTR */
+  text-align: left;
+}
+
 @media (max-width: 860px) {
   body {
     overflow: auto;

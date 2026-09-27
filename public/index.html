@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,49 +12,61 @@
       <span class="logo">🧬</span>
       <div>
         <h1>Joaju</h1>
-        <p class="tagline">Playground de diagramas e heredogramas clínicos</p>
+        <p class="tagline" data-i18n="tagline">Playground de diagramas e heredogramas clínicos</p>
       </div>
     </div>
     <div class="actions">
-      <button id="btn-example-pedigree" class="btn btn-secondary" type="button">Heredograma</button>
-      <button id="btn-example-mermaid" class="btn btn-secondary" type="button">Mermaid</button>
-      <button id="btn-render" class="btn btn-primary" type="button">Renderizar</button>
+      <select id="lang-select" class="lang-select" aria-label="Idioma / Language">
+        <option value="pt" selected>Português (BR)</option>
+        <option value="en">English (US)</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="ru">Русский</option>
+        <option value="zh">中文</option>
+        <option value="ja">日本語</option>
+        <option value="ar">العربية (RTL)</option>
+      </select>
+      <button id="btn-example-pedigree" class="btn btn-secondary" type="button" data-i18n="btn_pedigree">Heredograma</button>
+      <button id="btn-example-mermaid" class="btn btn-secondary" type="button" data-i18n="btn_mermaid">Mermaid</button>
+      <button id="btn-render" class="btn btn-primary" type="button" data-i18n="btn_render">Renderizar</button>
     </div>
   </header>
 
   <main class="workbench">
     <section class="editor-pane">
       <div class="pane-header">
-        <label for="code-input">Código Fonte</label>
+        <label for="code-input" data-i18n="editor_label">Código Fonte</label>
         <div class="editor-controls">
           <label class="toggle-label">
             <input type="checkbox" id="auto-render" checked>
-            <span>Auto-render</span>
+            <span data-i18n="auto_render">Auto-render</span>
           </label>
-          <button id="btn-clear" class="btn btn-sm btn-ghost" type="button">Limpar</button>
+          <button id="btn-clear" class="btn btn-sm btn-ghost" type="button" data-i18n="btn_clear">Limpar</button>
         </div>
       </div>
-      <textarea id="code-input" spellcheck="false" placeholder="Cole aqui seu bloco ```heredograma ou ```mermaid (ou apenas os dados internos)..."></textarea>
+      <textarea id="code-input" spellcheck="false" data-i18n-placeholder="placeholder" placeholder="Cole aqui seu bloco ```heredograma ou ```mermaid (ou apenas os dados internos)..."></textarea>
       <div class="pane-footer">
         <span id="char-count">0 caracteres</span>
-        <span class="shortcut-tip">Atalho: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+        <span class="shortcut-tip"><span data-i18n="shortcut_tip">Atalho:</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
       </div>
     </section>
 
     <section class="preview-pane">
       <div class="pane-header">
-        <span>Resultado</span>
+        <span data-i18n="preview_label">Resultado</span>
         <div class="preview-controls">
-          <button id="btn-download" class="btn btn-sm btn-secondary" type="button" disabled>Baixar SVG</button>
+          <button id="btn-download" class="btn btn-sm btn-secondary" type="button" disabled data-i18n="btn_download">Baixar SVG</button>
         </div>
       </div>
       <div id="preview-container" class="preview-body">
         <div class="empty-state">
           <div class="empty-icon">📊</div>
-          <p>Digite ou escolha um exemplo acima para visualizar o gráfico instantaneamente.</p>
+          <p data-i18n="empty_state">Digite ou escolha um exemplo acima para visualizar o gráfico instantaneamente.</p>
         </div>
       </div>
-      <div id="status-bar" class="status-bar">Pronto.</div>
+      <div id="status-bar" class="status-bar" data-i18n="status_ready">Pronto.</div>
     </section>
   </main>
 
