@@ -227,6 +227,37 @@ _%>
 
 ## 🛠️ API de Backend
 
+### `GET /`
+
+Interface web interativa (Playground) para edição e preview instantâneo de diagramas e heredogramas clínicos.
+
+### `POST /render`
+
+Renderiza instantaneamente um bloco de heredograma ou diagrama Mermaid isolado, devolvendo o gráfico em formato vetorial SVG.
+
+* **Payload:**
+
+  ```json
+  {
+    "code": "```heredograma\n%% layout.width=90%\nid,pai,mae,sex,fenotipo\n1,0,0,M,wt\n...\n```"
+  }
+  ```
+
+* **Respostas:**
+
+  * `200 OK`: JSON contendo o SVG gerado:
+    ```json
+    {
+      "format": "pedigree",
+      "type": "svg",
+      "svg": "<svg ...>...</svg>"
+    }
+    ```
+
+  * `400 Bad Request`: Parâmetros inválidos ou código vazio.
+
+  * `500 Internal Server Error`: Erro no motor de renderização (Rscript ou Kroki).
+
 ### `POST /compile`
 
 Recebe o conteúdo Markdown bruto e entrega o PDF diagramado.

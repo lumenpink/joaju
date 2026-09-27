@@ -6,6 +6,7 @@ const path = require('path');
 
 const app = express();
 app.use(express.json({ limit: '50mb' })); // Suporte a documentos longos
+app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Pré-processador 1: Heredogramas Clínicos Avançados (R) ---
 async function preprocessPedigrees(markdown, sessionId) {
@@ -57,9 +58,8 @@ async function preprocessPedigrees(markdown, sessionId) {
         const rArgsString = `list(${rArgs.join(', ')})`;
 
         try {
-            // Executa o script R localmente dentro do container
-            // Escapa aspas para a linha de comando Unix
-            execSync(`Rscript /app/plot_pedigree.R "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`);
+            const scriptPath = fs.existsSync('/app/plot_pedigree.R') ? '/app/plot_pedigree.R' : path.join(__dirname, 'plot_pedigree.R');
+            execSync(`Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`);
 
             if (fs.existsSync(svgPath)) {
                 // Injeta o layout Typst perfeito com os limites dimensionais
@@ -134,6 +134,112 @@ async function preprocessDiagrams(markdown, sessionId) {
     return modifiedMarkdown;
 }
 
+// --- Renderizadores Isolados para Preview Instantâneo ---
+function renderSinglePedigree(rawContent, sessionId = 'preview') {
+    const csvPath = `/tmp/ped_${sessionId}.csv`;
+    const svgPath = `/tmp/ped_${sessionId}.svg`;
+
+    const rArgs = [];
+    const lines = rawContent.split('\n');
+    const csvLines = [];
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('%%')) {
+            const directiveText = trimmed.replace(/^%%\s*/, '');
+            const pairs = directiveText.match(/[\w.-]+=(?:c\([^)]+\)|"[^"]*"|'[^']*'|[^\s]+)/g) || [];
+            for (const pair of pairs) {
+                const [key, val] = pair.split(/=(.*)/s);
+                if (key !== 'layout.width' && key !== 'width' && key !== 'layout.max_width' && key !== 'max-width') {
+                    rArgs.push(`${key} = ${val}`);
+                }
+            }
+        } else {
+            csvLines.push(line);
+        }
+    }
+
+    fs.writeFileSync(csvPath, csvLines.join('\n'));
+    const rArgsString = `list(${rArgs.join(', ')})`;
+    const scriptPath = fs.existsSync('/app/plot_pedigree.R') ? '/app/plot_pedigree.R' : path.join(__dirname, 'plot_pedigree.R');
+
+    try {
+        execSync(`Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`);
+        if (fs.existsSync(svgPath)) {
+            const svgContent = fs.readFileSync(svgPath, 'utf8');
+            return svgContent;
+        }
+        throw new Error('Arquivo SVG não gerado pelo Rscript');
+    } finally {
+        try {
+            if (fs.existsSync(csvPath)) fs.unlinkSync(csvPath);
+            if (fs.existsSync(svgPath)) fs.unlinkSync(svgPath);
+        } catch (_) {}
+    }
+}
+
+async function renderSingleMermaid(rawContent) {
+    const cleanLines = rawContent
+        .split('\n')
+        .filter(line => !line.trim().startsWith('%%'))
+        .join('\n')
+        .trim();
+
+    const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
+    const response = await fetch(`${krokiHost}/mermaid/svg`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: cleanLines
+    });
+
+    if (!response.ok) {
+        const errorDetail = await response.text();
+        throw new Error(`Erro do Kroki (${response.status}): ${errorDetail || response.statusText}`);
+    }
+
+    return await response.text();
+}
+
+// --- Rota de Preview Rápido para a Interface Web ---
+app.post('/render', async (req, res) => {
+    const rawInput = (req.body.code || req.body.markdown || '').trim();
+    if (!rawInput) {
+        return res.status(400).json({ error: 'Nenhum código fornecido para renderização.' });
+    }
+
+    // 1. Tenta extrair bloco demarcado por ```
+    const blockMatch = rawInput.match(/```(heredograma|pedigree|mermaid)\n([\s\S]*?)\n?```/i);
+    let type = 'unknown';
+    let content = rawInput;
+
+    if (blockMatch) {
+        const tag = blockMatch[1].toLowerCase();
+        type = (tag === 'heredograma' || tag === 'pedigree') ? 'pedigree' : 'mermaid';
+        content = blockMatch[2].trim();
+    } else {
+        // 2. Inferência heurística se o usuário colar apenas o miolo
+        if (/^(flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)/m.test(rawInput) || rawInput.includes('-->') || rawInput.includes('graph ')) {
+            type = 'mermaid';
+        } else {
+            type = 'pedigree';
+        }
+    }
+
+    const sessionId = uuid.v4();
+
+    try {
+        if (type === 'pedigree') {
+            const svg = renderSinglePedigree(content, sessionId);
+            return res.json({ format: 'pedigree', type: 'svg', svg });
+        } else if (type === 'mermaid') {
+            const svg = await renderSingleMermaid(content);
+            return res.json({ format: 'mermaid', type: 'svg', svg });
+        }
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 // --- Rota Principal de Compilação ---
 app.post('/compile', async (req, res) => {
     const markdown = req.body.markdown || '';
@@ -200,4 +306,4 @@ if (require.main === module) {
     app.listen(PORT, () => console.log(`✅ Pipeline acadêmico orquestrando na porta ${PORT}...`));
 }
 
-module.exports = { app, preprocessPedigrees, preprocessDiagrams };
+module.exports = { app, preprocessPedigrees, preprocessDiagrams, renderSinglePedigree, renderSingleMermaid };

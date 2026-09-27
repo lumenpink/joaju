@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joaju — Playground de Diagramação</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="logo">🧬</span>
+      <div>
+        <h1>Joaju</h1>
+        <p class="tagline">Playground de diagramas e heredogramas clínicos</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btn-example-pedigree" class="btn btn-secondary" type="button">Heredograma</button>
+      <button id="btn-example-mermaid" class="btn btn-secondary" type="button">Mermaid</button>
+      <button id="btn-render" class="btn btn-primary" type="button">Renderizar</button>
+    </div>
+  </header>
+
+  <main class="workbench">
+    <section class="editor-pane">
+      <div class="pane-header">
+        <label for="code-input">Código Fonte</label>
+        <div class="editor-controls">
+          <label class="toggle-label">
+            <input type="checkbox" id="auto-render" checked>
+            <span>Auto-render</span>
+          </label>
+          <button id="btn-clear" class="btn btn-sm btn-ghost" type="button">Limpar</button>
+        </div>
+      </div>
+      <textarea id="code-input" spellcheck="false" placeholder="Cole aqui seu bloco ```heredograma ou ```mermaid (ou apenas os dados internos)..."></textarea>
+      <div class="pane-footer">
+        <span id="char-count">0 caracteres</span>
+        <span class="shortcut-tip">Atalho: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+      </div>
+    </section>
+
+    <section class="preview-pane">
+      <div class="pane-header">
+        <span>Resultado</span>
+        <div class="preview-controls">
+          <button id="btn-download" class="btn btn-sm btn-secondary" type="button" disabled>Baixar SVG</button>
+        </div>
+      </div>
+      <div id="preview-container" class="preview-body">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <p>Digite ou escolha um exemplo acima para visualizar o gráfico instantaneamente.</p>
+        </div>
+      </div>
+      <div id="status-bar" class="status-bar">Pronto.</div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

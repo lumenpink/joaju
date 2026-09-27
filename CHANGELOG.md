@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (ui) implement interactive web playground and preview endpoint (closes #10)
   - (docker) update runtimes to latest and apply multi-stage non-root oci standards (closes #8)
   - (ci) add CI/CD pipeline, Docker compose setup, and Node.js project configuration (closes #7)
   - (api) implement compiler orchestrator and regex preprocessors (closes #5)
