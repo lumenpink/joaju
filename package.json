@@ -1,0 +1,16 @@
+{
+  "name": "joaju",
+  "version": "0.1.0",
+  "description": "Orquestrador declarativo local e compilador acadêmico com suporte a grafos, diagramas e heredogramas clínicos conforme a padronização internacional da NSGC",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node -c server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "fetch": "^1.1.0",
+    "uuid": "^9.0.1"
+  },
+  "license": "Apache-2.0"
+}

@@ -18,7 +18,7 @@ services:
 
   # 2. Gateway do Kroki (encaminha requisições gráficas)
   kroki:
-    image: yuzutech/kroki:latest
+    image: yuzutech/kroki:0.24.0
     container_name: kroki_gateway
     restart: unless-stopped
     environment:
@@ -32,7 +32,7 @@ services:
 
   # 3. Renderizador isolado do Mermaid (Chromium headless)
   kroki-mermaid:
-    image: yuzutech/kroki-mermaid:latest
+    image: yuzutech/kroki-mermaid:0.24.0
     container_name: kroki_mermaid
     restart: unless-stopped
     networks:
