@@ -124,7 +124,8 @@ async function preprocessDiagrams(markdown, sessionId) {
       const response = await fetch(`${krokiHost}/mermaid/png`, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: code
+        body: code,
+        signal: AbortSignal.timeout(8000)
       });
 
       if (response.ok) {
@@ -211,15 +212,32 @@ async function renderSingleMermaid(rawContent) {
     .trim();
 
   const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
-  const response = await fetch(`${krokiHost}/mermaid/svg`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: cleanLines
-  });
+  let response;
+  try {
+    response = await fetch(`${krokiHost}/mermaid/svg`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: cleanLines,
+      signal: AbortSignal.timeout(6000)
+    });
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      const timeoutError = new Error('Tempo limite excedido na comunicação com o gateway Kroki.');
+      timeoutError.status = 504;
+      throw timeoutError;
+    }
+    const netError = new Error(`Falha de conexão com o motor gráfico Kroki (${err.message})`);
+    netError.status = 503;
+    throw netError;
+  }
 
   if (!response.ok) {
     const errorDetail = await response.text();
-    throw new Error(`Erro do Kroki (${response.status}): ${errorDetail || response.statusText}`);
+    const syntaxError = new Error(
+      `Erro do Kroki (${response.status}): ${errorDetail.split('\n')[0] || response.statusText}`
+    );
+    syntaxError.status = response.status === 400 ? 422 : response.status;
+    throw syntaxError;
   }
 
   return await response.text();
@@ -248,11 +266,18 @@ app.post('/render', async (req, res) => {
         rawInput
       ) ||
       rawInput.includes('-->') ||
-      rawInput.includes('graph ')
+      rawInput.includes('graph ') ||
+      rawInput.includes('graph TD') ||
+      rawInput.includes('graph LR')
     ) {
       type = 'mermaid';
-    } else {
+    } else if (
+      /^(id\s*,|pai\s*,|mae\s*,|dadid\s*,|momid\s*,)/im.test(rawInput) ||
+      /^(\d+)\s*,\s*(\d+|\bNA\b)\s*,\s*(\d+|\bNA\b)\s*,/m.test(rawInput)
+    ) {
       type = 'pedigree';
+    } else {
+      type = rawInput.includes(',') ? 'pedigree' : 'mermaid';
     }
   }
 
@@ -268,7 +293,8 @@ app.post('/render', async (req, res) => {
       return res.json({ format: 'mermaid', type: 'svg', svg });
     }
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    const statusCode = err.status && Number.isInteger(err.status) ? err.status : 500;
+    return res.status(statusCode).json({ error: err.message });
   }
 });
 

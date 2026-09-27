@@ -268,6 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentSvg = '';
   let debounceTimer = null;
+  let currentAbortController = null;
+  let lastRenderedCode = null;
+  const DEBOUNCE_MS = 800;
   let currentLang = localStorage.getItem('joaju_lang') || 'pt';
   if (!LOCALES[currentLang]) currentLang = 'pt';
 
@@ -312,10 +315,16 @@ document.addEventListener('DOMContentLoaded', () => {
     charCount.textContent = `${len} ${unit}`;
   }
 
-  async function triggerRender() {
+  async function triggerRender(force = false) {
     const t = getT();
     const code = codeInput.value.trim();
+
     if (!code) {
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      lastRenderedCode = '';
       previewContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📊</div>
@@ -328,13 +337,25 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    if (!force && code === lastRenderedCode) {
+      return;
+    }
+
+    // Trava anti-empilhamento: cancela qualquer requisição em trânsito
+    if (currentAbortController) {
+      currentAbortController.abort();
+    }
+    const abortController = new AbortController();
+    currentAbortController = abortController;
+
     statusBar.textContent = `⏳ ${t.status_rendering}`;
 
     try {
       const response = await fetch('/render', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ code }),
+        signal: abortController.signal
       });
 
       const data = await response.json();
@@ -345,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (data.svg) {
         currentSvg = data.svg;
+        lastRenderedCode = code;
         previewContainer.innerHTML = data.svg;
         btnDownload.disabled = false;
         const msg = t.status_rendered
@@ -355,6 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('Servidor não retornou dados de imagem válidos.');
       }
     } catch (err) {
+      if (err.name === 'AbortError') {
+        // Ignora requisição abortada deliberadamente por nova digitação
+        return;
+      }
       currentSvg = '';
       btnDownload.disabled = true;
       previewContainer.innerHTML = `
@@ -363,6 +389,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
       statusBar.textContent = `❌ ${t.error_title}.`;
+    } finally {
+      if (currentAbortController === abortController) {
+        currentAbortController = null;
+      }
     }
   }
 
@@ -389,35 +419,42 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCharCount();
     if (autoRenderCheckbox.checked) {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(triggerRender, 400);
+      debounceTimer = setTimeout(() => triggerRender(false), DEBOUNCE_MS);
     }
   });
 
   codeInput.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
-      triggerRender();
+      clearTimeout(debounceTimer);
+      triggerRender(true);
     }
   });
 
-  btnRender.addEventListener('click', triggerRender);
+  btnRender.addEventListener('click', () => {
+    clearTimeout(debounceTimer);
+    triggerRender(true);
+  });
 
   btnClear.addEventListener('click', () => {
+    clearTimeout(debounceTimer);
     codeInput.value = '';
     updateCharCount();
-    triggerRender();
+    triggerRender(true);
   });
 
   btnPedigree.addEventListener('click', () => {
+    clearTimeout(debounceTimer);
     codeInput.value = SAMPLE_PEDIGREE;
     updateCharCount();
-    triggerRender();
+    triggerRender(true);
   });
 
   btnMermaid.addEventListener('click', () => {
+    clearTimeout(debounceTimer);
     codeInput.value = SAMPLE_MERMAID;
     updateCharCount();
-    triggerRender();
+    triggerRender(true);
   });
 
   btnDownload.addEventListener('click', downloadSvg);

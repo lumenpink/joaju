@@ -17,6 +17,7 @@
   - (docker) setup multi-engine container orchestration (closes #2)
 
 ### Bug Fixes
+  - (resilience) adicionar trava anti-empilhamento, debounce 800ms e status 422
   - (pedigree) ajustar proporcoes compactas de geracoes e ampliar simbolos
 
 ## Previous Releases
