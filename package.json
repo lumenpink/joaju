@@ -6,11 +6,15 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test",
-    "test:coverage": "node --test --experimental-test-coverage"
+    "test:coverage": "node --test --experimental-test-coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "express": "^4.19.2",
     "uuid": "^11.1.1"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
 }

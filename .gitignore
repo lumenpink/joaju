@@ -18,5 +18,7 @@ tmp/
 *.tmp
 *.pdf
 *.svg
+test-results/
+playwright-report/
 .DS_Store
 Thumbs.db
