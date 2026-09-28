@@ -18,6 +18,7 @@ df <- read.csv(input_csv, stringsAsFactors = FALSE, strip.white = TRUE)
 # 1. Normalização de Nomes de Coluna (Suporte a PT-BR amigável)
 if ("pai" %in% names(df)) df$dadid <- df$pai
 if ("mae" %in% names(df)) df$momid <- df$mae
+if ("sexo" %in% names(df)) df$sex <- df$sexo
 if ("falecido" %in% names(df)) df$status <- df$falecido
 if ("probando" %in% names(df)) df$proband <- df$probando
 
@@ -31,6 +32,8 @@ if ("sex" %in% names(df)) {
     df$sex <- ifelse(s %in% c("M", "MALE", "MAS", "1"), 1,
               ifelse(s %in% c("F", "FEMALE", "FEM", "2"), 2,
               ifelse(s %in% c("T", "TERM", "4"), 4, 3)))
+} else {
+    df$sex <- rep(3, nrow(df))
 }
 
 # 4. TRATAMENTO COMPLEXO: Zigosidade e Afecção (affected matrix para portadores)

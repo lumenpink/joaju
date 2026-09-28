@@ -12,14 +12,14 @@
       right: 2cm,
       bottom: 2cm,
     ),
-    header: locate(loc => {
+    header: context {
       // Numeração no canto superior direito a partir da página 2
-      let page_number = counter(page).at(loc).first()
+      let page_number = counter(page).get().first()
       if page_number > 1 [
         #set text(font: fonte, size: 10pt)
         #align(right)[#page_number]
       ]
-    })
+    }
   )
 
   // 2. Tipografia Base e Espaçamento

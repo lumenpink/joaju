@@ -19,6 +19,7 @@
   - (docker) setup multi-engine container orchestration (closes #2)
 
 ### Bug Fixes
+  - (compiler) improve typst 0.11 compatibility, kinship sex mapping and pandoc rules
   - (kroki) aumentar timeout para 20s em instancias de cpu compartilhada
   - (resilience) adicionar trava anti-empilhamento, debounce 800ms e status 422
   - (pedigree) ajustar proporcoes compactas de geracoes e ampliar simbolos

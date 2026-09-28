@@ -5,6 +5,18 @@ const uuid = require('uuid');
 const path = require('node:path');
 
 const app = express();
+
+// 🌐 Suporte a CORS para integração com Obsidian e clientes desktop/mobile
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 app.use(express.json({ limit: '50mb' })); // Suporte a documentos longos
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/locales', express.static(path.join(__dirname, 'locales')));
@@ -525,18 +537,26 @@ app.post('/compile', async (req, res) => {
   try {
     cp.execSync(pandocCmd);
 
+    // Injeta suporte a réguas horizontais do Pandoc e função min no escopo do arquivo Typst
+    if (fs.existsSync(tempTypstOutput)) {
+      const originalTypst = fs.readFileSync(tempTypstOutput, 'utf8');
+      const patchedTypst = `#let horizontalrule = line(length: 100%, stroke: 0.5pt + luma(180))\n#let min(a, b) = if type(a) == ratio { a } else if type(b) == ratio { b } else { calc.min(a, b) }\n${originalTypst}`;
+      fs.writeFileSync(tempTypstOutput, patchedTypst);
+    }
+
     // 2️⃣ ETAPA 2: Typst (Diagramação Rápida)
     // Cria um wrapper que envelopa o texto compilado no template master.
     const typstWrapper = `
 #import "/data/template.typ": abnt
 #show: doc => abnt(doc)
+#let horizontalrule = line(length: 100%, stroke: 0.5pt + luma(180))
 
 #include "${tempTypstOutput}"
 `;
     fs.writeFileSync(tempWrapperTypst, typstWrapper);
 
     // Compila o Typst nativo na porta 3000
-    const typstCmd = `typst compile --root /data "${tempWrapperTypst}" "${tempPdf}"`;
+    const typstCmd = `typst compile --root / "${tempWrapperTypst}" "${tempPdf}"`;
     cp.execSync(typstCmd);
 
     // Lê o PDF vetorial final
