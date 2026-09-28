@@ -218,7 +218,7 @@ async function renderSingleMermaid(rawContent) {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: cleanLines,
-      signal: AbortSignal.timeout(6000)
+      signal: AbortSignal.timeout(20000)
     });
   } catch (err) {
     if (err.name === 'TimeoutError') {
