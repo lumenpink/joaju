@@ -19,9 +19,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// --- Pré-processador 1: Heredogramas Clínicos Avançados (R) ---
+// --- Pré-processador 1: Heredogramas Clínicos Avançados (R / Kinship) ---
 async function preprocessPedigrees(markdown, sessionId) {
-  const regex = /```(heredograma|pedigree)\n([\s\S]*?)\n```/g;
+  const regex = /```(kinship|kinship2|heredograma|pedigree)\n([\s\S]*?)\n```/gi;
   let match;
   let modifiedMarkdown = markdown;
   let index = 0;
@@ -97,19 +97,24 @@ async function preprocessPedigrees(markdown, sessionId) {
   return modifiedMarkdown;
 }
 
-// --- Pré-processador 2: Diagramas Genéricos Isolados (Kroki via Mermaid) ---
+// --- Pré-processador 2: Diagramas Rápidos (Graphviz, PlantUML, D2, Mermaid) ---
 async function preprocessDiagrams(markdown, sessionId) {
-  const regex = /```mermaid\n([\s\S]*?)\n```/g;
+  const regex = /```(graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n```/gi;
   let match;
   let modifiedMarkdown = markdown;
   let index = 0;
 
   while ((match = regex.exec(markdown)) !== null) {
-    const code = match[1];
-    const imgPath = `/tmp/diag_${sessionId}_${index}.png`;
+    const rawEngine = match[1].toLowerCase();
+    const code = match[2];
+    const isPng = rawEngine === 'mermaid';
+    const ext = isPng ? 'png' : 'svg';
+    const imgPath = `/tmp/diag_${sessionId}_${index}.${ext}`;
 
-    // 🔍 Captura diretivas visuais %% width=... do Mermaid
-    const configMatch = code.match(/%%\s*width=([\d%]+)\s+max-width=([\d\w]+)/);
+    // 🔍 Captura diretivas visuais %% width=...
+    const configMatch = code.match(
+      /%%\s*(?:layout\.)?width=([\d%]+)\s+(?:layout\.)?max-width=([\d\w]+)/
+    );
     let width = '75%';
     let maxWidth = '500pt';
 
@@ -119,20 +124,30 @@ async function preprocessDiagrams(markdown, sessionId) {
     }
 
     try {
-      const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
-      // Requisição ao gateway Kroki (local ou configurado)
-      const response = await fetch(`${krokiHost}/mermaid/png`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: code,
-        signal: AbortSignal.timeout(8000)
-      });
+      if (rawEngine === 'd2') {
+        const svg = renderSingleD2(code, `${sessionId}_${index}`);
+        fs.writeFileSync(imgPath, svg);
+      } else {
+        const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
+        const targetEngine =
+          rawEngine === 'dot' ? 'graphviz' : rawEngine === 'puml' ? 'plantuml' : rawEngine;
+        const format = isPng ? 'png' : 'svg';
+        const response = await fetch(`${krokiHost}/${targetEngine}/${format}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: code,
+          signal: AbortSignal.timeout(10000)
+        });
 
-      if (response.ok) {
-        const buffer = Buffer.from(await response.arrayBuffer());
-        fs.writeFileSync(imgPath, buffer);
+        if (response.ok) {
+          const buffer = Buffer.from(await response.arrayBuffer());
+          fs.writeFileSync(imgPath, buffer);
+        } else {
+          throw new Error(`Kroki retornou ${response.status}`);
+        }
+      }
 
-        const typstLayout = `
+      const typstLayout = `
 \`\`\`{=typst}
 #align(center)[
   #block(width: min(${width},${maxWidth}))[
@@ -141,8 +156,7 @@ async function preprocessDiagrams(markdown, sessionId) {
 ]
 \`\`\`
 `;
-        modifiedMarkdown = modifiedMarkdown.replace(match[0], typstLayout);
-      }
+      modifiedMarkdown = modifiedMarkdown.replace(match[0], typstLayout);
     } catch (err) {
       console.error(`Erro Kroki: ${err.message}`);
     }
@@ -152,7 +166,7 @@ async function preprocessDiagrams(markdown, sessionId) {
 }
 
 // --- Renderizadores Isolados para Preview Instantâneo ---
-function renderSinglePedigree(rawContent, sessionId = 'preview') {
+function renderSingleKinship(rawContent, sessionId = 'preview') {
   const csvPath = `/tmp/ped_${sessionId}.csv`;
   const svgPath = `/tmp/ped_${sessionId}.svg`;
 
@@ -211,7 +225,7 @@ function renderSinglePedigree(rawContent, sessionId = 'preview') {
           .filter((l) => l.startsWith('Error in') || l.startsWith('Error:'))
           .map((l) => l.replace(/^Error.*:\s*/, ''))
           .join('; ') || err.message;
-      const pedError = new Error(`Erro no heredograma: ${cleanMsg}`);
+      const pedError = new Error(`Erro no heredograma (kinship): ${cleanMsg}`);
       pedError.status = 422;
       throw pedError;
     }
@@ -220,6 +234,137 @@ function renderSinglePedigree(rawContent, sessionId = 'preview') {
   } finally {
     try {
       if (fs.existsSync(csvPath)) fs.unlinkSync(csvPath);
+      if (fs.existsSync(svgPath)) fs.unlinkSync(svgPath);
+    } catch (_) {}
+  }
+}
+
+const renderSinglePedigree = renderSingleKinship;
+
+async function renderSingleGraphviz(rawContent) {
+  const cleanLines = rawContent
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('%%'))
+    .join('\n')
+    .trim();
+
+  const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
+  let response;
+  try {
+    response = await fetch(`${krokiHost}/graphviz/svg`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: cleanLines,
+      signal: AbortSignal.timeout(10000)
+    });
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      const timeoutError = new Error('Tempo limite excedido na comunicação com o motor Graphviz.');
+      timeoutError.status = 504;
+      throw timeoutError;
+    }
+    const netError = new Error(`Falha de conexão com o motor gráfico Graphviz (${err.message})`);
+    netError.status = 503;
+    throw netError;
+  }
+
+  if (!response.ok) {
+    const errorDetail = await response.text();
+    const syntaxError = new Error(
+      `Erro do Graphviz (${response.status}): ${errorDetail.split('\n')[0] || response.statusText}`
+    );
+    syntaxError.status = response.status === 400 ? 422 : response.status;
+    throw syntaxError;
+  }
+
+  return await response.text();
+}
+
+async function renderSinglePlantuml(rawContent) {
+  const cleanLines = rawContent
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('%%'))
+    .join('\n')
+    .trim();
+
+  let plantCode = cleanLines;
+  if (
+    !plantCode.includes('@startuml') &&
+    !plantCode.includes('@startmindmap') &&
+    !plantCode.includes('@startwbs') &&
+    !plantCode.includes('@startgantt')
+  ) {
+    plantCode = `@startuml\n${plantCode}\n@enduml`;
+  }
+
+  const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
+  let response;
+  try {
+    response = await fetch(`${krokiHost}/plantuml/svg`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: plantCode,
+      signal: AbortSignal.timeout(15000)
+    });
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      const timeoutError = new Error('Tempo limite excedido na comunicação com o motor PlantUML.');
+      timeoutError.status = 504;
+      throw timeoutError;
+    }
+    const netError = new Error(`Falha de conexão com o motor gráfico PlantUML (${err.message})`);
+    netError.status = 503;
+    throw netError;
+  }
+
+  if (!response.ok) {
+    const errorDetail = await response.text();
+    const syntaxError = new Error(
+      `Erro do PlantUML (${response.status}): ${errorDetail.split('\n')[0] || response.statusText}`
+    );
+    syntaxError.status = response.status === 400 ? 422 : response.status;
+    throw syntaxError;
+  }
+
+  return await response.text();
+}
+
+function renderSingleD2(rawContent, sessionId = 'preview') {
+  const cleanLines = rawContent
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('%%'))
+    .join('\n')
+    .trim();
+
+  const d2Path = `/tmp/d2_${sessionId}.d2`;
+  const svgPath = `/tmp/d2_${sessionId}.svg`;
+  fs.writeFileSync(d2Path, cleanLines);
+
+  try {
+    cp.execSync(`d2 "${d2Path}" "${svgPath}"`, { stdio: ['pipe', 'pipe', 'pipe'] });
+    if (fs.existsSync(svgPath)) {
+      return fs.readFileSync(svgPath, 'utf8');
+    }
+    const missingSvgErr = new Error('Arquivo SVG não gerado pelo D2');
+    missingSvgErr.status = 422;
+    throw missingSvgErr;
+  } catch (err) {
+    if (err.status && err.status >= 400 && err.status < 600) {
+      throw err;
+    }
+    const stderr = err.stderr ? err.stderr.toString() : '';
+    const cleanMsg =
+      stderr
+        .split('\n')
+        .filter((l) => l.trim().length > 0)
+        .slice(0, 3)
+        .join('; ') || err.message;
+    const d2Error = new Error(`Erro de sintaxe no D2: ${cleanMsg}`);
+    d2Error.status = 422;
+    throw d2Error;
+  } finally {
+    try {
+      if (fs.existsSync(d2Path)) fs.unlinkSync(d2Path);
       if (fs.existsSync(svgPath)) fs.unlinkSync(svgPath);
     } catch (_) {}
   }
@@ -272,42 +417,71 @@ app.post('/render', async (req, res) => {
   }
 
   // 1. Tenta extrair bloco demarcado por ```
-  const blockMatch = rawInput.match(/```(heredograma|pedigree|mermaid)\n([\s\S]*?)\n?```/i);
+  const blockMatch = rawInput.match(
+    /```(kinship|kinship2|heredograma|pedigree|graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n?```/i
+  );
   let type = 'unknown';
   let content = rawInput;
 
   if (blockMatch) {
     const tag = blockMatch[1].toLowerCase();
-    type = tag === 'heredograma' || tag === 'pedigree' ? 'pedigree' : 'mermaid';
+    if (tag === 'kinship' || tag === 'kinship2' || tag === 'heredograma' || tag === 'pedigree') {
+      type = 'kinship';
+    } else if (tag === 'graphviz' || tag === 'dot') {
+      type = 'graphviz';
+    } else if (tag === 'plantuml' || tag === 'puml') {
+      type = 'plantuml';
+    } else if (tag === 'd2') {
+      type = 'd2';
+    } else if (tag === 'mermaid') {
+      type = 'mermaid';
+    }
     content = blockMatch[2].trim();
   } else {
     // 2. Inferência heurística se o usuário colar apenas o miolo
-    if (
+    if (/^\s*(digraph|strict digraph|graph|subgraph)\b/m.test(rawInput)) {
+      type = 'graphviz';
+    } else if (/^\s*(@start|class |actor |participant |autonumber)/m.test(rawInput)) {
+      type = 'plantuml';
+    } else if (
       /^(flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)/m.test(
         rawInput
       ) ||
       rawInput.includes('-->') ||
-      rawInput.includes('graph ') ||
       rawInput.includes('graph TD') ||
       rawInput.includes('graph LR')
     ) {
       type = 'mermaid';
+    } else if (/^\s*[\w\d_-]+\s*(?:->|<-|--|<->)\s*[\w\d_-]+/m.test(rawInput)) {
+      type = 'd2';
     } else if (
       /^(id\s*,|pai\s*,|mae\s*,|dadid\s*,|momid\s*,)/im.test(rawInput) ||
       /^(\d+)\s*,\s*(\d+|\bNA\b)\s*,\s*(\d+|\bNA\b)\s*,/m.test(rawInput)
     ) {
-      type = 'pedigree';
+      type = 'kinship';
     } else {
-      type = rawInput.includes(',') ? 'pedigree' : 'mermaid';
+      type = rawInput.includes(',') ? 'kinship' : 'graphviz';
     }
   }
 
   const sessionId = uuid.v4();
 
   try {
-    if (type === 'pedigree') {
-      const svg = renderSinglePedigree(content, sessionId);
-      return res.json({ format: 'pedigree', type: 'svg', svg });
+    if (type === 'kinship') {
+      const svg = renderSingleKinship(content, sessionId);
+      return res.json({ format: 'kinship', type: 'svg', svg });
+    }
+    if (type === 'graphviz') {
+      const svg = await renderSingleGraphviz(content);
+      return res.json({ format: 'graphviz', type: 'svg', svg });
+    }
+    if (type === 'plantuml') {
+      const svg = await renderSinglePlantuml(content);
+      return res.json({ format: 'plantuml', type: 'svg', svg });
+    }
+    if (type === 'd2') {
+      const svg = renderSingleD2(content, sessionId);
+      return res.json({ format: 'd2', type: 'svg', svg });
     }
     if (type === 'mermaid') {
       const svg = await renderSingleMermaid(content);
@@ -394,5 +568,9 @@ module.exports = {
   preprocessPedigrees,
   preprocessDiagrams,
   renderSinglePedigree,
+  renderSingleKinship,
+  renderSingleGraphviz,
+  renderSinglePlantuml,
+  renderSingleD2,
   renderSingleMermaid
 };

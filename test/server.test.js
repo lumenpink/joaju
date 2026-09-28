@@ -273,7 +273,7 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     assert.ok(body.error.includes('Nenhum código fornecido'));
   });
 
-  await t.test('POST /render: processa bloco ```heredograma', async () => {
+  await t.test('POST /render: processa bloco ```kinship / ```heredograma', async () => {
     cp.execSync = (cmd) => {
       const match = cmd.match(/"(\/tmp\/ped_[^"]+\.svg)"/);
       if (match) fs.writeFileSync(match[1], '<svg class="ped"></svg>');
@@ -282,13 +282,58 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     const res = await fetch(`${baseUrl}/render`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: '```heredograma\nid,sex\n1,M\n```' })
+      body: JSON.stringify({ code: '```kinship\nid,sex\n1,M\n```' })
     });
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.format, 'pedigree');
+    assert.equal(body.format, 'kinship');
     assert.equal(body.type, 'svg');
     assert.ok(body.svg.includes('<svg'));
+  });
+
+  await t.test('POST /render: processa bloco ```graphviz', async () => {
+    mockKroki(async () => new Response('<svg class="dot"></svg>', { status: 200 }));
+
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```graphviz\ndigraph G { A -> B }\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'graphviz');
+    assert.ok(body.svg.includes('class="dot"'));
+  });
+
+  await t.test('POST /render: processa bloco ```plantuml', async () => {
+    mockKroki(async () => new Response('<svg class="puml"></svg>', { status: 200 }));
+
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```plantuml\nAlice -> Bob\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'plantuml');
+    assert.ok(body.svg.includes('class="puml"'));
+  });
+
+  await t.test('POST /render: processa bloco ```d2', async () => {
+    cp.execSync = (cmd) => {
+      const match = cmd.match(/"(\/tmp\/d2_[^"]+\.svg)"/);
+      if (match) fs.writeFileSync(match[1], '<svg class="d2"></svg>');
+    };
+
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```d2\nx -> y\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'd2');
+    assert.ok(body.svg.includes('class="d2"'));
   });
 
   await t.test('POST /render: processa bloco ```mermaid', async () => {
@@ -319,7 +364,7 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     assert.ok(body.svg.includes('heuristic-mmd'));
   });
 
-  await t.test('POST /render: infere Heredograma heuristicamente sem crases', async () => {
+  await t.test('POST /render: infere Kinship heuristicamente sem crases', async () => {
     cp.execSync = (cmd) => {
       const match = cmd.match(/"(\/tmp\/ped_[^"]+\.svg)"/);
       if (match) fs.writeFileSync(match[1], '<svg class="heuristic-ped"></svg>');
@@ -332,7 +377,7 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     });
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.format, 'pedigree');
+    assert.equal(body.format, 'kinship');
     assert.ok(body.svg.includes('heuristic-ped'));
   });
 

@@ -1,9 +1,10 @@
 # ==============================================================================
-# Estágio 1: Download de binários estáticos
+# Estágio 1: Download de binários estáticos (Typst e D2)
 # ==============================================================================
-FROM node:22-bookworm-slim AS typst-downloader
+FROM node:22-bookworm-slim AS binaries-downloader
 
 ARG TYPST_VERSION="0.15.1"
+ARG D2_VERSION="0.9.0"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -13,7 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && curl -fsSL "https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz" | \
        tar -xJ -C /tmp \
     && mv /tmp/typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst \
-    && chmod +x /usr/local/bin/typst
+    && chmod +x /usr/local/bin/typst \
+    && curl -fsSL "https://github.com/d2lang/d2/releases/download/v${D2_VERSION}/d2-v${D2_VERSION}-linux-amd64.tar.gz" | \
+       tar -xz -C /tmp \
+    && mv /tmp/d2-v${D2_VERSION}/bin/d2 /usr/local/bin/d2 \
+    && chmod +x /usr/local/bin/d2
 
 # ==============================================================================
 # Estágio 2: Instalação hermética de dependências Node.js
@@ -45,8 +50,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && Rscript -e "install.packages('kinship2', repos='https://cloud.r-project.org')"
 
-# Copia binário estático do Typst compilado
-COPY --from=typst-downloader /usr/local/bin/typst /usr/local/bin/typst
+# Copia binários estáticos compilados
+COPY --from=binaries-downloader /usr/local/bin/typst /usr/local/bin/typst
+COPY --from=binaries-downloader /usr/local/bin/d2 /usr/local/bin/d2
 
 WORKDIR /app
 

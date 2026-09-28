@@ -1,5 +1,5 @@
-const SAMPLE_PEDIGREE = `\`\`\`heredograma
-%% layout.width=90% layout.max_width=550pt cex=0.8
+const SAMPLE_KINSHIP = `\`\`\`kinship
+%% layout.width=90% layout.max_width=550pt symbolsize=2.2 cex=0.85 branch=0.4
 id,pai,mae,sex,fenotipo,label
 1,0,0,M,wt,Avô
 2,0,0,F,wt,Avó
@@ -9,15 +9,75 @@ id,pai,mae,sex,fenotipo,label
 6,3,4,M,wt,Irmão
 \`\`\``;
 
-const SAMPLE_MERMAID = `\`\`\`mermaid
-%% width=85% max-width=600pt
-graph TD
-    A[Coleta de Dados / Amostragem] --> B[Processamento & Limpeza]
-    B --> C{Validação dos Dados}
-    C -->|Válido| D[Análise Estatística & Modelagem]
-    C -->|Inconsistente| E[Filtragem de Ruído / Descarte]
-    D --> F[Visualização & Relatório Final]
+const SAMPLE_GRAPHVIZ = `\`\`\`graphviz
+%% width=80% max-width=550pt
+digraph G {
+  rankdir=LR;
+  node [shape=box, style="rounded,filled", fillcolor="#1e293b", fontcolor="#f8fafc", color="#38bdf8", fontname="Helvetica"];
+  edge [color="#94a3b8", fontcolor="#94a3b8", fontname="Helvetica"];
+
+  Coleta [label="Coleta de Dados"];
+  PreProc [label="Processamento & Limpeza"];
+  Validacao [label="Validação", shape=diamond];
+  Analise [label="Análise Estatística"];
+  Relatorio [label="Relatório Final"];
+
+  Coleta -> PreProc -> Validacao;
+  Validacao -> Analise [label="Válido"];
+  Validacao -> PreProc [label="Ajustar", style=dashed];
+  Analise -> Relatorio;
+}
 \`\`\``;
+
+const SAMPLE_PLANTUML = `\`\`\`plantuml
+%% width=80% max-width=550pt
+@startuml
+skinparam backgroundColor transparent
+skinparam defaultFontName Helvetica
+skinparam sequence {
+  ArrowColor #38bdf8
+  LifeLineBorderColor #38bdf8
+  ParticipantBorderColor #38bdf8
+  ParticipantBackgroundColor #1e293b
+  ParticipantFontColor #f8fafc
+}
+
+autonumber
+Pesquisador -> Joaju: Envia Markdown
+Joaju -> Kinship: Compila Heredograma (R)
+Kinship --> Joaju: Retorna SVG Vetorial
+Joaju -> Typst: Compila PDF Acadêmico
+Typst --> Pesquisador: Devolve Artigo
+@enduml
+\`\`\``;
+
+const SAMPLE_D2 = `\`\`\`d2
+%% width=80% max-width=550pt
+vars: {
+  d2-config: {
+    theme-id: 200
+  }
+}
+
+coleta: Coleta de Dados
+processamento: Processamento & Limpeza
+validacao: Validação Estatística {
+  shape: diamond
+}
+publicacao: Publicação Final {
+  style.stroke: "#38bdf8"
+  style.fill: "#1e293b"
+}
+
+coleta -> processamento -> validacao
+validacao -> publicacao: Aprovado
+validacao -> processamento: Revisar {
+  style.stroke-dash: 3
+}
+\`\`\``;
+
+const SAMPLE_PEDIGREE = SAMPLE_KINSHIP;
+const SAMPLE_MERMAID = SAMPLE_GRAPHVIZ;
 
 const LOCALES = {
   pt: {
@@ -262,6 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRender = document.getElementById('btn-render');
   const btnClear = document.getElementById('btn-clear');
   const btnDownload = document.getElementById('btn-download');
+  const btnKinship = document.getElementById('btn-example-kinship');
+  const btnGraphviz = document.getElementById('btn-example-graphviz');
+  const btnPlantuml = document.getElementById('btn-example-plantuml');
+  const btnD2 = document.getElementById('btn-example-d2');
   const btnPedigree = document.getElementById('btn-example-pedigree');
   const btnMermaid = document.getElementById('btn-example-mermaid');
   const langSelect = document.getElementById('lang-select');
@@ -449,19 +513,59 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerRender(true);
   });
 
-  btnPedigree.addEventListener('click', () => {
-    clearTimeout(debounceTimer);
-    codeInput.value = SAMPLE_PEDIGREE;
-    updateCharCount();
-    triggerRender(true);
-  });
+  if (btnKinship) {
+    btnKinship.addEventListener('click', () => {
+      clearTimeout(debounceTimer);
+      codeInput.value = SAMPLE_KINSHIP;
+      updateCharCount();
+      triggerRender(true);
+    });
+  }
 
-  btnMermaid.addEventListener('click', () => {
-    clearTimeout(debounceTimer);
-    codeInput.value = SAMPLE_MERMAID;
-    updateCharCount();
-    triggerRender(true);
-  });
+  if (btnGraphviz) {
+    btnGraphviz.addEventListener('click', () => {
+      clearTimeout(debounceTimer);
+      codeInput.value = SAMPLE_GRAPHVIZ;
+      updateCharCount();
+      triggerRender(true);
+    });
+  }
+
+  if (btnPlantuml) {
+    btnPlantuml.addEventListener('click', () => {
+      clearTimeout(debounceTimer);
+      codeInput.value = SAMPLE_PLANTUML;
+      updateCharCount();
+      triggerRender(true);
+    });
+  }
+
+  if (btnD2) {
+    btnD2.addEventListener('click', () => {
+      clearTimeout(debounceTimer);
+      codeInput.value = SAMPLE_D2;
+      updateCharCount();
+      triggerRender(true);
+    });
+  }
+
+  if (btnPedigree) {
+    btnPedigree.addEventListener('click', () => {
+      clearTimeout(debounceTimer);
+      codeInput.value = SAMPLE_KINSHIP;
+      updateCharCount();
+      triggerRender(true);
+    });
+  }
+
+  if (btnMermaid) {
+    btnMermaid.addEventListener('click', () => {
+      clearTimeout(debounceTimer);
+      codeInput.value = SAMPLE_GRAPHVIZ;
+      updateCharCount();
+      triggerRender(true);
+    });
+  }
 
   btnDownload.addEventListener('click', downloadSvg);
 
@@ -503,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Inicialização da língua e dados
   applyLocale(currentLang);
-  codeInput.value = SAMPLE_MERMAID;
+  codeInput.value = SAMPLE_KINSHIP;
   updateCharCount();
   triggerRender();
 });
