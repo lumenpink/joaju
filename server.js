@@ -189,13 +189,34 @@ function renderSinglePedigree(rawContent, sessionId = 'preview') {
 
   try {
     cp.execSync(
-      `Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`
+      `Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`,
+      { stdio: ['pipe', 'pipe', 'pipe'] }
     );
     if (fs.existsSync(svgPath)) {
       const svgContent = fs.readFileSync(svgPath, 'utf8');
       return svgContent;
     }
-    throw new Error('Arquivo SVG não gerado pelo Rscript');
+    const missingSvgErr = new Error('Arquivo SVG não gerado pelo Rscript');
+    missingSvgErr.status = 422;
+    throw missingSvgErr;
+  } catch (err) {
+    if (err.status && err.status >= 400 && err.status < 600) {
+      throw err;
+    }
+    const stderr = err.stderr ? err.stderr.toString() : '';
+    if (err.status !== undefined || stderr?.includes('Error')) {
+      const cleanMsg =
+        stderr
+          .split('\n')
+          .filter((l) => l.startsWith('Error in') || l.startsWith('Error:'))
+          .map((l) => l.replace(/^Error.*:\s*/, ''))
+          .join('; ') || err.message;
+      const pedError = new Error(`Erro no heredograma: ${cleanMsg}`);
+      pedError.status = 422;
+      throw pedError;
+    }
+    err.status = 500;
+    throw err;
   } finally {
     try {
       if (fs.existsSync(csvPath)) fs.unlinkSync(csvPath);
@@ -218,7 +239,7 @@ async function renderSingleMermaid(rawContent) {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: cleanLines,
-      signal: AbortSignal.timeout(20000)
+      signal: AbortSignal.timeout(40000)
     });
   } catch (err) {
     if (err.name === 'TimeoutError') {
@@ -293,7 +314,9 @@ app.post('/render', async (req, res) => {
       return res.json({ format: 'mermaid', type: 'svg', svg });
     }
   } catch (err) {
-    const statusCode = err.status && Number.isInteger(err.status) ? err.status : 500;
+    const rawStatus = err.statusCode || err.status;
+    const statusCode =
+      Number.isInteger(rawStatus) && rawStatus >= 400 && rawStatus < 600 ? rawStatus : 422;
     return res.status(statusCode).json({ error: err.message });
   }
 });

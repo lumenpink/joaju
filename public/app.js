@@ -358,7 +358,13 @@ document.addEventListener('DOMContentLoaded', () => {
         signal: abortController.signal
       });
 
-      const data = await response.json();
+      let data = {};
+      const rawText = await response.text();
+      try {
+        data = JSON.parse(rawText);
+      } catch (_) {
+        data = { error: rawText || `Erro HTTP ${response.status}` };
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Erro desconhecido ao processar gráfico');
@@ -458,6 +464,36 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnDownload.addEventListener('click', downloadSvg);
+
+  const btnOpenGuide = document.getElementById('btn-open-guide');
+  const btnCloseGuide = document.getElementById('btn-close-guide');
+  const guideModal = document.getElementById('guide-modal');
+
+  if (btnOpenGuide && guideModal) {
+    btnOpenGuide.addEventListener('click', () => {
+      guideModal.classList.remove('hidden');
+    });
+  }
+
+  if (btnCloseGuide && guideModal) {
+    btnCloseGuide.addEventListener('click', () => {
+      guideModal.classList.add('hidden');
+    });
+  }
+
+  if (guideModal) {
+    guideModal.addEventListener('click', (e) => {
+      if (e.target === guideModal) {
+        guideModal.classList.add('hidden');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !guideModal.classList.contains('hidden')) {
+        guideModal.classList.add('hidden');
+      }
+    });
+  }
 
   if (langSelect) {
     langSelect.addEventListener('change', (e) => {

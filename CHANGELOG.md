@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (pedigree) adicionar modal com guia de campos e corrigir tratamento de erro 422
   - (branding) reposicionar foco em diagramas academicos e fundo branco obrigatorio
   - (ci) implement biome linter, stryker, renv.lock, no_color, and ci quality gates (closes #16)
   - (i18n) implement 10 canonical languages and rtl support conforming to gost (closes #15)

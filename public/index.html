@@ -39,6 +39,7 @@
       <div class="pane-header">
         <label for="code-input" data-i18n="editor_label">Código Fonte</label>
         <div class="editor-controls">
+          <button id="btn-open-guide" class="btn-guide-link" type="button" title="Ver campos e valores do heredograma">📖 Guia de Campos</button>
           <label class="toggle-label">
             <input type="checkbox" id="auto-render" checked>
             <span data-i18n="auto_render">Auto-render</span>
@@ -69,6 +70,142 @@
       <div id="status-bar" class="status-bar" data-i18n="status_ready">Pronto.</div>
     </section>
   </main>
+
+  <!-- Modal de Guia de Campos do Heredograma -->
+  <div id="guide-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="guide-title">🧬 Guia de Campos — Heredograma (Pedigree)</h2>
+        <button id="btn-close-guide" class="btn-close" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="guide-intro">O gerador aceita tabelas no formato CSV dentro de blocos <code>```heredograma</code>. Abaixo estão todos os campos e mapeamentos suportados pelo motor genético:</p>
+
+        <h3>1. Colunas Estruturais (Genealogia)</h3>
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>Coluna</th>
+              <th>Sinônimos</th>
+              <th>Obrigatório?</th>
+              <th>Descrição e Valores Aceitos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>—</td>
+              <td>Sim</td>
+              <td>Identificador único do indivíduo (ex: <code>1</code>, <code>2</code>, <code>filho1</code>).</td>
+            </tr>
+            <tr>
+              <td><code>pai</code></td>
+              <td><code>dadid</code></td>
+              <td>Sim</td>
+              <td>ID do pai. Use <code>0</code> ou deixe vazio se for fundador / desconhecido.</td>
+            </tr>
+            <tr>
+              <td><code>mae</code></td>
+              <td><code>momid</code></td>
+              <td>Sim</td>
+              <td>ID da mãe. Use <code>0</code> ou deixe vazio se for fundadora / desconhecida.</td>
+            </tr>
+            <tr>
+              <td><code>sex</code></td>
+              <td>—</td>
+              <td>Sim</td>
+              <td>
+                <code>M</code> ou <code>1</code>: Masculino (Quadrado)<br>
+                <code>F</code> ou <code>2</code>: Feminino (Círculo)<br>
+                <code>?</code>, <code>U</code> ou <code>3</code>: Sexo Indeterminado (Losango)<br>
+                <code>T</code> ou <code>4</code>: Gestação Interrompida / Aborto
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. Campo de Fenótipo / Afecção</h3>
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>Coluna</th>
+              <th>Sinônimos</th>
+              <th>Valor Informado</th>
+              <th>Resultado Gráfico (Padrão Internacional)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="4"><code>fenotipo</code></td>
+              <td rowspan="4"><code>afetado</code>, <code>affected</code></td>
+              <td><code>wt</code>, <code>0</code>, <code>higido</code>, <code>selvagem</code></td>
+              <td><strong>Normal / Não Afetado:</strong> Símbolo vazio (branco).</td>
+            </tr>
+            <tr>
+              <td><code>het</code>, <code>heterozigoto</code>, <code>portador</code>, <code>carrier</code></td>
+              <td><strong>Portador Heterozigoto:</strong> Metade esquerda preenchida verticalmente.</td>
+            </tr>
+            <tr>
+              <td><code>hom</code>, <code>1</code>, <code>afetado</code>, <code>doente</code>, <code>mut</code></td>
+              <td><strong>Afetado / Homozigoto:</strong> Preenchimento sólido completo.</td>
+            </tr>
+            <tr>
+              <td><code>?</code>, <code>na</code>, <code>desconhecido</code></td>
+              <td><strong>Fenótipo Desconhecido:</strong> Ponto de interrogação (<code>?</code>) no símbolo.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>3. Campos Clínicos Extras (Opcionais)</h3>
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>Coluna</th>
+              <th>Sinônimos</th>
+              <th>Valores</th>
+              <th>Efeito Gráfico</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>label</code></td>
+              <td>—</td>
+              <td>Texto livre</td>
+              <td>Texto exibido logo abaixo do símbolo (ex: <code>"Pai"</code>, <code>"Probanda"</code>, <code>"III-2"</code>). Se omitido, exibe o <code>id</code>.</td>
+            </tr>
+            <tr>
+              <td><code>falecido</code></td>
+              <td><code>status</code></td>
+              <td><code>1</code> (falecido) ou <code>0</code> (vivo)</td>
+              <td>Traço diagonal cortando o símbolo, indicando óbito.</td>
+            </tr>
+            <tr>
+              <td><code>gemeo_com</code></td>
+              <td>—</td>
+              <td>ID do irmão</td>
+              <td>Liga os indivíduos como irmãos gêmeos a partir do mesmo nó.</td>
+            </tr>
+            <tr>
+              <td><code>tipo_gemeo</code></td>
+              <td>—</td>
+              <td><code>MZ</code> ou <code>DZ</code></td>
+              <td><code>MZ</code> (monozigóticos / idênticos com barra) ou <code>DZ</code> (dizigóticos / fraternos).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>4. Diretivas Visuais (Linha <code>%%</code>)</h3>
+        <p class="guide-intro">Você pode ajustar proporções colocando uma linha iniciada por <code>%%</code> antes do CSV:</p>
+        <pre class="guide-code">%% symbolsize=2.2 cex=0.85 branch=0.4 layout.width=90%</pre>
+        <ul class="guide-list">
+          <li><code>symbolsize</code>: Escala dos símbolos (padrão: <code>2.2</code>).</li>
+          <li><code>cex</code>: Escala da fonte dos textos e rótulos (padrão: <code>0.85</code>).</li>
+          <li><code>branch</code>: Proporção e comprimento dos ramos de junção (padrão: <code>0.4</code>).</li>
+          <li><code>plot_width</code> / <code>plot_height</code>: Dimensões manuais do SVG em polegadas (ex: <code>plot_height=3.5</code>).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -61,6 +61,7 @@ COPY --chown=node:node package.json /app/package.json
 COPY --chown=node:node server.js /app/server.js
 COPY --chown=node:node plot_pedigree.R /app/plot_pedigree.R
 COPY --chown=node:node public /app/public
+COPY --chown=node:node locales /app/locales
 
 USER node
 
