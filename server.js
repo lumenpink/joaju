@@ -3,6 +3,8 @@ const cp = require('node:child_process');
 const fs = require('node:fs');
 const uuid = require('uuid');
 const path = require('node:path');
+const OCL = require('openchemlib');
+const { escapeTypst } = require('./unfurl');
 
 const app = express();
 
@@ -60,6 +62,15 @@ async function resolveExternalSource(rawContent, fetchFn = globalThis.fetch) {
   return rawContent;
 }
 
+function normalizeDimension(val, defaultVal = '100%') {
+  if (!val) return defaultVal;
+  const str = String(val).trim();
+  if (/^\d+$/.test(str)) {
+    return `${str}pt`;
+  }
+  return str;
+}
+
 // --- Pré-processador 1: Heredogramas Clínicos Avançados (R / pedtools e kinship2) ---
 async function preprocessPedigrees(markdown, sessionId) {
   const regex = /```(pedtools|kinship2|kinship|heredograma|pedigree)\n([\s\S]*?)\n```/gi;
@@ -98,9 +109,9 @@ async function preprocessPedigrees(markdown, sessionId) {
           const [key, val] = pair.split(/=(.*)/s);
           // Dimensões do bloco Typst na página A4
           if (key === 'layout.width' || (key === 'width' && /[%a-z]/i.test(val))) {
-            layoutWidth = val;
+            layoutWidth = normalizeDimension(val, '80%');
           } else if (key === 'layout.max_width' || (key === 'max-width' && /[%a-z]/i.test(val))) {
-            layoutMaxWidth = val;
+            layoutMaxWidth = normalizeDimension(val, '500pt');
           } else if (key !== 'src' && key !== 'file') {
             rArgs.push(`${key} = ${val}`);
           }
@@ -162,14 +173,14 @@ async function preprocessDiagrams(markdown, sessionId) {
 
     // 🔍 Captura diretivas visuais %% width=...
     const configMatch = code.match(
-      /%%\s*(?:layout\.)?width=([\d%]+)\s+(?:layout\.)?max-width=([\d\w]+)/
+      /%%\s*(?:layout\.)?width=([^\s]+)(?:\s+(?:layout\.)?max-width=([^\s]+))?/i
     );
     let width = '75%';
     let maxWidth = '500pt';
 
     if (configMatch) {
-      width = configMatch[1];
-      maxWidth = configMatch[2];
+      if (configMatch[1]) width = normalizeDimension(configMatch[1], '75%');
+      if (configMatch[2]) maxWidth = normalizeDimension(configMatch[2], '500pt');
     }
 
     try {
@@ -210,6 +221,265 @@ async function preprocessDiagrams(markdown, sessionId) {
       console.error(`Erro Kroki: ${err.message}`);
     }
     index++;
+  }
+  return modifiedMarkdown;
+}
+
+// --- Pré-processador 3: Química Estrutural (OpenChemLib e Open Babel) ---
+async function preprocessChemistry(markdown, sessionId) {
+  const regex = /```(openchemlib|openbabel)\n([\s\S]*?)\n```/gi;
+  let match;
+  let modifiedMarkdown = markdown;
+  let index = 0;
+
+  while ((match = regex.exec(markdown)) !== null) {
+    const engineTag = match[1].toLowerCase();
+    let rawContent = match[2].trim();
+    rawContent = await resolveExternalSource(rawContent);
+
+    const imgPath = `/tmp/chem_${sessionId}_${index}.svg`;
+
+    const configMatch = rawContent.match(
+      /%%\s*(?:layout\.)?width=([^\s]+)(?:\s+(?:layout\.)?max-width=([^\s]+))?/i
+    );
+    let width = '50%';
+    let maxWidth = '350pt';
+
+    if (configMatch) {
+      if (configMatch[1]) width = normalizeDimension(configMatch[1], '50%');
+      if (configMatch[2]) maxWidth = normalizeDimension(configMatch[2], '350pt');
+    }
+
+    try {
+      let svg;
+      if (engineTag === 'openchemlib') {
+        svg = renderSingleOpenchemlib(rawContent);
+      } else {
+        svg = renderSingleOpenbabel(rawContent, `${sessionId}_${index}`);
+      }
+
+      fs.writeFileSync(imgPath, svg);
+
+      const typstLayout = `
+\`\`\`{=typst}
+#align(center)[
+  #block(width: min(${width},${maxWidth}))[
+    #image("${imgPath}")
+  ]
+]
+\`\`\`
+`;
+      modifiedMarkdown = modifiedMarkdown.replace(match[0], typstLayout);
+    } catch (err) {
+      console.error(`Erro ao compilar molécula (${engineTag}): ${err.message}`);
+    }
+    index++;
+  }
+  return modifiedMarkdown;
+}
+
+// --- Pré-processador 4: Tabelas Acadêmicas 3-Linhas (ABNT / IBGE / APA) ---
+function parseTableData(rawContent) {
+  const lines = rawContent.split('\n');
+  const directives = {};
+  const dataLines = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('%%')) {
+      const match = trimmed.match(/^%%\s*([\w.-]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        let val = match[2].trim();
+        val = val.replace(/^["']|["']$/g, '');
+        directives[key] = val;
+      }
+    } else if (trimmed) {
+      dataLines.push(trimmed);
+    }
+  }
+
+  if (dataLines.length === 0) {
+    const emptyErr = new Error('Tabela não contém dados.');
+    emptyErr.status = 400;
+    throw emptyErr;
+  }
+
+  const firstLine = dataLines[0];
+  let isMarkdownPipe = false;
+  let delimiter = ',';
+
+  if (firstLine.includes('|')) {
+    isMarkdownPipe = true;
+  } else if (firstLine.includes('\t')) {
+    delimiter = '\t';
+  }
+
+  const rows = [];
+
+  if (isMarkdownPipe) {
+    for (const line of dataLines) {
+      if (/^\s*\|?\s*:?-+:?\s*(\|?\s*:?-+:?\s*)+\|?\s*$/.test(line)) {
+        continue;
+      }
+      const rawCols = line.split('|');
+      if (line.trim().startsWith('|')) rawCols.shift();
+      if (line.trim().endsWith('|')) rawCols.pop();
+      const cells = rawCols.map((c) => c.trim());
+      if (cells.length > 0) rows.push(cells);
+    }
+  } else {
+    for (const line of dataLines) {
+      const cells = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"' || char === "'") {
+          inQuotes = !inQuotes;
+        } else if (char === delimiter && !inQuotes) {
+          cells.push(current.trim().replace(/^["']|["']$/g, ''));
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      cells.push(current.trim().replace(/^["']|["']$/g, ''));
+      if (cells.length > 0) rows.push(cells);
+    }
+  }
+
+  if (rows.length === 0) {
+    const emptyErr = new Error('Nenhuma linha válida encontrada na tabela.');
+    emptyErr.status = 400;
+    throw emptyErr;
+  }
+
+  return { directives, rows };
+}
+
+function renderSingleTable(rawContent) {
+  const { directives, rows } = parseTableData(rawContent);
+  const title = directives.title || directives.titulo || directives.caption || '';
+  const note = directives.note || directives.fonte || directives.source || '';
+  const alignSpec = directives.align || '';
+  const width = directives['layout.width'] || directives.width || 'auto';
+
+  const alignments = alignSpec
+    ? alignSpec.split(/[,|\s]+/).map((a) => {
+        const code = a.trim().toLowerCase()[0];
+        return code === 'c' ? 'center' : code === 'r' ? 'right' : 'left';
+      })
+    : [];
+
+  const headers = rows[0];
+  const dataRows = rows.slice(1);
+
+  const escapeHtml = (str) =>
+    String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  let html = `<div class="joaju-academic-table-wrapper" style="width: ${width};">\n`;
+  if (title) {
+    html += `  <div class="joaju-table-title">${escapeHtml(title)}</div>\n`;
+  }
+  html += `  <table class="joaju-academic-table">\n`;
+  html += '    <thead>\n      <tr>\n';
+  for (let i = 0; i < headers.length; i++) {
+    const align = alignments[i] || 'left';
+    html += `        <th style="text-align: ${align};">${escapeHtml(headers[i])}</th>\n`;
+  }
+  html += '      </tr>\n    </thead>\n    <tbody>\n';
+  for (const row of dataRows) {
+    html += '      <tr>\n';
+    for (let i = 0; i < headers.length; i++) {
+      const cell = row[i] !== undefined ? row[i] : '';
+      const align = alignments[i] || 'left';
+      html += `        <td style="text-align: ${align};">${escapeHtml(cell)}</td>\n`;
+    }
+    html += '      </tr>\n';
+  }
+  html += '    </tbody>\n  </table>\n';
+  if (note) {
+    html += `  <div class="joaju-table-note">${escapeHtml(note)}</div>\n`;
+  }
+  html += '</div>';
+
+  return html;
+}
+
+async function preprocessTables(markdown, sessionId) {
+  const regex = /```table\n([\s\S]*?)\n```/gi;
+  let match;
+  let modifiedMarkdown = markdown;
+
+  while ((match = regex.exec(markdown)) !== null) {
+    let rawContent = match[1].trim();
+    rawContent = await resolveExternalSource(rawContent);
+
+    try {
+      const { directives, rows } = parseTableData(rawContent);
+      const title = directives.title || directives.titulo || directives.caption || '';
+      const note = directives.note || directives.fonte || directives.source || '';
+      const alignSpec = directives.align || '';
+      const rawWidth = directives['layout.width'] || directives.width || '100%';
+      const width = normalizeDimension(rawWidth, '100%');
+
+      const headers = rows[0];
+      const dataRows = rows.slice(1);
+      const numCols = headers.length;
+
+      const alignmentsTypst = [];
+      const alignCodes = alignSpec ? alignSpec.split(/[,|\s]+/) : [];
+      for (let i = 0; i < numCols; i++) {
+        const code = (alignCodes[i] || 'l').trim().toLowerCase()[0];
+        alignmentsTypst.push(code === 'c' ? 'center' : code === 'r' ? 'right' : 'left');
+      }
+
+      const totalRows = dataRows.length + 1;
+      const colDef = Array(numCols).fill('1fr').join(', ');
+
+      const headerCells = headers.map((h) => `[*${escapeTypst(h)}*]`).join(', ');
+
+      const bodyCells = dataRows
+        .map((row) => {
+          const cells = [];
+          for (let i = 0; i < numCols; i++) {
+            const val = row[i] !== undefined ? row[i] : '';
+            cells.push(`[${escapeTypst(val)}]`);
+          }
+          return cells.join(', ');
+        })
+        .join(',\n        ');
+
+      const captionBlock = title ? `caption: [${escapeTypst(title)}],` : '';
+
+      const typstTable = `
+\`\`\`{=typst}
+#align(center)[
+  #block(width: ${width})[
+    #figure(
+      ${captionBlock}
+      table(
+        columns: (${colDef}),
+        align: (${alignmentsTypst.join(', ')}),
+        stroke: (x, y) => if y == 0 { (top: 1.5pt + black, bottom: 0.8pt + black) } else if y == ${totalRows} - 1 { (bottom: 1.5pt + black) } else { none },
+        table.header(${headerCells}),
+        ${bodyCells}
+      )
+    )
+    ${note ? `#v(-3pt)\n    #align(left)[#text(size: 8pt)[_${escapeTypst(note)}_]]` : ''}
+  ]
+]
+\`\`\`
+`;
+      modifiedMarkdown = modifiedMarkdown.replace(match[0], typstTable);
+    } catch (err) {
+      console.error(`Erro ao compilar tabela acadêmica: ${err.message}`);
+    }
   }
   return modifiedMarkdown;
 }
@@ -535,6 +805,103 @@ async function renderSingleMermaid(rawContent) {
   return await response.text();
 }
 
+function renderSingleOpenchemlib(rawContent) {
+  const lines = rawContent.split('\n');
+  const codeLines = [];
+  let width = 400;
+  let height = 300;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('%%')) {
+      const wMatch = trimmed.match(/width=(\d+)/i);
+      const hMatch = trimmed.match(/height=(\d+)/i);
+      if (wMatch) width = Number.parseInt(wMatch[1], 10);
+      if (hMatch) height = Number.parseInt(hMatch[1], 10);
+    } else if (trimmed && !trimmed.startsWith('#')) {
+      codeLines.push(trimmed);
+    }
+  }
+
+  const smiles = codeLines.join(' ').trim();
+  if (!smiles) {
+    const emptyErr = new Error('Código SMILES está vazio.');
+    emptyErr.status = 400;
+    throw emptyErr;
+  }
+
+  try {
+    const mol = OCL.Molecule.fromSmiles(smiles);
+    const svg = mol.toSVG(width, height);
+    return svg;
+  } catch (err) {
+    const chemErr = new Error(`Erro na molécula (openchemlib): ${err.message}`);
+    chemErr.status = 422;
+    throw chemErr;
+  }
+}
+
+function renderSingleOpenbabel(rawContent, sessionId = 'preview') {
+  const lines = rawContent.split('\n');
+  const codeLines = [];
+  let size = 400;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('%%')) {
+      const sMatch = trimmed.match(/(?:width|size)=(\d+)/i);
+      if (sMatch) size = Number.parseInt(sMatch[1], 10);
+    } else if (trimmed && !trimmed.startsWith('#')) {
+      codeLines.push(trimmed);
+    }
+  }
+
+  const molStr = codeLines.join('\n').trim();
+  if (!molStr) {
+    const emptyErr = new Error('Conteúdo químico está vazio.');
+    emptyErr.status = 400;
+    throw emptyErr;
+  }
+
+  const inputExt = molStr.startsWith('InChI=') ? 'inchi' : 'smi';
+  const inPath = `/tmp/ob_${sessionId}.${inputExt}`;
+  const outSvg = `/tmp/ob_${sessionId}.svg`;
+
+  fs.writeFileSync(inPath, molStr);
+
+  try {
+    cp.execSync(`obabel "${inPath}" -O "${outSvg}" -xP ${size} -d`, {
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    if (fs.existsSync(outSvg)) {
+      const svg = fs.readFileSync(outSvg, 'utf8');
+      return svg;
+    }
+    const missingErr = new Error('Arquivo SVG não gerado pelo Open Babel');
+    missingErr.status = 422;
+    throw missingErr;
+  } catch (err) {
+    if (err.status && err.status >= 400 && err.status < 600) {
+      throw err;
+    }
+    const stderr = err.stderr ? err.stderr.toString() : '';
+    const cleanMsg =
+      stderr
+        .split('\n')
+        .filter((l) => l.trim().length > 0)
+        .slice(0, 3)
+        .join('; ') || err.message;
+    const obError = new Error(`Erro no Open Babel: ${cleanMsg}`);
+    obError.status = 422;
+    throw obError;
+  } finally {
+    try {
+      if (fs.existsSync(inPath)) fs.unlinkSync(inPath);
+      if (fs.existsSync(outSvg)) fs.unlinkSync(outSvg);
+    } catch (_) {}
+  }
+}
+
 // --- Rota de Preview Rápido para a Interface Web ---
 app.post('/render', async (req, res) => {
   const rawInput = (req.body.code || req.body.markdown || '').trim();
@@ -544,7 +911,7 @@ app.post('/render', async (req, res) => {
 
   // 1. Tenta extrair bloco demarcado por ```
   const blockMatch = rawInput.match(
-    /```(pedtools|kinship|kinship2|heredograma|pedigree|graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n?```/i
+    /```(openchemlib|openbabel|table|pedtools|kinship|kinship2|heredograma|pedigree|graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n?```/i
   );
   let type = 'unknown';
   let requestedFormat = 'unknown';
@@ -552,7 +919,16 @@ app.post('/render', async (req, res) => {
 
   if (blockMatch) {
     const tag = blockMatch[1].toLowerCase();
-    if (tag === 'pedtools') {
+    if (tag === 'openchemlib') {
+      type = 'openchemlib';
+      requestedFormat = 'openchemlib';
+    } else if (tag === 'openbabel') {
+      type = 'openbabel';
+      requestedFormat = 'openbabel';
+    } else if (tag === 'table') {
+      type = 'table';
+      requestedFormat = 'table';
+    } else if (tag === 'pedtools') {
       type = 'pedtools';
       requestedFormat = 'pedtools';
     } else if (
@@ -616,6 +992,18 @@ app.post('/render', async (req, res) => {
   const sessionId = uuid.v4();
 
   try {
+    if (type === 'openchemlib') {
+      const svg = renderSingleOpenchemlib(content);
+      return res.json({ format: 'openchemlib', type: 'svg', svg });
+    }
+    if (type === 'openbabel') {
+      const svg = renderSingleOpenbabel(content, sessionId);
+      return res.json({ format: 'openbabel', type: 'svg', svg });
+    }
+    if (type === 'table') {
+      const html = renderSingleTable(content);
+      return res.json({ format: 'table', type: 'html', html });
+    }
     if (type === 'pedtools') {
       const svg = renderSinglePedtools(content, sessionId);
       return res.json({ format: 'pedtools', type: 'svg', svg });
@@ -665,6 +1053,8 @@ app.post('/compile', async (req, res) => {
   // 🔄 ORQUESTRADORES DE PRÉ-PROCESSAMENTO
   let cleanMarkdown = await preprocessPedigrees(markdown, id);
   cleanMarkdown = await preprocessDiagrams(cleanMarkdown, id);
+  cleanMarkdown = await preprocessChemistry(cleanMarkdown, id);
+  cleanMarkdown = await preprocessTables(cleanMarkdown, id);
 
   // Suporte genérico a blocos nativos: ```typst -> <typst>
   cleanMarkdown = cleanMarkdown.replace(/```typst\n([\s\S]*?)\n```/g, '$1');
@@ -681,7 +1071,7 @@ app.post('/compile', async (req, res) => {
     // Injeta suporte a réguas horizontais do Pandoc e função min no escopo do arquivo Typst
     if (fs.existsSync(tempTypstOutput)) {
       const originalTypst = fs.readFileSync(tempTypstOutput, 'utf8');
-      const patchedTypst = `#let horizontalrule = line(length: 100%, stroke: 0.5pt + luma(180))\n#let min(a, b) = if type(a) == ratio { a } else if type(b) == ratio { b } else { calc.min(a, b) }\n${originalTypst}`;
+      const patchedTypst = `#let horizontalrule = line(length: 100%, stroke: 0.5pt + luma(180))\n#let min(a, b) = if type(a) == ratio { a } else if type(b) == ratio { b } else if type(a) == int { calc.min(a * 1pt, b) } else if type(b) == int { calc.min(a, b * 1pt) } else { calc.min(a, b) }\n${originalTypst}`;
       fs.writeFileSync(tempTypstOutput, patchedTypst);
     }
 
@@ -749,7 +1139,13 @@ module.exports = {
   app,
   preprocessPedigrees,
   preprocessDiagrams,
+  preprocessChemistry,
+  preprocessTables,
   resolveExternalSource,
+  parseTableData,
+  renderSingleTable,
+  renderSingleOpenchemlib,
+  renderSingleOpenbabel,
   renderSinglePedigree,
   renderSingleKinship,
   renderSinglePedtools,

@@ -8,7 +8,13 @@ const {
   app,
   preprocessPedigrees,
   preprocessDiagrams,
+  preprocessChemistry,
+  preprocessTables,
   resolveExternalSource,
+  parseTableData,
+  renderSingleTable,
+  renderSingleOpenchemlib,
+  renderSingleOpenbabel,
   renderSinglePedigree,
   renderSingleKinship,
   renderSinglePedtools,
@@ -269,6 +275,83 @@ test('Motores Isolados: renderSinglePedigree e renderSingleMermaid', async (t) =
       }, /Erro do Kroki \(400\): Diagram syntax error/);
     }
   );
+
+  await t.test('renderSingleOpenchemlib: renderiza molécula SMILES válida em SVG', async () => {
+    const smiles = 'CC(=O)Oc1ccccc1C(=O)O'; // Aspirina
+    const svg = renderSingleOpenchemlib(smiles);
+    assert.ok(svg.includes('<svg'));
+    assert.ok(svg.includes('mol'));
+  });
+
+  await t.test('renderSingleOpenchemlib: rejeita SMILES vazio com 400', async () => {
+    assert.throws(
+      () => renderSingleOpenchemlib('   '),
+      (err) => err.status === 400
+    );
+  });
+
+  await t.test('renderSingleOpenchemlib: rejeita SMILES com erro de sintaxe com 422', async () => {
+    assert.throws(
+      () => renderSingleOpenchemlib('invalid_smiles_@@@'),
+      (err) => err.status === 422
+    );
+  });
+
+  await t.test('renderSingleOpenbabel: renderiza molécula com obabel em SVG', async () => {
+    cp.execSync = (cmd) => {
+      const match = cmd.match(/"(\/tmp\/(?:ob|chem)_[^"]+\.svg)"/);
+      if (match) fs.writeFileSync(match[1], '<svg class="openbabel"></svg>');
+    };
+    const smiles = 'CC(=O)O';
+    const svg = renderSingleOpenbabel(smiles, 'test-obabel');
+    assert.ok(svg.includes('<svg'));
+  });
+
+  await t.test('renderSingleTable: gera tabela acadêmica HTML com 3 linhas', async () => {
+    const input = `
+%% title="Tabela 1 - Teste"
+%% note="Fonte: Pesquisa 2026"
+%% align=l,c,r
+Item, Qtd, Valor
+Alfa, 10, R$ 100
+Beta, 20, R$ 200
+`;
+    const html = renderSingleTable(input);
+    assert.ok(html.includes('class="joaju-academic-table-wrapper"'));
+    assert.ok(html.includes('class="joaju-academic-table"'));
+    assert.ok(html.includes('Tabela 1 - Teste'));
+    assert.ok(html.includes('Fonte: Pesquisa 2026'));
+    assert.ok(html.includes('text-align: right;'));
+  });
+
+  await t.test('preprocessChemistry: injeta bloco Typst com SVG gerado', async () => {
+    const md = '```openchemlib\nCC(=O)O\n```';
+    const result = await preprocessChemistry(md, 'test-chem');
+    assert.ok(result.includes('```{=typst}'));
+    assert.ok(result.includes('#image('));
+  });
+
+  await t.test(
+    'preprocessTables: injeta tabela Typst nativa com figura e regras Booktabs',
+    async () => {
+      const md = `
+\`\`\`table
+%% title="Tabela Teste Typst"
+%% note="Fonte do autor"
+ColA, ColB
+1, 2
+\`\`\`
+`;
+      const result = await preprocessTables(md, 'test-tab');
+      assert.ok(result.includes('```{=typst}'));
+      assert.ok(result.includes('#figure('));
+      assert.ok(result.includes('caption: [Tabela Teste Typst]'));
+      assert.ok(result.includes('stroke: (x, y) => if y == 0'));
+      assert.ok(result.includes('table.header([*ColA*], [*ColB*])'));
+      assert.ok(result.includes('[1], [2]'));
+      assert.ok(result.includes('Fonte do autor'));
+    }
+  );
 });
 
 test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) => {
@@ -358,6 +441,49 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     assert.equal(body.format, 'kinship2');
     assert.equal(body.type, 'svg');
     assert.ok(body.svg.includes('kinship2-res'));
+  });
+
+  await t.test('POST /render: processa bloco ```openchemlib', async () => {
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```openchemlib\nCC(=O)Oc1ccccc1C(=O)O\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'openchemlib');
+    assert.equal(body.type, 'svg');
+    assert.ok(body.svg.includes('<svg'));
+  });
+
+  await t.test('POST /render: processa bloco ```openbabel', async () => {
+    cp.execSync = (cmd) => {
+      const match = cmd.match(/"(\/tmp\/(?:ob|chem)_[^"]+\.svg)"/);
+      if (match) fs.writeFileSync(match[1], '<svg class="openbabel"></svg>');
+    };
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```openbabel\nCC(=O)O\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'openbabel');
+    assert.equal(body.type, 'svg');
+    assert.ok(body.svg.includes('<svg'));
+  });
+
+  await t.test('POST /render: processa bloco ```table', async () => {
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```table\nA, B\n1, 2\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'table');
+    assert.equal(body.type, 'html');
+    assert.ok(body.html.includes('class="joaju-academic-table"'));
   });
 
   await t.test('POST /render: processa bloco ```graphviz', async () => {

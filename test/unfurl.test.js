@@ -1,6 +1,8 @@
-const { describe, it } = require('node:test');
+const { describe, it, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
+const cp = require('node:child_process');
+const fs = require('node:fs');
 const { parseHTML } = require('linkedom');
 const { app } = require('../server');
 const {
@@ -12,6 +14,34 @@ const {
 } = require('../unfurl');
 
 describe('Joaju Unfurl: Utilitários e Parser', () => {
+  const originalExecSync = cp.execSync;
+
+  beforeEach(() => {
+    cp.execSync = (cmd, opts) => {
+      try {
+        return originalExecSync(cmd, opts);
+      } catch (err) {
+        if (typeof cmd === 'string' && cmd.includes('pandoc')) {
+          return '== Introdução\nSistemas distribuídos...';
+        }
+        if (typeof cmd === 'string' && cmd.includes('typst compile')) {
+          const match = cmd.match(/"([^"]+\.pdf)"/);
+          if (match) {
+            fs.writeFileSync(
+              match[1],
+              Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(1100, 65)])
+            );
+            return Buffer.from('');
+          }
+        }
+        throw err;
+      }
+    };
+  });
+
+  afterEach(() => {
+    cp.execSync = originalExecSync;
+  });
   it('escapeTypst: escapa caracteres de formatação do Typst', () => {
     assert.equal(escapeTypst(null), '');
     assert.equal(escapeTypst(''), '');
@@ -122,6 +152,35 @@ describe('Joaju Unfurl: HTTP Server /unfurl', () => {
   // Servidor mock para testes locais de requisição HTTP sem internet
   let mockServer;
   let mockPort;
+
+  const originalExecSync = cp.execSync;
+
+  beforeEach(() => {
+    cp.execSync = (cmd, opts) => {
+      try {
+        return originalExecSync(cmd, opts);
+      } catch (err) {
+        if (typeof cmd === 'string' && cmd.includes('pandoc')) {
+          return '== Introdução\nSistemas distribuídos...';
+        }
+        if (typeof cmd === 'string' && cmd.includes('typst compile')) {
+          const match = cmd.match(/"([^"]+\.pdf)"/);
+          if (match) {
+            fs.writeFileSync(
+              match[1],
+              Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(1100, 65)])
+            );
+            return Buffer.from('');
+          }
+        }
+        throw err;
+      }
+    };
+  });
+
+  afterEach(() => {
+    cp.execSync = originalExecSync;
+  });
 
   it('inicia servidores de teste', async () => {
     await new Promise((resolve) => {

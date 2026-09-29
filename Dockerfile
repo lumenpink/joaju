@@ -52,6 +52,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     r-cran-quadprog \
     r-cran-lpsolve \
     r-cran-knitr \
+    openbabel \
     && rm -rf /var/lib/apt/lists/* \
     && Rscript -e "install.packages(c('kinship2', 'pedtools'), repos='https://cloud.r-project.org')"
 
