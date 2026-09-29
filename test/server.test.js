@@ -8,7 +8,10 @@ const {
   app,
   preprocessPedigrees,
   preprocessDiagrams,
+  resolveExternalSource,
   renderSinglePedigree,
+  renderSingleKinship,
+  renderSinglePedtools,
   renderSingleMermaid
 } = require('../server.js');
 
@@ -112,6 +115,16 @@ id,sex
       assert.ok(typeof result === 'string');
     }
   );
+
+  await t.test('resolve fonte externa remota %% src=http... com sucesso', async () => {
+    const rawBlock = '%% layout.width=80%\n%% src="https://exemplo.com/familia.csv"';
+    const mockFetch = async () => new Response('id,pai,mae,sex\n1,0,0,M\n2,0,0,F', { status: 200 });
+
+    const resolved = await resolveExternalSource(rawBlock, mockFetch);
+    assert.ok(resolved.includes('%% layout.width=80%'));
+    assert.ok(resolved.includes('id,pai,mae,sex'));
+    assert.ok(!resolved.includes('src='));
+  });
 });
 
 test('Preprocessador de Diagramas Mermaid via Kroki', async (t) => {
@@ -210,6 +223,26 @@ test('Motores Isolados: renderSinglePedigree e renderSingleMermaid', async (t) =
     }
   );
 
+  await t.test(
+    'renderSinglePedtools: gera SVG com sucesso e executa cleanup de arquivos',
+    async () => {
+      let capturedCsv = '';
+      cp.execSync = (cmd) => {
+        const csvMatch = cmd.match(/"(\/tmp\/pedtools_[^"]+\.csv)"/);
+        const svgMatch = cmd.match(/"(\/tmp\/pedtools_[^"]+\.svg)"/);
+        if (csvMatch) capturedCsv = fs.readFileSync(csvMatch[1], 'utf8');
+        if (svgMatch) fs.writeFileSync(svgMatch[1], '<svg class="pedtools"></svg>');
+      };
+
+      const content = '%% layout.width=90% cex=0.8\nid,pai,mae,sex\n1,0,0,1';
+      const svg = renderSinglePedtools(content, 'single-pedtools-ok');
+      assert.equal(svg, '<svg class="pedtools"></svg>');
+      assert.ok(capturedCsv.includes('id,pai,mae,sex'));
+      assert.ok(!capturedCsv.includes('%%'));
+      assert.equal(fs.existsSync('/tmp/pedtools_single-pedtools-ok.csv'), false);
+    }
+  );
+
   await t.test('renderSingleMermaid: remove diretivas %% e retorna SVG com sucesso', async () => {
     let sentBody = '';
     mockKroki(async (url, opts) => {
@@ -289,6 +322,42 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     assert.equal(body.format, 'kinship');
     assert.equal(body.type, 'svg');
     assert.ok(body.svg.includes('<svg'));
+  });
+
+  await t.test('POST /render: processa bloco ```pedtools', async () => {
+    cp.execSync = (cmd) => {
+      const match = cmd.match(/"(\/tmp\/pedtools_[^"]+\.svg)"/);
+      if (match) fs.writeFileSync(match[1], '<svg class="pedtools-res"></svg>');
+    };
+
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```pedtools\nid,sex\n1,M\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'pedtools');
+    assert.equal(body.type, 'svg');
+    assert.ok(body.svg.includes('pedtools-res'));
+  });
+
+  await t.test('POST /render: processa bloco ```kinship2', async () => {
+    cp.execSync = (cmd) => {
+      const match = cmd.match(/"(\/tmp\/ped_[^"]+\.svg)"/);
+      if (match) fs.writeFileSync(match[1], '<svg class="kinship2-res"></svg>');
+    };
+
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```kinship2\nid,sex\n1,M\n```' })
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.format, 'kinship2');
+    assert.equal(body.type, 'svg');
+    assert.ok(body.svg.includes('kinship2-res'));
   });
 
   await t.test('POST /render: processa bloco ```graphviz', async () => {

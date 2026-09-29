@@ -31,17 +31,53 @@ app.get('/health', (req, res) => {
   });
 });
 
-// --- Pré-processador 1: Heredogramas Clínicos Avançados (R / Kinship) ---
+/**
+ * Se o bloco contiver %% src=http... ou %% file=http..., busca o conteúdo remoto e mescla com as diretivas.
+ */
+async function resolveExternalSource(rawContent, fetchFn = globalThis.fetch) {
+  const srcMatch = rawContent.match(/%%\s*(?:src|file)=([^\s\n]+)/);
+  if (!srcMatch) return rawContent;
+
+  const urlOrPath = srcMatch[1].trim().replace(/^["']|["']$/g, '');
+  if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
+    try {
+      const res = await fetchFn(urlOrPath, { signal: AbortSignal.timeout(10000) });
+      if (res.ok) {
+        const fetchedText = await res.text();
+        const remainingDirectives = rawContent
+          .split('\n')
+          .filter((l) => l.trim().startsWith('%%') && !l.trim().match(/^%%\s*(?:src|file)=/))
+          .join('\n')
+          .trim();
+        return remainingDirectives
+          ? `${remainingDirectives}\n${fetchedText}`.trim()
+          : fetchedText.trim();
+      }
+    } catch (err) {
+      console.warn(`[Joaju] Falha ao resolver URL remota em %% src: ${err.message}`);
+    }
+  }
+  return rawContent;
+}
+
+// --- Pré-processador 1: Heredogramas Clínicos Avançados (R / pedtools e kinship2) ---
 async function preprocessPedigrees(markdown, sessionId) {
-  const regex = /```(kinship|kinship2|heredograma|pedigree)\n([\s\S]*?)\n```/gi;
+  const regex = /```(pedtools|kinship2|kinship|heredograma|pedigree)\n([\s\S]*?)\n```/gi;
   let match;
   let modifiedMarkdown = markdown;
   let index = 0;
 
   while ((match = regex.exec(markdown)) !== null) {
-    const rawContent = match[2].trim();
-    const csvPath = `/tmp/ped_${sessionId}_${index}.csv`;
-    const svgPath = `/tmp/ped_${sessionId}_${index}.svg`;
+    const engineTag = match[1].toLowerCase();
+    const isPedtools = engineTag === 'pedtools';
+    let rawContent = match[2].trim();
+
+    // Resolve fonte remota %% src=http... se houver
+    rawContent = await resolveExternalSource(rawContent);
+
+    const prefix = isPedtools ? 'pedtools' : 'ped';
+    const csvPath = `/tmp/${prefix}_${sessionId}_${index}.csv`;
+    const svgPath = `/tmp/${prefix}_${sessionId}_${index}.svg`;
 
     let layoutWidth = '80%';
     let layoutMaxWidth = '500pt';
@@ -65,8 +101,7 @@ async function preprocessPedigrees(markdown, sessionId) {
             layoutWidth = val;
           } else if (key === 'layout.max_width' || (key === 'max-width' && /[%a-z]/i.test(val))) {
             layoutMaxWidth = val;
-          } else {
-            // Qualquer spec oficial do kinship2 (cex, symbolsize, branch, packed, align, etc.)
+          } else if (key !== 'src' && key !== 'file') {
             rArgs.push(`${key} = ${val}`);
           }
         }
@@ -77,13 +112,14 @@ async function preprocessPedigrees(markdown, sessionId) {
 
     fs.writeFileSync(csvPath, csvLines.join('\n'));
 
-    // Monta a expressão R nativa: list(cex=0.8, ...)
+    // Monta a expressão R nativa: list(...)
     const rArgsString = `list(${rArgs.join(', ')})`;
 
     try {
-      const scriptPath = fs.existsSync('/app/plot_pedigree.R')
-        ? '/app/plot_pedigree.R'
-        : path.join(__dirname, 'plot_pedigree.R');
+      const scriptFile = isPedtools ? 'plot_pedtools.R' : 'plot_pedigree.R';
+      const scriptPath = fs.existsSync(`/app/${scriptFile}`)
+        ? `/app/${scriptFile}`
+        : path.join(__dirname, scriptFile);
       cp.execSync(
         `Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`
       );
@@ -102,7 +138,7 @@ async function preprocessPedigrees(markdown, sessionId) {
         modifiedMarkdown = modifiedMarkdown.replace(match[0], typstLayout);
       }
     } catch (err) {
-      console.error(`Erro ao compilar heredograma: ${err.message}`);
+      console.error(`Erro ao compilar heredograma (${engineTag}): ${err.message}`);
     }
     index++;
   }
@@ -118,7 +154,8 @@ async function preprocessDiagrams(markdown, sessionId) {
 
   while ((match = regex.exec(markdown)) !== null) {
     const rawEngine = match[1].toLowerCase();
-    const code = match[2];
+    let code = match[2];
+    code = await resolveExternalSource(code);
     const isPng = rawEngine === 'mermaid';
     const ext = isPng ? 'png' : 'svg';
     const imgPath = `/tmp/diag_${sessionId}_${index}.${ext}`;
@@ -197,7 +234,9 @@ function renderSingleKinship(rawContent, sessionId = 'preview') {
           key !== 'layout.width' &&
           key !== 'width' &&
           key !== 'layout.max_width' &&
-          key !== 'max-width'
+          key !== 'max-width' &&
+          key !== 'src' &&
+          key !== 'file'
         ) {
           rArgs.push(`${key} = ${val}`);
         }
@@ -238,6 +277,81 @@ function renderSingleKinship(rawContent, sessionId = 'preview') {
           .map((l) => l.replace(/^Error.*:\s*/, ''))
           .join('; ') || err.message;
       const pedError = new Error(`Erro no heredograma (kinship): ${cleanMsg}`);
+      pedError.status = 422;
+      throw pedError;
+    }
+    err.status = 500;
+    throw err;
+  } finally {
+    try {
+      if (fs.existsSync(csvPath)) fs.unlinkSync(csvPath);
+      if (fs.existsSync(svgPath)) fs.unlinkSync(svgPath);
+    } catch (_) {}
+  }
+}
+
+function renderSinglePedtools(rawContent, sessionId = 'preview') {
+  const csvPath = `/tmp/pedtools_${sessionId}.csv`;
+  const svgPath = `/tmp/pedtools_${sessionId}.svg`;
+
+  const rArgs = [];
+  const lines = rawContent.split('\n');
+  const csvLines = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('%%')) {
+      const directiveText = trimmed.replace(/^%%\s*/, '');
+      const pairs = directiveText.match(/[\w.-]+=(?:c\([^)]+\)|"[^"]*"|'[^']*'|[^\s]+)/g) || [];
+      for (const pair of pairs) {
+        const [key, val] = pair.split(/=(.*)/s);
+        if (
+          key !== 'layout.width' &&
+          key !== 'width' &&
+          key !== 'layout.max_width' &&
+          key !== 'max-width' &&
+          key !== 'src' &&
+          key !== 'file'
+        ) {
+          rArgs.push(`${key} = ${val}`);
+        }
+      }
+    } else {
+      csvLines.push(line);
+    }
+  }
+
+  fs.writeFileSync(csvPath, csvLines.join('\n'));
+  const rArgsString = `list(${rArgs.join(', ')})`;
+  const scriptPath = fs.existsSync('/app/plot_pedtools.R')
+    ? '/app/plot_pedtools.R'
+    : path.join(__dirname, 'plot_pedtools.R');
+
+  try {
+    cp.execSync(
+      `Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`,
+      { stdio: ['pipe', 'pipe', 'pipe'] }
+    );
+    if (fs.existsSync(svgPath)) {
+      const svgContent = fs.readFileSync(svgPath, 'utf8');
+      return svgContent;
+    }
+    const missingSvgErr = new Error('Arquivo SVG não gerado pelo Rscript (pedtools)');
+    missingSvgErr.status = 422;
+    throw missingSvgErr;
+  } catch (err) {
+    if (err.status && err.status >= 400 && err.status < 600) {
+      throw err;
+    }
+    const stderr = err.stderr ? err.stderr.toString() : '';
+    if (err.status !== undefined || stderr?.includes('Error')) {
+      const cleanMsg =
+        stderr
+          .split('\n')
+          .filter((l) => l.startsWith('Error in') || l.startsWith('Error:'))
+          .map((l) => l.replace(/^Error.*:\s*/, ''))
+          .join('; ') || err.message;
+      const pedError = new Error(`Erro no heredograma (pedtools): ${cleanMsg}`);
       pedError.status = 422;
       throw pedError;
     }
@@ -430,31 +544,47 @@ app.post('/render', async (req, res) => {
 
   // 1. Tenta extrair bloco demarcado por ```
   const blockMatch = rawInput.match(
-    /```(kinship|kinship2|heredograma|pedigree|graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n?```/i
+    /```(pedtools|kinship|kinship2|heredograma|pedigree|graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n?```/i
   );
   let type = 'unknown';
+  let requestedFormat = 'unknown';
   let content = rawInput;
 
   if (blockMatch) {
     const tag = blockMatch[1].toLowerCase();
-    if (tag === 'kinship' || tag === 'kinship2' || tag === 'heredograma' || tag === 'pedigree') {
-      type = 'kinship';
+    if (tag === 'pedtools') {
+      type = 'pedtools';
+      requestedFormat = 'pedtools';
+    } else if (
+      tag === 'kinship' ||
+      tag === 'kinship2' ||
+      tag === 'heredograma' ||
+      tag === 'pedigree'
+    ) {
+      type = 'kinship2';
+      requestedFormat = tag === 'kinship' ? 'kinship' : 'kinship2';
     } else if (tag === 'graphviz' || tag === 'dot') {
       type = 'graphviz';
+      requestedFormat = 'graphviz';
     } else if (tag === 'plantuml' || tag === 'puml') {
       type = 'plantuml';
+      requestedFormat = 'plantuml';
     } else if (tag === 'd2') {
       type = 'd2';
+      requestedFormat = 'd2';
     } else if (tag === 'mermaid') {
       type = 'mermaid';
+      requestedFormat = 'mermaid';
     }
     content = blockMatch[2].trim();
   } else {
     // 2. Inferência heurística se o usuário colar apenas o miolo
     if (/^\s*(digraph|strict digraph|graph|subgraph)\b/m.test(rawInput)) {
       type = 'graphviz';
+      requestedFormat = 'graphviz';
     } else if (/^\s*(@start|class |actor |participant |autonumber)/m.test(rawInput)) {
       type = 'plantuml';
+      requestedFormat = 'plantuml';
     } else if (
       /^(flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)/m.test(
         rawInput
@@ -464,24 +594,35 @@ app.post('/render', async (req, res) => {
       rawInput.includes('graph LR')
     ) {
       type = 'mermaid';
+      requestedFormat = 'mermaid';
     } else if (/^\s*[\w\d_-]+\s*(?:->|<-|--|<->)\s*[\w\d_-]+/m.test(rawInput)) {
       type = 'd2';
+      requestedFormat = 'd2';
     } else if (
       /^(id\s*,|pai\s*,|mae\s*,|dadid\s*,|momid\s*,)/im.test(rawInput) ||
       /^(\d+)\s*,\s*(\d+|\bNA\b)\s*,\s*(\d+|\bNA\b)\s*,/m.test(rawInput)
     ) {
-      type = 'kinship';
+      type = 'kinship2';
+      requestedFormat = 'kinship';
     } else {
-      type = rawInput.includes(',') ? 'kinship' : 'graphviz';
+      type = rawInput.includes(',') ? 'kinship2' : 'graphviz';
+      requestedFormat = type === 'kinship2' ? 'kinship' : type;
     }
   }
+
+  // Resolve fonte remota %% src=http... se houver
+  content = await resolveExternalSource(content);
 
   const sessionId = uuid.v4();
 
   try {
-    if (type === 'kinship') {
+    if (type === 'pedtools') {
+      const svg = renderSinglePedtools(content, sessionId);
+      return res.json({ format: 'pedtools', type: 'svg', svg });
+    }
+    if (type === 'kinship2') {
       const svg = renderSingleKinship(content, sessionId);
-      return res.json({ format: 'kinship', type: 'svg', svg });
+      return res.json({ format: requestedFormat, type: 'svg', svg });
     }
     if (type === 'graphviz') {
       const svg = await renderSingleGraphviz(content);
@@ -575,6 +716,27 @@ app.post('/compile', async (req, res) => {
   }
 });
 
+const { unfurlUrl } = require('./unfurl');
+
+// 🌐 Endpoint de Unfurl, Metadados e Snapshot Web
+app.post('/unfurl', async (req, res) => {
+  const { url, archive } = req.body || {};
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Parâmetro "url" é obrigatório.' });
+  }
+
+  try {
+    const result = await unfurlUrl(url.trim(), { archive: Boolean(archive) });
+    if (!result.ok) {
+      return res.status(422).json(result);
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error(`[Joaju Server] Erro em /unfurl: ${err.message}`);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 if (require.main === module) {
@@ -587,10 +749,13 @@ module.exports = {
   app,
   preprocessPedigrees,
   preprocessDiagrams,
+  resolveExternalSource,
   renderSinglePedigree,
   renderSingleKinship,
+  renderSinglePedtools,
   renderSingleGraphviz,
   renderSinglePlantuml,
   renderSingleD2,
-  renderSingleMermaid
+  renderSingleMermaid,
+  unfurlUrl
 };

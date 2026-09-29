@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (render) adicionar motor pedtools, canonicalizar tags e suportar fontes remotas
   - (render) adicionar motores leves d2, graphviz, plantuml e padronizar kinship
   - (pedigree) adicionar modal com guia de campos e corrigir tratamento de erro 422
   - (branding) reposicionar foco em diagramas academicos e fundo branco obrigatorio

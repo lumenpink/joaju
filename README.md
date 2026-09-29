@@ -291,6 +291,49 @@ Sonda de integridade operacional (Health Check) para Docker, Kubernetes e script
     }
     ```
 
+### `POST /unfurl`
+
+Extrai metadados ricos de uma URL (título, descrição, imagem de capa, domínio, autor, data, tempo de leitura estimado) usando **Readability** + **linkedom** — sem Chromium. Opcionalmente gera um snapshot PDF da página via Readability → Pandoc → Typst.
+
+* **Payload:**
+
+  ```json
+  {
+    "url": "https://example.com/artigo",
+    "archive": false
+  }
+  ```
+
+  | Campo | Tipo | Descrição |
+  |---|---|---|
+  | `url` | string | URL a ser desdobrada. Protocolos suportados: `http`, `https`. |
+  | `archive` | boolean | Se `true`, inclui um snapshot PDF da página em `pdfBase64`. |
+
+* **Respostas:**
+
+  * `200 OK`:
+    ```json
+    {
+      "ok": true,
+      "url": "https://example.com/artigo",
+      "title": "Título da Página",
+      "description": "Resumo extraído do OG ou da meta description.",
+      "imageUrl": "https://example.com/og-image.jpg",
+      "faviconUrl": "https://example.com/favicon.ico",
+      "domain": "example.com",
+      "siteName": "Example",
+      "author": "Autora Silva",
+      "date": "2025-01-15",
+      "readingTimeMin": 4,
+      "hasArticle": true,
+      "pdfBase64": "JVBERi0x..." 
+    }
+    ```
+    > `pdfBase64` presente apenas quando `archive: true`.
+
+  * `400 Bad Request`: `url` ausente ou vazio.
+  * `422 Unprocessable Entity`: Protocolo não suportado ou servidor retornou erro HTTP.
+
 ## 🛠️ Interfaces de Desenvolvimento CCCP (Serve, Dev & Demo)
 
 O Joaju implementa conformidade total com os comandos do ecossistema **CCCP**:
