@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const fs = require('node:fs');
 const cp = require('node:child_process');
+const path = require('node:path');
 
 const {
   app,
@@ -63,7 +64,7 @@ test('Preprocessador de Heredogramas Clínicos', async (t) => {
 
       const input = `
 # Artigo
-\`\`\`heredograma
+\`\`\`kinship2
 %% layout.width=85% layout.max_width=500pt cex=0.75 symbolsize=1.1 align=c(1,2)
 id,pai,mae,sex,fenotipo
 1,0,0,M,wt
@@ -84,20 +85,21 @@ Texto final.`;
     'processa diretivas alternativas (width e max-width genéricas) e múltiplos blocos',
     async () => {
       cp.execSync = (cmd) => {
-        const match = cmd.match(/"(\/tmp\/ped_[^"]+\.svg)"/);
+        const match =
+          cmd.match(/"(\/tmp\/ped_[^"]+\.svg)"/) || cmd.match(/"(\/tmp\/pedtools_[^"]+\.svg)"/);
         if (match) {
           fs.writeFileSync(match[1], '<svg><rect/></svg>');
         }
       };
 
       const input = `
-\`\`\`pedigree
+\`\`\`pedtools
 %% width=70% max-width=400pt packed=TRUE
 id,sex
 1,M
 \`\`\`
 Meio
-\`\`\`heredograma
+\`\`\`kinship2
 %% layout.width=90%
 id,sex
 2,F
@@ -116,7 +118,7 @@ id,sex
         throw new Error('Falha simulada na execução do Rscript');
       };
 
-      const input = '```heredograma\nid,sex\n1,M\n```';
+      const input = '```kinship2\nid,sex\n1,M\n```';
       const result = await preprocessPedigrees(input, 'test-err');
       assert.ok(typeof result === 'string');
     }
@@ -130,6 +132,13 @@ id,sex
     assert.ok(resolved.includes('%% layout.width=80%'));
     assert.ok(resolved.includes('id,pai,mae,sex'));
     assert.ok(!resolved.includes('src='));
+  });
+
+  await t.test('ignora tags legadas (heredograma, pedigree, kinship)', async () => {
+    const input =
+      '```heredograma\nid,sex\n1,M\n```\n```pedigree\nid,sex\n2,F\n```\n```kinship\nid,sex\n3,M\n```';
+    const result = await preprocessPedigrees(input, 'test-legacy');
+    assert.strictEqual(result, input);
   });
 });
 
@@ -389,7 +398,18 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     assert.ok(body.error.includes('Nenhum código fornecido'));
   });
 
-  await t.test('POST /render: processa bloco ```kinship / ```heredograma', async () => {
+  await t.test('POST /render: rejeita motor legado ou não suportado com 400', async () => {
+    const res = await fetch(`${baseUrl}/render`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: '```kinship\nid,sex\n1,M\n```' })
+    });
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.ok(body.error.includes("Motor 'kinship' não suportado"));
+  });
+
+  await t.test('POST /render: processa bloco ```kinship2', async () => {
     cp.execSync = (cmd) => {
       const match = cmd.match(/"(\/tmp\/ped_[^"]+\.svg)"/);
       if (match) fs.writeFileSync(match[1], '<svg class="ped"></svg>');
@@ -398,11 +418,11 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     const res = await fetch(`${baseUrl}/render`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: '```kinship\nid,sex\n1,M\n```' })
+      body: JSON.stringify({ code: '```kinship2\nid,sex\n1,M\n```' })
     });
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.format, 'kinship');
+    assert.equal(body.format, 'kinship2');
     assert.equal(body.type, 'svg');
     assert.ok(body.svg.includes('<svg'));
   });
@@ -572,7 +592,7 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     });
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.format, 'kinship');
+    assert.equal(body.format, 'kinship2');
     assert.ok(body.svg.includes('heuristic-ped'));
   });
 
@@ -584,7 +604,7 @@ test('Servidor HTTP: Rotas /render, /compile e Arquivos Estáticos', async (t) =
     const res = await fetch(`${baseUrl}/render`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: '```heredograma\nid,sex\n1,1\n```' })
+      body: JSON.stringify({ code: '```kinship2\nid,sex\n1,1\n```' })
     });
     assert.equal(res.status, 500);
     const body = await res.json();
@@ -678,6 +698,92 @@ perfil: vancouver
     assert.equal(res.status, 500);
     const errText = await res.text();
     assert.ok(errText.includes('Pandoc filter syntax error'));
+  });
+
+  await t.test(
+    'POST /compile: compila pacote ZIP com sucesso resolvendo anexos locais',
+    async () => {
+      const srcDir = '/tmp/test_zip_pkg_src';
+      const zipPath = '/tmp/test_bundle.zip';
+      fs.mkdirSync(path.join(srcDir, 'attachments'), { recursive: true });
+
+      fs.writeFileSync(
+        path.join(srcDir, 'main.md'),
+        '# Artigo ZIP\n\n```table\n%% src=attachments/dados.csv\n```\n'
+      );
+      fs.writeFileSync(path.join(srcDir, 'attachments/dados.csv'), 'Item, Valor\nA, 10\nB, 20\n');
+
+      originalExecSync(`cd "${srcDir}" && zip -q -r "${zipPath}" .`);
+
+      let pandocWithResourcePath = false;
+      cp.execSync = (cmd) => {
+        if (cmd.startsWith('unzip')) {
+          return originalExecSync(cmd);
+        }
+        if (cmd.startsWith('pandoc')) {
+          if (cmd.includes('--resource-path=')) {
+            pandocWithResourcePath = true;
+          }
+          const outMatch = cmd.match(/-o "([^"]+)"/);
+          if (outMatch) fs.writeFileSync(outMatch[1], '= Typst Output from ZIP');
+          return Buffer.from('');
+        }
+        if (cmd.startsWith('typst compile')) {
+          const pdfMatch = cmd.match(/"([^"]+\.pdf)"/);
+          if (pdfMatch) fs.writeFileSync(pdfMatch[1], '%PDF-1.7 Mock ZIP PDF');
+          return Buffer.from('');
+        }
+        return Buffer.from('');
+      };
+
+      const zipBuffer = fs.readFileSync(zipPath);
+      const res = await fetch(`${baseUrl}/compile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/zip' },
+        body: zipBuffer
+      });
+
+      assert.equal(res.status, 200);
+      assert.equal(res.headers.get('content-type'), 'application/pdf');
+      const pdfBytes = Buffer.from(await res.arrayBuffer());
+      assert.ok(pdfBytes.toString().includes('%PDF-1.7 Mock ZIP PDF'));
+      assert.ok(pandocWithResourcePath);
+
+      // Cleanup
+      fs.rmSync(srcDir, { recursive: true, force: true });
+      if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+    }
+  );
+
+  await t.test('POST /compile: retorna 400 se pacote ZIP não contiver arquivo .md', async () => {
+    const srcDir = '/tmp/test_empty_zip_src';
+    const zipPath = '/tmp/test_empty_bundle.zip';
+    fs.mkdirSync(srcDir, { recursive: true });
+    fs.writeFileSync(path.join(srcDir, 'foto.png'), 'fake image');
+
+    originalExecSync(`cd "${srcDir}" && zip -q -r "${zipPath}" .`);
+
+    cp.execSync = (cmd) => {
+      if (cmd.startsWith('unzip')) {
+        return originalExecSync(cmd);
+      }
+      return Buffer.from('');
+    };
+
+    const zipBuffer = fs.readFileSync(zipPath);
+    const res = await fetch(`${baseUrl}/compile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/zip' },
+      body: zipBuffer
+    });
+
+    assert.equal(res.status, 400);
+    const body = await res.json();
+    assert.ok(body.error.includes('Nenhum arquivo Markdown'));
+
+    // Cleanup
+    fs.rmSync(srcDir, { recursive: true, force: true });
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
   });
 
   // --- Health Check ---

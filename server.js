@@ -1,6 +1,7 @@
 const express = require('express');
 const cp = require('node:child_process');
 const fs = require('node:fs');
+const os = require('node:os');
 const uuid = require('uuid');
 const path = require('node:path');
 const OCL = require('openchemlib');
@@ -20,6 +21,12 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '50mb' })); // Suporte a documentos longos
+app.use(
+  express.raw({
+    type: ['application/zip', 'application/x-zip-compressed', 'application/octet-stream'],
+    limit: '100mb'
+  })
+);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/locales', express.static(path.join(__dirname, 'locales')));
 
@@ -34,31 +41,53 @@ app.get('/health', (req, res) => {
 });
 
 /**
- * Se o bloco contiver %% src=http... ou %% file=http..., busca o conteúdo remoto e mescla com as diretivas.
+ * Se o bloco contiver %% src=... ou %% file=..., busca o conteúdo remoto ou lê do workspace local e mescla com as diretivas.
  */
-async function resolveExternalSource(rawContent, fetchFn = globalThis.fetch) {
+async function resolveExternalSource(rawContent, workspaceDir = null, fetchFn = globalThis.fetch) {
+  let wsDir = workspaceDir;
+  let fn = fetchFn;
+  if (typeof workspaceDir === 'function') {
+    fn = workspaceDir;
+    wsDir = null;
+  }
+
   const srcMatch = rawContent.match(/%%\s*(?:src|file)=([^\s\n]+)/);
   if (!srcMatch) return rawContent;
 
   const urlOrPath = srcMatch[1].trim().replace(/^["']|["']$/g, '');
+  let fetchedText = null;
+
   if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
     try {
-      const res = await fetchFn(urlOrPath, { signal: AbortSignal.timeout(10000) });
+      const res = await fn(urlOrPath, { signal: AbortSignal.timeout(10000) });
       if (res.ok) {
-        const fetchedText = await res.text();
-        const remainingDirectives = rawContent
-          .split('\n')
-          .filter((l) => l.trim().startsWith('%%') && !l.trim().match(/^%%\s*(?:src|file)=/))
-          .join('\n')
-          .trim();
-        return remainingDirectives
-          ? `${remainingDirectives}\n${fetchedText}`.trim()
-          : fetchedText.trim();
+        fetchedText = await res.text();
       }
     } catch (err) {
       console.warn(`[Joaju] Falha ao resolver URL remota em %% src: ${err.message}`);
     }
+  } else if (wsDir) {
+    const localPath = path.resolve(wsDir, urlOrPath);
+    if (localPath.startsWith(path.resolve(wsDir)) && fs.existsSync(localPath)) {
+      try {
+        fetchedText = fs.readFileSync(localPath, 'utf8');
+      } catch (err) {
+        console.warn(`[Joaju] Falha ao ler arquivo local em %% src: ${err.message}`);
+      }
+    }
   }
+
+  if (fetchedText !== null) {
+    const remainingDirectives = rawContent
+      .split('\n')
+      .filter((l) => l.trim().startsWith('%%') && !l.trim().match(/^%%\s*(?:src|file)=/))
+      .join('\n')
+      .trim();
+    return remainingDirectives
+      ? `${remainingDirectives}\n${fetchedText}`.trim()
+      : fetchedText.trim();
+  }
+
   return rawContent;
 }
 
@@ -72,8 +101,8 @@ function normalizeDimension(val, defaultVal = '100%') {
 }
 
 // --- Pré-processador 1: Heredogramas Clínicos Avançados (R / pedtools e kinship2) ---
-async function preprocessPedigrees(markdown, sessionId) {
-  const regex = /```(pedtools|kinship2|kinship|heredograma|pedigree)\n([\s\S]*?)\n```/gi;
+async function preprocessPedigrees(markdown, sessionId, workspaceDir = null) {
+  const regex = /```(pedtools|kinship2)\n([\s\S]*?)\n```/gi;
   let match;
   let modifiedMarkdown = markdown;
   let index = 0;
@@ -83,8 +112,8 @@ async function preprocessPedigrees(markdown, sessionId) {
     const isPedtools = engineTag === 'pedtools';
     let rawContent = match[2].trim();
 
-    // Resolve fonte remota %% src=http... se houver
-    rawContent = await resolveExternalSource(rawContent);
+    // Resolve fonte remota ou do workspace local %% src=... se houver
+    rawContent = await resolveExternalSource(rawContent, workspaceDir);
 
     const prefix = isPedtools ? 'pedtools' : 'ped';
     const csvPath = `/tmp/${prefix}_${sessionId}_${index}.csv`;
@@ -157,8 +186,8 @@ async function preprocessPedigrees(markdown, sessionId) {
 }
 
 // --- Pré-processador 2: Diagramas Rápidos (Graphviz, PlantUML, D2, Mermaid) ---
-async function preprocessDiagrams(markdown, sessionId) {
-  const regex = /```(graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n```/gi;
+async function preprocessDiagrams(markdown, sessionId, workspaceDir = null) {
+  const regex = /```(graphviz|plantuml|d2|mermaid)\n([\s\S]*?)\n```/gi;
   let match;
   let modifiedMarkdown = markdown;
   let index = 0;
@@ -166,7 +195,7 @@ async function preprocessDiagrams(markdown, sessionId) {
   while ((match = regex.exec(markdown)) !== null) {
     const rawEngine = match[1].toLowerCase();
     let code = match[2];
-    code = await resolveExternalSource(code);
+    code = await resolveExternalSource(code, workspaceDir);
     const isPng = rawEngine === 'mermaid';
     const ext = isPng ? 'png' : 'svg';
     const imgPath = `/tmp/diag_${sessionId}_${index}.${ext}`;
@@ -189,8 +218,7 @@ async function preprocessDiagrams(markdown, sessionId) {
         fs.writeFileSync(imgPath, svg);
       } else {
         const krokiHost = process.env.KROKI_HOST || 'http://kroki:8000';
-        const targetEngine =
-          rawEngine === 'dot' ? 'graphviz' : rawEngine === 'puml' ? 'plantuml' : rawEngine;
+        const targetEngine = rawEngine;
         const format = isPng ? 'png' : 'svg';
         const response = await fetch(`${krokiHost}/${targetEngine}/${format}`, {
           method: 'POST',
@@ -226,7 +254,7 @@ async function preprocessDiagrams(markdown, sessionId) {
 }
 
 // --- Pré-processador 3: Química Estrutural (OpenChemLib e Open Babel) ---
-async function preprocessChemistry(markdown, sessionId) {
+async function preprocessChemistry(markdown, sessionId, workspaceDir = null) {
   const regex = /```(openchemlib|openbabel)\n([\s\S]*?)\n```/gi;
   let match;
   let modifiedMarkdown = markdown;
@@ -235,7 +263,7 @@ async function preprocessChemistry(markdown, sessionId) {
   while ((match = regex.exec(markdown)) !== null) {
     const engineTag = match[1].toLowerCase();
     let rawContent = match[2].trim();
-    rawContent = await resolveExternalSource(rawContent);
+    rawContent = await resolveExternalSource(rawContent, workspaceDir);
 
     const imgPath = `/tmp/chem_${sessionId}_${index}.svg`;
 
@@ -411,14 +439,14 @@ function renderSingleTable(rawContent) {
   return html;
 }
 
-async function preprocessTables(markdown, sessionId) {
+async function preprocessTables(markdown, sessionId, workspaceDir = null) {
   const regex = /```table\n([\s\S]*?)\n```/gi;
   let match;
   let modifiedMarkdown = markdown;
 
   while ((match = regex.exec(markdown)) !== null) {
     let rawContent = match[1].trim();
-    rawContent = await resolveExternalSource(rawContent);
+    rawContent = await resolveExternalSource(rawContent, workspaceDir);
 
     try {
       const { directives, rows } = parseTableData(rawContent);
@@ -911,7 +939,7 @@ app.post('/render', async (req, res) => {
 
   // 1. Tenta extrair bloco demarcado por ```
   const blockMatch = rawInput.match(
-    /```(openchemlib|openbabel|table|pedtools|kinship|kinship2|heredograma|pedigree|graphviz|dot|plantuml|puml|d2|mermaid)\n([\s\S]*?)\n?```/i
+    /```(openchemlib|openbabel|table|pedtools|kinship2|graphviz|plantuml|d2|mermaid)\n([\s\S]*?)\n?```/i
   );
   let type = 'unknown';
   let requestedFormat = 'unknown';
@@ -931,18 +959,13 @@ app.post('/render', async (req, res) => {
     } else if (tag === 'pedtools') {
       type = 'pedtools';
       requestedFormat = 'pedtools';
-    } else if (
-      tag === 'kinship' ||
-      tag === 'kinship2' ||
-      tag === 'heredograma' ||
-      tag === 'pedigree'
-    ) {
+    } else if (tag === 'kinship2') {
       type = 'kinship2';
-      requestedFormat = tag === 'kinship' ? 'kinship' : 'kinship2';
-    } else if (tag === 'graphviz' || tag === 'dot') {
+      requestedFormat = 'kinship2';
+    } else if (tag === 'graphviz') {
       type = 'graphviz';
       requestedFormat = 'graphviz';
-    } else if (tag === 'plantuml' || tag === 'puml') {
+    } else if (tag === 'plantuml') {
       type = 'plantuml';
       requestedFormat = 'plantuml';
     } else if (tag === 'd2') {
@@ -954,6 +977,13 @@ app.post('/render', async (req, res) => {
     }
     content = blockMatch[2].trim();
   } else {
+    const anyFenceMatch = rawInput.trim().match(/^```([a-zA-Z0-9_-]+)/);
+    if (anyFenceMatch) {
+      return res.status(400).json({
+        error: `Motor '${anyFenceMatch[1]}' não suportado. Motores válidos: pedtools, kinship2, openchemlib, openbabel, table, d2, plantuml, graphviz, mermaid.`
+      });
+    }
+
     // 2. Inferência heurística se o usuário colar apenas o miolo
     if (/^\s*(digraph|strict digraph|graph|subgraph)\b/m.test(rawInput)) {
       type = 'graphviz';
@@ -979,10 +1009,10 @@ app.post('/render', async (req, res) => {
       /^(\d+)\s*,\s*(\d+|\bNA\b)\s*,\s*(\d+|\bNA\b)\s*,/m.test(rawInput)
     ) {
       type = 'kinship2';
-      requestedFormat = 'kinship';
+      requestedFormat = 'kinship2';
     } else {
       type = rawInput.includes(',') ? 'kinship2' : 'graphviz';
-      requestedFormat = type === 'kinship2' ? 'kinship' : type;
+      requestedFormat = type;
     }
   }
 
@@ -1038,34 +1068,86 @@ app.post('/render', async (req, res) => {
 
 // --- Rota Principal de Compilação ---
 app.post('/compile', async (req, res) => {
-  const markdown = req.body.markdown || '';
   const id = uuid.v4();
-  const tempMd = `/tmp/input_${id}.md`;
-  const tempTypstOutput = `/tmp/conteudo_${id}.typ`;
-  const tempWrapperTypst = `/tmp/main_${id}.typ`;
-  const tempPdf = `/tmp/output_${id}.pdf`;
-
-  // 🔍 Extrai metadados do YAML para automação bibliográfica
-  // Procura o perfil (abnt, vancouver, etc.) condicionalmente
-  const metaMatch = markdown.match(/^---[\s\S]*?perfil:\s*(\w+)[\s\S]*?---/);
-  const profile = metaMatch ? metaMatch[1] : 'abnt';
-
-  // 🔄 ORQUESTRADORES DE PRÉ-PROCESSAMENTO
-  let cleanMarkdown = await preprocessPedigrees(markdown, id);
-  cleanMarkdown = await preprocessDiagrams(cleanMarkdown, id);
-  cleanMarkdown = await preprocessChemistry(cleanMarkdown, id);
-  cleanMarkdown = await preprocessTables(cleanMarkdown, id);
-
-  // Suporte genérico a blocos nativos: ```typst -> <typst>
-  cleanMarkdown = cleanMarkdown.replace(/```typst\n([\s\S]*?)\n```/g, '$1');
-
-  fs.writeFileSync(tempMd, cleanMarkdown);
-
-  // 1️⃣ ETAPA 1: Pandoc + Citeproc (Maturação Bibliográfica)
-  // O Pandoc resolve citações ABNT/Vancouver usando o Zotero e cospe texto Typst estático.
-  const pandocCmd = `pandoc "${tempMd}" --citeproc --bibliography=/data/referencias.bib --csl=/data/${profile}.csl -t typst -o "${tempTypstOutput}"`;
+  const isZip = Buffer.isBuffer(req.body) && req.body.length > 0;
+  let workspaceDir = null;
+  let markdown = '';
 
   try {
+    if (isZip) {
+      workspaceDir = path.join(os.tmpdir(), `job_${id}`);
+      fs.mkdirSync(workspaceDir, { recursive: true });
+      const zipPath = path.join(workspaceDir, `bundle_${id}.zip`);
+      fs.writeFileSync(zipPath, req.body);
+      try {
+        cp.execSync(`unzip -q -o "${zipPath}" -d "${workspaceDir}"`);
+      } finally {
+        if (fs.existsSync(zipPath)) {
+          try {
+            fs.unlinkSync(zipPath);
+          } catch (_) {}
+        }
+      }
+
+      const candidates = ['main.md', 'index.md', 'document.md'];
+      let entryFile = null;
+      for (const cand of candidates) {
+        const p = path.join(workspaceDir, cand);
+        if (fs.existsSync(p)) {
+          entryFile = p;
+          break;
+        }
+      }
+
+      if (!entryFile) {
+        const rootFiles = fs.readdirSync(workspaceDir);
+        const mdFiles = rootFiles.filter(
+          (f) => f.endsWith('.md') && fs.statSync(path.join(workspaceDir, f)).isFile()
+        );
+        if (mdFiles.length > 0) {
+          entryFile = path.join(workspaceDir, mdFiles[0]);
+        }
+      }
+
+      if (!entryFile) {
+        return res
+          .status(400)
+          .json({ error: 'Nenhum arquivo Markdown (.md) encontrado dentro do arquivo ZIP.' });
+      }
+
+      markdown = fs.readFileSync(entryFile, 'utf8');
+    } else if (typeof req.body?.markdown === 'string') {
+      markdown = req.body.markdown;
+    } else if (typeof req.body === 'string') {
+      markdown = req.body;
+    }
+
+    const baseDir = workspaceDir || os.tmpdir();
+    const tempMd = path.join(baseDir, `input_${id}.md`);
+    const tempTypstOutput = path.join(baseDir, `conteudo_${id}.typ`);
+    const tempWrapperTypst = path.join(baseDir, `main_${id}.typ`);
+    const tempPdf = path.join(baseDir, `output_${id}.pdf`);
+
+    // 🔍 Extrai metadados do YAML para automação bibliográfica
+    // Procura o perfil (abnt, vancouver, etc.) condicionalmente
+    const metaMatch = markdown.match(/^---[\s\S]*?perfil:\s*(\w+)[\s\S]*?---/);
+    const profile = metaMatch ? metaMatch[1] : 'abnt';
+
+    // 🔄 ORQUESTRADORES DE PRÉ-PROCESSAMENTO
+    let cleanMarkdown = await preprocessPedigrees(markdown, id, workspaceDir);
+    cleanMarkdown = await preprocessDiagrams(cleanMarkdown, id, workspaceDir);
+    cleanMarkdown = await preprocessChemistry(cleanMarkdown, id, workspaceDir);
+    cleanMarkdown = await preprocessTables(cleanMarkdown, id, workspaceDir);
+
+    // Suporte genérico a blocos nativos: ```typst -> <typst>
+    cleanMarkdown = cleanMarkdown.replace(/```typst\n([\s\S]*?)\n```/g, '$1');
+
+    fs.writeFileSync(tempMd, cleanMarkdown);
+
+    // 1️⃣ ETAPA 1: Pandoc + Citeproc (Maturação Bibliográfica)
+    const resourcePathArg = workspaceDir ? `--resource-path="${workspaceDir}"` : '';
+    const pandocCmd = `pandoc "${tempMd}" ${resourcePathArg} --citeproc --bibliography=/data/referencias.bib --csl=/data/${profile}.csl -t typst -o "${tempTypstOutput}"`;
+
     cp.execSync(pandocCmd);
 
     // Injeta suporte a réguas horizontais do Pandoc e função min no escopo do arquivo Typst
@@ -1076,7 +1158,6 @@ app.post('/compile', async (req, res) => {
     }
 
     // 2️⃣ ETAPA 2: Typst (Diagramação Rápida)
-    // Cria um wrapper que envelopa o texto compilado no template master.
     const typstWrapper = `
 #import "/data/template.typ": abnt
 #show: doc => abnt(doc)
@@ -1095,14 +1176,29 @@ app.post('/compile', async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="PIT.pdf"');
     res.send(pdfBuffer);
-
-    // 🧹 Limpeza assíncrona dos arquivos temporários de compilação
-    for (const file of [tempMd, tempTypstOutput, tempWrapperTypst, tempPdf]) {
-      if (fs.existsSync(file)) fs.unlinkSync(file);
-    }
   } catch (err) {
     console.error(`Erro fatal no pipeline: ${err.message}`);
     res.status(500).send(`Erro na compilação do artigo: ${err.message}`);
+  } finally {
+    if (workspaceDir && fs.existsSync(workspaceDir)) {
+      try {
+        fs.rmSync(workspaceDir, { recursive: true, force: true });
+      } catch (_) {}
+    } else {
+      const baseDir = os.tmpdir();
+      for (const f of [
+        path.join(baseDir, `input_${id}.md`),
+        path.join(baseDir, `conteudo_${id}.typ`),
+        path.join(baseDir, `main_${id}.typ`),
+        path.join(baseDir, `output_${id}.pdf`)
+      ]) {
+        if (fs.existsSync(f)) {
+          try {
+            fs.unlinkSync(f);
+          } catch (_) {}
+        }
+      }
+    }
   }
 });
 

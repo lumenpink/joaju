@@ -33,7 +33,7 @@ flowchart TD
 
         subgraph Preprocess [Pré-processamento Dinâmico]
             direction LR
-            H_BLK["```heredograma"] -->|CSV + Diretivas %%| R_ENG[Rscript plot_pedigree.R]
+            H_BLK["```kinship2 / ```pedtools"] -->|CSV + Diretivas %%| R_ENG[Rscript pedtools / kinship2]
             M_BLK["```mermaid"] -->|Código + Diretivas %%| KRK[Kroki Gateway + Chromium Headless]
             R_ENG -->|Vetor SVG| TYP_INJ1[Injeção Typst Raw Block]
             KRK -->|PNG Alta Resolução| TYP_INJ2[Injeção Typst Raw Block]
@@ -118,50 +118,82 @@ perfil: vancouver # Opções: 'vancouver' ou 'abnt'
 ---
 ```
 
-### 2. Heredogramas Clínicos (\`\`\`\`heredograma\`)
+### 2. Heredogramas Clínicos (`pedtools` e `kinship2`)
 
-O Joaju interpreta tabelas com cabeçalhos amigáveis em português ou parâmetros canônicos do `kinship2`. As diretivas de tamanho e ajustes do motor são passadas na linha com `%%`.
+O Joaju oferece suporte a dois motores especializados em genética clínica:
 
-#### Exemplo Completo (Fibrose Cística com Portadores e Gêmeos MZ)
+* **`pedtools` (Recomendado):** Padrão moderno do ecossistema pedsuite em R, com suporte robusto a fundadores múltiplos, casamentos consanguíneos e formatação padronizada.
+* **`kinship2`:** Motor de heredogramas clínicos baseado no pacote `kinship2` em R.
+
+#### Exemplo Completo com `pedtools`
 
 ````markdown
 ### Análise Genealógica da Linhagem
 
-```heredograma
+```pedtools
 %% layout.width=85% layout.max_width=520pt
-%% cex=0.85 symbolsize=1.0 branch=0.5 packed=TRUE align=c(1.5,2)
-id,   pai,  mae,  sexo, fenotipo, falecido, probando, idade, genotipo,      gemeo_com, tipo_gemeo, label
-I:1,    0,    0,     M, portador,        0,        0,   68a, wt/c.1521,             0,          0, I:1
-I:2,    0,    0,     F, portador,        0,        0,   65a, wt/c.1521,             0,          0, I:2
-II:1, I:1,  I:2,     M,  afetado,        1,        0,  †12a, c.1521/1521,           0,          0, II:1
-II:2, I:1,  I:2,     F, portador,        0,        1,   38a, wt/c.1521,          II:3,         MZ, II:2 [P]
-II:3, I:1,  I:2,     F, portador,        0,        0,   38a, wt/c.1521,          II:2,         MZ, II:3
-II:4,   0,    0,     M,   higido,        0,        0,   41a, wt/wt,                 0,          0, II:4
-III:1,II:4, II:2,    F,   higido,        0,        0,    8a, wt/wt,                 0,          0, III:1
-III:2,II:4, II:2,    M,        ?,        0,        0,    6a, pendente,              0,          0, III:2
+%% title="Linhagem Familiar - Fibrose Cística"
+id,   fid,  mid,  sex, aff
+I:1,    0,    0,    1,   1
+I:2,    0,    0,    2,   1
+II:1, I:1,  I:2,    1,   2
+II:2, I:1,  I:2,    2,   1
 ```
 ````
 
-#### Dicionário de Colunas e Estados Clínicos
+#### Importação de Dados Externos (`%% src=` ou `%% file=`)
 
-| **Campo** | **Valores Aceitos** | **Comportamento no Traçado** |
-| :--- | :--- | :--- |
-| `id` | Texto / Código (ex: `I:1`) | Identificador do sujeito na matriz de parentesco |
-| `pai` / `mae` | ID ou `0` / vazio | Conexão parental (`0` cria nó fundador raiz) |
-| `sexo` | `M`, `F`, `U` (ou `?`), `T` | `M` = Quadrado, `F` = Círculo, `U` = Losango, `T` = Aborto |
-| `fenotipo` | `hom` / `afetado` / `1` | Símbolo **totalmente preenchido** (preto) |
-| | `het` / `portador` | Símbolo **meio preenchido** (metade vertical esquerda) |
-| | `higido` / `wt` / `0` | Símbolo **em branco** (contorno fino) |
-| | `?` / `desconhecido` | Insere uma interrogação interna no símbolo |
-| `falecido` | `1` ou `0` | Traça barra diagonal de óbito a 45° sobre o símbolo |
-| `probando` | `1` ou `0` | Destaca o caso índice na árvore |
-| `gemeo_com` | ID do irmão | Declara vínculo gemelar direto |
-| `tipo_gemeo` | `MZ` ou `DZ` | `MZ` adiciona barra horizontal entre ramos; `DZ` ramifica em V |
-| `label` | Texto customizado | Sobrescreve o texto impresso logo abaixo do símbolo |
+Você pode separar os dados genealógicos do arquivo Markdown, referenciando arquivos locais anexos ou URLs remotas:
 
-### 3. Diagramas de Fluxo e Processo (```mermaid```)
+````markdown
+```pedtools
+%% src=attachments/familia_silva.csv
+%% layout.width=80%
+```
+````
 
-Sem tags HTML na nota. O tamanho de exibição no PDF final é controlado por diretivas de comentário `%%`, garantindo que o **Live Preview do Obsidian continue funcionando**:
+### 3. Química Estrutural 2D (`openchemlib` e `openbabel`)
+
+Renderize estruturas moleculares 2D em SVG vetorial de alta resolução a partir de notação SMILES, fórmulas ou arquivos MOL/SDF:
+
+````markdown
+```openchemlib
+%% title="Molécula de Ácido Acetilsalicílico (Aspirina)"
+CC(=O)Oc1ccccc1C(=O)O
+```
+````
+
+Também suporta referência a arquivos de moléculas na pasta de anexos:
+
+````markdown
+```openchemlib
+%% file=attachments/cafeina.mol
+```
+````
+
+### 4. Tabelas Acadêmicas (`table`)
+
+Transforma arquivos CSV ou dados tabulares em tabelas com tipografia acadêmica estrita (estilo APA/ABNT com réguas horizontais superior, intermediária e inferior, e alinhamento numérico):
+
+````markdown
+```table
+%% caption="Resultados dos Grupos de Teste Clínico"
+%% src=attachments/tabela_resultados.csv
+```
+````
+
+### 5. Diagramas Técnicos (`d2`, `plantuml`, `graphviz`, `mermaid`)
+
+Suporte completo a diagramas arquiteturais e de fluxo sem injeção de HTML no editor:
+
+````markdown
+```d2
+%% width=75%
+coleta: Coleta de Sangue -> sequenciamento: Sequenciamento NGS
+sequenciamento -> analise: Análise Bioinformática
+analise -> laudo: Laudo Médico
+```
+````
 
 ````markdown
 ```mermaid
@@ -239,7 +271,7 @@ Renderiza instantaneamente um bloco de heredograma ou diagrama Mermaid isolado, 
 
   ```json
   {
-    "code": "```heredograma\n%% layout.width=90%\nid,pai,mae,sex,fenotipo\n1,0,0,M,wt\n...\n```"
+    "code": "```kinship2\n%% layout.width=90%\nid,pai,mae,sex,fenotipo\n1,0,0,M,wt\n...\n```"
   }
   ```
 
@@ -248,7 +280,7 @@ Renderiza instantaneamente um bloco de heredograma ou diagrama Mermaid isolado, 
   * `200 OK`: JSON contendo o SVG gerado:
     ```json
     {
-      "format": "pedigree",
+      "format": "kinship2",
       "type": "svg",
       "svg": "<svg ...>...</svg>"
     }
@@ -260,15 +292,23 @@ Renderiza instantaneamente um bloco de heredograma ou diagrama Mermaid isolado, 
 
 ### `POST /compile`
 
-Recebe o conteúdo Markdown bruto e entrega o PDF diagramado.
+Recebe o conteúdo Markdown e compila para PDF acadêmico (Pandoc + Citeproc + Typst). Suporta duas modalidades de envio:
 
-* **Payload:**
+1. **Markdown em Texto Plano (JSON):**
+   * **Content-Type:** `application/json`
+   * **Payload:**
+     ```json
+     {
+       "markdown": "# Conteúdo do artigo..."
+     }
+     ```
 
-  ```json
-  {
-    "markdown": "# Conteúdo do artigo..."
-  }
-  ```
+2. **Pacote de Workspace com Anexos (ZIP):**
+   * **Content-Type:** `application/zip` (ou `application/octet-stream`)
+   * **Payload:** Arquivo binário `.zip` contendo:
+     * `main.md`: Artigo Markdown principal;
+     * `attachments/`: Pasta contendo imagens referenciadas (`![[foto.png]]`), arquivos CSV (`%% src=...`) e arquivos químicos (`%% file=...`).
+   * O Joaju descompacta o arquivo em um workspace efêmero `/tmp/job_<id>/`, permitindo que o Pandoc e o Typst acessem os arquivos diretamente por caminho relativo, eliminando a necessidade de converter dados pesados para Base64. O diretório temporário é excluído automaticamente logo após a compilação.
 
 * **Respostas:**
 

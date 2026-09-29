@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - add canonical engines, zip workspace compilation and eliminate legacy tags
   - (render) adicionar motores openchemlib, openbabel e tabelas academicas booktabs
   - (render) adicionar motor pedtools, canonicalizar tags e suportar fontes remotas
   - (render) adicionar motores leves d2, graphviz, plantuml e padronizar kinship
