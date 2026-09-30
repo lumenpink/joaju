@@ -4,6 +4,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const cp = require('node:child_process');
 const path = require('node:path');
+const os = require('node:os');
 
 const {
   app,
@@ -11,6 +12,8 @@ const {
   preprocessDiagrams,
   preprocessChemistry,
   preprocessTables,
+  preprocessImages,
+  findImageInWorkspace,
   resolveExternalSource,
   parseTableData,
   renderSingleTable,
@@ -359,6 +362,43 @@ ColA, ColB
       assert.ok(result.includes('table.header([*ColA*], [*ColB*])'));
       assert.ok(result.includes('[1], [2]'));
       assert.ok(result.includes('Fonte do autor'));
+    }
+  );
+
+  await t.test(
+    'preprocessImages: normaliza wikilinks com underscores, dimensões e legendas',
+    async () => {
+      const md = `
+![[forest_plot_iniquidades_sc_2024.png]]
+![[figura_1.png|500]]
+![[figura_2.png|Legenda Detalhada do Gráfico]]
+`;
+      const result = await preprocessImages(md, 'test-img');
+      assert.ok(result.includes('![](forest_plot_iniquidades_sc_2024.png)'));
+      assert.ok(result.includes('![](figura_1.png){width=500pt}'));
+      assert.ok(result.includes('![Legenda Detalhada do Gráfico](figura_2.png)'));
+    }
+  );
+
+  await t.test(
+    'preprocessImages: mapeia imagens em subpastas de anexos quando workspaceDir fornecido',
+    async () => {
+      const tmpWs = fs.mkdtempSync(path.join(os.tmpdir(), 'ws_img_test_'));
+      fs.mkdirSync(path.join(tmpWs, 'attachments'), { recursive: true });
+      fs.writeFileSync(
+        path.join(tmpWs, 'attachments/forest_plot_iniquidades_sc_2024.png'),
+        'fake_png'
+      );
+
+      const md = `
+![[forest_plot_iniquidades_sc_2024.png]]
+![Legenda](forest_plot_iniquidades_sc_2024.png)
+`;
+      const result = await preprocessImages(md, 'test-ws-img', tmpWs);
+      assert.ok(result.includes('![](attachments/forest_plot_iniquidades_sc_2024.png)'));
+      assert.ok(result.includes('![Legenda](attachments/forest_plot_iniquidades_sc_2024.png)'));
+
+      fs.rmSync(tmpWs, { recursive: true, force: true });
     }
   );
 });
@@ -748,6 +788,68 @@ perfil: vancouver
       const pdfBytes = Buffer.from(await res.arrayBuffer());
       assert.ok(pdfBytes.toString().includes('%PDF-1.7 Mock ZIP PDF'));
       assert.ok(pandocWithResourcePath);
+
+      // Cleanup
+      fs.rmSync(srcDir, { recursive: true, force: true });
+      if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+    }
+  );
+
+  await t.test(
+    'POST /compile: compila pacote ZIP com wikilink de imagem contendo underscores',
+    async () => {
+      const srcDir = '/tmp/test_zip_img_underscores';
+      const zipPath = '/tmp/test_bundle_img.zip';
+      fs.mkdirSync(path.join(srcDir, 'attachments'), { recursive: true });
+
+      fs.writeFileSync(
+        path.join(srcDir, 'main.md'),
+        '# Artigo Underscores\n\n![[forest_plot_iniquidades_sc_2024.png]]\n'
+      );
+      fs.writeFileSync(
+        path.join(srcDir, 'attachments/forest_plot_iniquidades_sc_2024.png'),
+        'PNG_DATA'
+      );
+
+      originalExecSync(`cd "${srcDir}" && zip -q -r "${zipPath}" .`);
+
+      let processedMarkdownHasImage = false;
+      cp.execSync = (cmd) => {
+        if (cmd.startsWith('unzip')) {
+          return originalExecSync(cmd);
+        }
+        if (cmd.startsWith('pandoc')) {
+          const inMatch = cmd.match(/pandoc "([^"]+)"/);
+          if (inMatch && fs.existsSync(inMatch[1])) {
+            const inputMd = fs.readFileSync(inMatch[1], 'utf8');
+            if (inputMd.includes('attachments/forest_plot_iniquidades_sc_2024.png')) {
+              processedMarkdownHasImage = true;
+            }
+          }
+          const outMatch = cmd.match(/-o "([^"]+)"/);
+          if (outMatch) fs.writeFileSync(outMatch[1], '= Typst Output with Image');
+          return Buffer.from('');
+        }
+        if (cmd.startsWith('typst compile')) {
+          const pdfMatch = cmd.match(/"([^"]+\.pdf)"/);
+          if (pdfMatch) fs.writeFileSync(pdfMatch[1], '%PDF-1.7 Mock Image PDF');
+          return Buffer.from('');
+        }
+        return Buffer.from('');
+      };
+
+      const zipBuffer = fs.readFileSync(zipPath);
+      const res = await fetch(`${baseUrl}/compile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/zip' },
+        body: zipBuffer
+      });
+
+      assert.equal(res.status, 200);
+      assert.equal(res.headers.get('content-type'), 'application/pdf');
+      const pdfBytes = Buffer.from(await res.arrayBuffer());
+      assert.ok(pdfBytes.toString().includes('%PDF-1.7 Mock Image PDF'));
+      assert.ok(processedMarkdownHasImage);
 
       // Cleanup
       fs.rmSync(srcDir, { recursive: true, force: true });

@@ -2,8 +2,14 @@ const cp = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { parseHTML } = require('linkedom');
-const { Readability } = require('@mozilla/readability');
+let parseHTML = null;
+let Readability = null;
+try {
+  ({ parseHTML } = require('linkedom'));
+  ({ Readability } = require('@mozilla/readability'));
+} catch (e) {
+  // optional dependency
+}
 const uuid = require('uuid');
 
 /**

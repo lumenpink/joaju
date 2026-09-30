@@ -512,6 +512,140 @@ async function preprocessTables(markdown, sessionId, workspaceDir = null) {
   return modifiedMarkdown;
 }
 
+// --- Pré-processador 5: Imagens e Wikilinks do Obsidian ---
+function findImageInWorkspace(ref, workspaceDir) {
+  if (!workspaceDir || !ref) return null;
+  const cleanRef = ref.trim().replace(/^["']|["']$/g, '');
+  if (
+    cleanRef.startsWith('http://') ||
+    cleanRef.startsWith('https://') ||
+    cleanRef.startsWith('data:')
+  ) {
+    return null;
+  }
+
+  const resolvedWs = path.resolve(workspaceDir);
+
+  // 1. Caminho direto relativo ou absoluto
+  const directPath = path.resolve(workspaceDir, cleanRef);
+  if (directPath.startsWith(resolvedWs) && fs.existsSync(directPath)) {
+    return path.relative(resolvedWs, directPath);
+  }
+
+  // 2. Procura nas subpastas canônicas de anexos
+  const baseName = path.basename(cleanRef);
+  const commonFolders = ['attachments', 'anexos', '99_anexo', 'assets', 'images', 'img'];
+  for (const folder of commonFolders) {
+    const candidate = path.resolve(workspaceDir, folder, baseName);
+    if (candidate.startsWith(resolvedWs) && fs.existsSync(candidate)) {
+      return path.relative(resolvedWs, candidate);
+    }
+  }
+
+  // 3. Busca recursiva segura dentro do workspaceDir
+  const searchRecursive = (dir) => {
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isFile() && entry.name === baseName) {
+          return path.relative(resolvedWs, fullPath);
+        }
+        if (entry.isDirectory() && !entry.name.startsWith('.')) {
+          const found = searchRecursive(fullPath);
+          if (found) return found;
+        }
+      }
+    } catch (_) {}
+    return null;
+  };
+
+  return searchRecursive(resolvedWs);
+}
+
+async function preprocessImages(markdown, sessionId, workspaceDir = null) {
+  if (!markdown || typeof markdown !== 'string') return markdown;
+
+  let modifiedMarkdown = markdown;
+  let imgIndex = 0;
+
+  const resolveImageSource = async (ref) => {
+    const cleanRef = ref.trim().replace(/^["']|["']$/g, '');
+    if (cleanRef.startsWith('http://') || cleanRef.startsWith('https://')) {
+      try {
+        const response = await fetch(cleanRef, { signal: AbortSignal.timeout(10000) });
+        if (response.ok) {
+          const buffer = Buffer.from(await response.arrayBuffer());
+          const extMatch = cleanRef.match(/\.(png|jpe?g|gif|webp|svg)/i);
+          const ext = extMatch ? extMatch[1].toLowerCase() : 'png';
+          const localImgPath = path.join(
+            workspaceDir || os.tmpdir(),
+            `remote_img_${sessionId}_${imgIndex++}.${ext}`
+          );
+          fs.writeFileSync(localImgPath, buffer);
+          return workspaceDir ? path.relative(workspaceDir, localImgPath) : localImgPath;
+        }
+      } catch (err) {
+        console.warn(`[Joaju] Falha ao baixar imagem remota "${cleanRef}": ${err.message}`);
+      }
+      return cleanRef;
+    }
+
+    if (workspaceDir) {
+      const found = findImageInWorkspace(cleanRef, workspaceDir);
+      if (found) return found;
+    }
+
+    return cleanRef;
+  };
+
+  // 1. Normaliza Wikilinks do Obsidian: ![[imagem.png]] ou ![[imagem.png|legenda]] ou ![[imagem.png|400]]
+  const wikiRegex = /!\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]/g;
+  const wikiMatches = [...modifiedMarkdown.matchAll(wikiRegex)];
+  for (const match of wikiMatches) {
+    const fullMatch = match[0];
+    const rawRef = match[1];
+    const rawAlias = match[2];
+    const resolvedPath = await resolveImageSource(rawRef);
+
+    let replacement = `![](${resolvedPath})`;
+    if (rawAlias?.trim()) {
+      const trimmedAlias = rawAlias.trim();
+      const dimMatch = trimmedAlias.match(/^(\d+)(?:x\d+)?$/);
+      if (dimMatch) {
+        replacement = `![](${resolvedPath}){width=${dimMatch[1]}pt}`;
+      } else {
+        replacement = `![${trimmedAlias}](${resolvedPath})`;
+      }
+    }
+    modifiedMarkdown = modifiedMarkdown.replace(fullMatch, replacement);
+  }
+
+  // 2. Normaliza imagens Markdown padrão se o arquivo estiver em subpasta do workspace
+  if (workspaceDir) {
+    const mdImgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const mdMatches = [...modifiedMarkdown.matchAll(mdImgRegex)];
+    for (const match of mdMatches) {
+      const fullMatch = match[0];
+      const alt = match[1];
+      const rawRef = match[2];
+      const cleanRef = rawRef.trim().replace(/^["']|["']$/g, '');
+      if (
+        !cleanRef.startsWith('http://') &&
+        !cleanRef.startsWith('https://') &&
+        !cleanRef.startsWith('data:')
+      ) {
+        const found = findImageInWorkspace(cleanRef, workspaceDir);
+        if (found && found !== cleanRef) {
+          modifiedMarkdown = modifiedMarkdown.replace(fullMatch, `![${alt}](${found})`);
+        }
+      }
+    }
+  }
+
+  return modifiedMarkdown;
+}
+
 // --- Renderizadores Isolados para Preview Instantâneo ---
 function renderSingleKinship(rawContent, sessionId = 'preview') {
   const csvPath = `/tmp/ped_${sessionId}.csv`;
@@ -1138,6 +1272,7 @@ app.post('/compile', async (req, res) => {
     cleanMarkdown = await preprocessDiagrams(cleanMarkdown, id, workspaceDir);
     cleanMarkdown = await preprocessChemistry(cleanMarkdown, id, workspaceDir);
     cleanMarkdown = await preprocessTables(cleanMarkdown, id, workspaceDir);
+    cleanMarkdown = await preprocessImages(cleanMarkdown, id, workspaceDir);
 
     // Suporte genérico a blocos nativos: ```typst -> <typst>
     cleanMarkdown = cleanMarkdown.replace(/```typst\n([\s\S]*?)\n```/g, '$1');
@@ -1237,6 +1372,8 @@ module.exports = {
   preprocessDiagrams,
   preprocessChemistry,
   preprocessTables,
+  preprocessImages,
+  findImageInWorkspace,
   resolveExternalSource,
   parseTableData,
   renderSingleTable,
