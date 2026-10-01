@@ -206,7 +206,25 @@ graph TD
 ```
 ````
 
-### 4. Integração via Templater no Obsidian
+### 6. Inclusão de Gists do Fuxico (`gist`)
+
+Permite embutir código-fonte ou scripts analíticos (R, Python, Julia, SQL, etc.) hospedados como gists no Fuxico (`https://2lp.in/{slug}`) diretamente no texto renderizado, sem poluição visual ou duplicação no cofre:
+
+````markdown
+```gist
+%% url=https://2lp.in/abc123
+%% file=analise_sobrevivencia.R
+%% title="Script R: Curva de Sobrevivência Kaplan-Meier"
+```
+````
+
+* **Diretiva `%% url=` (Obrigatória):** URL do gist no Fuxico.
+* **Diretiva `%% file=` (Opcional):** Arquivo específico do gist multi-arquivo a ser extraído. Se omitido, busca o primeiro arquivo do repositório/gist.
+* **Diretiva `%% title=` (Opcional):** Legenda editorial associada ao código em formato de figura Typst.
+* **Cache em Memória:** As requisições de rede para o Fuxico são cacheadas em memória para evitar buscas redundantes durante re-compilações frequentes.
+* **Resiliência e Fallbacks:** Se o link estiver indisponível ou a rede falhar, o compilador insere um card de aviso estilizado com o link direto, sem interromper o pipeline acadêmico.
+
+### 7. Integração via Templater no Obsidian
 
 Para disparar a compilação via atalho de teclado:
 
