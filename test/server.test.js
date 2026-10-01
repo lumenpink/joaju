@@ -694,6 +694,39 @@ Texto do artigo.
     assert.ok(typstExecuted);
   });
 
+  await t.test(
+    'POST /compile: escapa caracteres soltos de menor que para evitar unclosed label no Typst',
+    async () => {
+      let capturedTypst = '';
+      cp.execSync = (cmd) => {
+        if (cmd.startsWith('pandoc')) {
+          const outMatch = cmd.match(/-o "([^"]+)"/);
+          if (outMatch)
+            fs.writeFileSync(outMatch[1], '= Teste\nIdade (<20, >=35) e label <legit-label>.');
+        } else if (cmd.startsWith('typst compile')) {
+          const mainMatch = cmd.match(/typst compile --root \/ "([^"]+)"/);
+          if (mainMatch) {
+            const mainContent = fs.readFileSync(mainMatch[1], 'utf8');
+            const incMatch = mainContent.match(/#include "([^"]+)"/);
+            if (incMatch) capturedTypst = fs.readFileSync(incMatch[1], 'utf8');
+          }
+          const pdfMatch = cmd.match(/"([^"]+\.pdf)"/);
+          if (pdfMatch) fs.writeFileSync(pdfMatch[1], '%PDF-1.4 Escaped');
+        }
+      };
+
+      const res = await fetch(`${baseUrl}/compile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown: '# Título\nIdade (<20, >=35) e label <legit-label>.' })
+      });
+
+      assert.equal(res.status, 200);
+      assert.ok(capturedTypst.includes('Idade (\\<20, >=35)'));
+      assert.ok(capturedTypst.includes('<legit-label>'));
+    }
+  );
+
   await t.test('POST /compile: extrai perfil vancouver do YAML frontmatter', async () => {
     let capturedCmd = '';
     cp.execSync = (cmd) => {

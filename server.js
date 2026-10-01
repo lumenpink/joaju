@@ -1287,7 +1287,9 @@ app.post('/compile', async (req, res) => {
 
     // Injeta suporte a réguas horizontais do Pandoc e função min no escopo do arquivo Typst
     if (fs.existsSync(tempTypstOutput)) {
-      const originalTypst = fs.readFileSync(tempTypstOutput, 'utf8');
+      let originalTypst = fs.readFileSync(tempTypstOutput, 'utf8');
+      // Escapa caracteres '<' que não compõem labels válidos do Typst para evitar 'unclosed label'
+      originalTypst = originalTypst.replace(/(?<!\\)<(?![a-zA-Z0-9_\-:]+>)/g, '\\<');
       const patchedTypst = `#let horizontalrule = line(length: 100%, stroke: 0.5pt + luma(180))\n#let min(a, b) = if type(a) == ratio { a } else if type(b) == ratio { b } else if type(a) == int { calc.min(a * 1pt, b) } else if type(b) == int { calc.min(a, b * 1pt) } else { calc.min(a, b) }\n${originalTypst}`;
       fs.writeFileSync(tempTypstOutput, patchedTypst);
     }
