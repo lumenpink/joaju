@@ -308,7 +308,7 @@ Recebe o conteúdo Markdown e compila para PDF acadêmico (Pandoc + Citeproc + T
    * **Payload:** Arquivo binário `.zip` contendo:
      * `main.md`: Artigo Markdown principal;
      * `attachments/`: Pasta contendo imagens referenciadas (`![[foto.png]]`, `![[imagem_com_underscore.png|500]]`, `![[foto.png|Legenda]]`), arquivos CSV (`%% src=...`) e arquivos químicos (`%% file=...`). O Joaju normaliza automaticamente wikilinks do Obsidian e imagens locais com caracteres especiais (`_`) para Typst nativo e formatação ABNT.
-   * O Joaju descompacta o arquivo em um workspace efêmero `/tmp/job_<id>/`, permitindo que o Pandoc e o Typst acessem os arquivos diretamente por caminho relativo, eliminando a necessidade de converter dados pesados para Base64. O diretório temporário é excluído automaticamente logo após a compilação.
+   * O Joaju descompacta o arquivo em um workspace efêmero `/tmp/job_<id>/`, permitindo que o Pandoc e o Typst acessem os arquivos diretamente por caminho relativo, eliminando a necessidade de converter dados pesados para Base64. O compilador Typst aplica saneamento automático de caracteres `<` isolados em textos e tabelas para prevenir falhas de `unclosed label`. O diretório temporário é excluído automaticamente logo após a compilação.
 
 * **Respostas:**
 
