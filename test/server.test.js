@@ -11,6 +11,7 @@ const {
   preprocessPedigrees,
   preprocessDiagrams,
   preprocessChemistry,
+  preprocessGists,
   preprocessTables,
   preprocessImages,
   findImageInWorkspace,
@@ -22,7 +23,9 @@ const {
   renderSinglePedigree,
   renderSingleKinship,
   renderSinglePedtools,
-  renderSingleMermaid
+  renderSingleMermaid,
+  buildGistRawUrl,
+  inferGistLang
 } = require('../server.js');
 
 const nativeFetch = globalThis.fetch;
@@ -962,5 +965,107 @@ perfil: vancouver
   await t.test('retorna 404 para rota ou arquivo estático inexistente', async () => {
     const res = await fetch(`${baseUrl}/nao-existe.html`);
     assert.equal(res.status, 404);
+  });
+});
+
+test('Pré-processador de Gists do Fuxico (preprocessGists)', async (t) => {
+  await t.test('buildGistRawUrl monta a URL correta com ou sem nome de arquivo', () => {
+    assert.equal(buildGistRawUrl('https://2lp.in/abc123/'), 'https://2lp.in/abc123/raw');
+    assert.equal(
+      buildGistRawUrl('https://2lp.in/abc123', 'analise.R'),
+      'https://2lp.in/abc123/raw/analise.R'
+    );
+  });
+
+  await t.test('inferGistLang mapeia extensões conhecidas para linguagens Typst', () => {
+    assert.equal(inferGistLang('script.R'), 'r');
+    assert.equal(inferGistLang('pipeline.py'), 'python');
+    assert.equal(inferGistLang('query.sql'), 'sql');
+    assert.equal(inferGistLang('desconhecido.xyz'), '');
+    assert.equal(inferGistLang(''), '');
+  });
+
+  await t.test('ignora blocos de código sem diretiva %% url=', async () => {
+    const md = '```gist\n%% file=teste.R\n```';
+    const res = await preprocessGists(md, 'session-test');
+    assert.equal(res, md);
+  });
+
+  await t.test(
+    'busca código remoto e gera bloco Typst estruturado com caption e link',
+    async () => {
+      let fetchCalled = 0;
+      const mockFetch = async (url) => {
+        fetchCalled++;
+        assert.equal(url, 'https://2lp.in/xyz987/raw/analise.R');
+        return {
+          ok: true,
+          text: async () => 'df <- read.csv("dados.csv")\nsummary(df)'
+        };
+      };
+
+      const md = `
+# Artigo
+\`\`\`gist
+%% url=https://2lp.in/xyz987
+%% file=analise.R
+%% title=Análise Descritiva de Dados
+\`\`\`
+Texto posterior.`;
+
+      const res = await preprocessGists(md, 'session-gist-1', null, mockFetch);
+      assert.equal(fetchCalled, 1);
+      assert.ok(res.includes('```{=typst}'));
+      assert.ok(res.includes('raw('));
+      assert.ok(res.includes('lang: "r"'));
+      assert.ok(res.includes('caption: [Análise Descritiva de Dados]'));
+      assert.ok(res.includes('https://2lp.in/xyz987'));
+    }
+  );
+
+  await t.test('utiliza cache em memória para chamadas subsequentes do mesmo gist', async () => {
+    let fetchCount = 0;
+    const mockFetch = async () => {
+      fetchCount++;
+      return {
+        ok: true,
+        text: async () => 'print("cached content")'
+      };
+    };
+
+    const md = '```gist\n%% url=https://2lp.in/cached-gist\n%% file=main.py\n```';
+    const res1 = await preprocessGists(md, 'session-gist-2', null, mockFetch);
+    const res2 = await preprocessGists(md, 'session-gist-2', null, mockFetch);
+
+    assert.equal(fetchCount, 1);
+    assert.equal(res1, res2);
+  });
+
+  await t.test('renderiza card de aviso sem abortar quando o fetch falha', async () => {
+    const mockFetch = async () => {
+      return {
+        ok: false,
+        status: 404
+      };
+    };
+
+    const md = '```gist\n%% url=https://2lp.in/invalido\n%% file=naoexiste.R\n```';
+    const res = await preprocessGists(md, 'session-gist-3', null, mockFetch);
+
+    assert.ok(res.includes('```{=typst}'));
+    assert.ok(res.includes('Gist indisponível'));
+    assert.ok(res.includes('https://2lp.in/invalido'));
+  });
+
+  await t.test('renderiza card de aviso sem abortar em caso de erro de rede', async () => {
+    const mockFetch = async () => {
+      throw new Error('Falha de conexão DNS/Timeout');
+    };
+
+    const md = '```gist\n%% url=https://2lp.in/timeout-gist\n```';
+    const res = await preprocessGists(md, 'session-gist-4', null, mockFetch);
+
+    assert.ok(res.includes('```{=typst}'));
+    assert.ok(res.includes('Gist indisponível'));
   });
 });

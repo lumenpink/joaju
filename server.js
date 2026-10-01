@@ -439,6 +439,196 @@ function renderSingleTable(rawContent) {
   return html;
 }
 
+// --- Pré-processador 3.5: Inclusão de Gists do Fuxico ---
+
+/**
+ * Cache em memória de conteúdo de gists para evitar fetches redundantes por sessão.
+ * Chave: `${url}|${file}` — Valor: string com o conteúdo ou null (falha).
+ */
+const _gistCache = new Map();
+
+/**
+ * Resolve a URL raw de um gist do Fuxico.
+ * Se `file` for especificado, usa `{url}/raw/{file}`; caso contrário `{url}/raw`.
+ *
+ * @param {string} baseUrl  - URL base do gist, ex.: https://2lp.in/abc123
+ * @param {string} file     - Nome do arquivo específico (opcional)
+ * @returns {string}
+ */
+function buildGistRawUrl(baseUrl, file) {
+  const base = baseUrl.replace(/\/+$/, '');
+  return file ? `${base}/raw/${encodeURIComponent(file)}` : `${base}/raw`;
+}
+
+/**
+ * Infere a linguagem de realce de sintaxe a partir da extensão do arquivo.
+ *
+ * @param {string} file  - Nome do arquivo ou URL, pode ser vazio
+ * @returns {string}     - Linguagem para Pandoc/Typst (ex.: 'r', 'python', '')
+ */
+function inferGistLang(file) {
+  if (!file) return '';
+  const ext = file.split('.').pop().toLowerCase();
+  const map = {
+    r: 'r',
+    rmd: 'r',
+    qmd: 'r',
+    py: 'python',
+    ipynb: 'python',
+    jl: 'julia',
+    sql: 'sql',
+    sh: 'bash',
+    bash: 'bash',
+    zsh: 'bash',
+    js: 'javascript',
+    ts: 'typescript',
+    mjs: 'javascript',
+    json: 'json',
+    yaml: 'yaml',
+    yml: 'yaml',
+    toml: 'toml',
+    md: 'markdown',
+    markdown: 'markdown',
+    tex: 'latex',
+    rs: 'rust',
+    go: 'go',
+    php: 'php',
+    c: 'c',
+    cpp: 'cpp',
+    h: 'c',
+    java: 'java',
+    kt: 'kotlin',
+    lua: 'lua',
+    typ: 'typst'
+  };
+  return map[ext] || '';
+}
+
+/**
+ * Pré-processador de blocos ```gist``` — busca o código-fonte do Fuxico e
+ * o transforma em bloco Typst (#raw) para PDF ou bloco de código Markdown
+ * anotado para HTML.
+ *
+ * Sintaxe no Markdown:
+ * ```gist
+ * %% url=https://2lp.in/{slug}
+ * %% file=script.R          (opcional — omitir para exibir primeiro arquivo)
+ * %% title=Legenda do bloco (opcional)
+ * ```
+ *
+ * Resiliência: se o fetch falhar, emite aviso no log e renderiza card de fallback
+ * sem abortar a compilação.
+ */
+async function preprocessGists(
+  markdown,
+  sessionId,
+  workspaceDir = null,
+  fetchFn = globalThis.fetch
+) {
+  const regex = /```gist\n([\s\S]*?)\n```/gi;
+  let match;
+  let modifiedMarkdown = markdown;
+
+  while ((match = regex.exec(markdown)) !== null) {
+    const rawBlock = match[1];
+
+    // --- Leitura de diretivas %%
+    const urlMatch = rawBlock.match(/%%\s*url=([^\s\n]+)/);
+    const fileMatch = rawBlock.match(/%%\s*file=([^\s\n]+)/);
+    const titleMatch = rawBlock.match(/%%\s*(?:title|titulo|caption)=(.+)/);
+
+    if (!urlMatch) {
+      console.warn('[Joaju/gist] Bloco gist sem diretiva %% url= — ignorado.');
+      continue;
+    }
+
+    const gistUrl = urlMatch[1].trim().replace(/^["']|["']$/g, '');
+    const gistFile = fileMatch ? fileMatch[1].trim().replace(/^["']|["']$/g, '') : '';
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    const lang = inferGistLang(gistFile);
+    const cacheKey = `${gistUrl}|${gistFile}`;
+
+    // --- Cache
+    let content;
+    if (_gistCache.has(cacheKey)) {
+      content = _gistCache.get(cacheKey);
+    } else {
+      const rawUrl = buildGistRawUrl(gistUrl, gistFile);
+      try {
+        const res = await fetchFn(rawUrl, { signal: AbortSignal.timeout(10000) });
+        content = res.ok ? await res.text() : null;
+        if (!res.ok) {
+          console.warn(`[Joaju/gist] Fetch falhou (${res.status}) para ${rawUrl}`);
+        }
+      } catch (err) {
+        console.warn(`[Joaju/gist] Erro de rede ao buscar gist: ${err.message}`);
+        content = null;
+      }
+      _gistCache.set(cacheKey, content);
+    }
+
+    let replacement;
+
+    if (content === null) {
+      // --- Fallback: card de aviso sem abortar
+      const displayUrl = gistFile ? `${gistUrl} (${gistFile})` : gistUrl;
+      replacement = `\`\`\`{=typst}
+#block(
+  fill: rgb("#fff3cd"),
+  stroke: 1pt + rgb("#856404"),
+  radius: 4pt,
+  inset: 10pt,
+  width: 100%
+)[
+  #text(weight: "bold")[⚠ Gist indisponível] \\
+  #link("${gistUrl}")[${escapeTypst(displayUrl)}]
+]
+\`\`\``;
+    } else {
+      // --- Renderização bem-sucedida
+      const label = gistFile || gistUrl.split('/').pop();
+      const langAttr = lang ? `, lang: "${lang}"` : '';
+      const captionBlock = title
+        ? `caption: [${escapeTypst(title)}],\n      supplement: [Código],`
+        : '';
+      const noteBlock = `#v(-4pt)\n  #align(left)[#text(size: 8pt)[_Fonte: #link("${gistUrl}")[${escapeTypst(label)}]_]]`;
+
+      replacement = `\`\`\`{=typst}
+#align(center)[
+  #block(width: 100%)[
+    #figure(
+      ${captionBlock}
+      raw(read("${label}") , block: true${langAttr})
+    )
+    ${noteBlock}
+  ]
+]
+\`\`\``;
+
+      // Para Typst, injeta o conteúdo via arquivo temporário na sessão
+      // (Pandoc/Typst não aceita raw() inline com strings longas seguramente)
+      // → embutimos como raw literal escapado
+      const escaped = content.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n');
+
+      replacement = `\`\`\`{=typst}
+#align(center)[
+  #block(width: 100%)[
+    #figure(
+      ${captionBlock}
+      raw("${escaped}", block: true${langAttr})
+    )
+    ${noteBlock}
+  ]
+]
+\`\`\``;
+    }
+
+    modifiedMarkdown = modifiedMarkdown.replace(match[0], replacement);
+  }
+
+  return modifiedMarkdown;
+}
+
 async function preprocessTables(markdown, sessionId, workspaceDir = null) {
   const regex = /```table\n([\s\S]*?)\n```/gi;
   let match;
@@ -1271,6 +1461,7 @@ app.post('/compile', async (req, res) => {
     let cleanMarkdown = await preprocessPedigrees(markdown, id, workspaceDir);
     cleanMarkdown = await preprocessDiagrams(cleanMarkdown, id, workspaceDir);
     cleanMarkdown = await preprocessChemistry(cleanMarkdown, id, workspaceDir);
+    cleanMarkdown = await preprocessGists(cleanMarkdown, id, workspaceDir);
     cleanMarkdown = await preprocessTables(cleanMarkdown, id, workspaceDir);
     cleanMarkdown = await preprocessImages(cleanMarkdown, id, workspaceDir);
 
@@ -1373,6 +1564,7 @@ module.exports = {
   preprocessPedigrees,
   preprocessDiagrams,
   preprocessChemistry,
+  preprocessGists,
   preprocessTables,
   preprocessImages,
   findImageInWorkspace,
@@ -1388,5 +1580,7 @@ module.exports = {
   renderSinglePlantuml,
   renderSingleD2,
   renderSingleMermaid,
+  buildGistRawUrl,
+  inferGistLang,
   unfurlUrl
 };
