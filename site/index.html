@@ -28,6 +28,39 @@
     <meta name="twitter:image" content="https://joaju.2lp.in/assets/og_preview.png">
 
     <link rel="stylesheet" href="style.css">
+
+  <style>
+    .site-footer {
+      border-top: 1px solid var(--border, #333);
+      padding: 2rem 1rem;
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .footer-canonical {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      align-items: center;
+      justify-content: center;
+    }
+    .footer-line-identity {
+      font-weight: 500;
+    }
+    .footer-line-metadata {
+      color: var(--text-muted, #888);
+      font-size: 0.8rem;
+    }
+    .site-footer a {
+      color: var(--accent, #ff79c6);
+      text-decoration: none;
+    }
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+
 </head>
 <body>
     <header class="navbar">
@@ -169,12 +202,16 @@ id,pai,mae,sex,fenotipo,label
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="footer-container">
-            <p>Joaju • Padrão Técnico <strong>GOST v1.0.0-draft</strong> (Perfil Lumen) • Licença Apache-2.0</p>
-            <p>Hospedado na borda via Cloudflare Workers em <a href="https://joaju.2lp.in/">joaju.2lp.in</a></p>
-        </div>
-    </footer>
+    <footer class="site-footer">
+    <div class="footer-canonical">
+      <div class="footer-line footer-line-identity">
+        Orgulhosamente produzido por uma <a href="https://travesti.2lp.in/pt/" target="_blank" rel="noopener">travesti latina</a> 🏳️‍⚧️ :)
+      </div>
+      <div class="footer-line footer-line-metadata">
+        joaju v0.1.0-dev.26+20260929.b7d8e3f • por <a href="https://lumen.pink" target="_blank" rel="noopener">Lumen Pink</a> • Brasil 🇧🇷 • <a href="LICENSE" target="_blank" rel="noopener">Apache-2.0</a>
+      </div>
+    </div>
+  </footer>
 
     <script src="app.js"></script>
 </body>
