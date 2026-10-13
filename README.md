@@ -206,17 +206,17 @@ id,pai,mae,sex,fenotipo,proband,label
 Transforma dados CSV em tabelas tipográficas conforme ABNT NBR 14724 e APA:
 
 ```table
-%% caption="Distribuição Fenotípica e Frequências Observadas"
+%% caption="Segregação Fenotípica e Genotípica na Geração F2 de Ervilhas (Pisum sativum)"
 %% align=l, c, c, r
-%% note="Fonte: Elaboração própria com base nos prontuários ambulatoriais (2026)."
-Fenótipo Observado, Genótipo Provável, Casos (N), Frequência (%)
-Castanho Normal, $B B$, 14, 35.0%
-Castanho Heterozigoto, $B b$, 20, 50.0%
-Olhos Claros, $b b$, 6, 15.0%
+%% note="Fonte: Gregor Mendel, Versuche über Pflanzen-Hybriden (1866)."
+Fenótipo Observado, Genótipo Provável, Contagem (N), Proporção Observada
+Sementes Lisas (Dominante), $R R$ / $R r$, 5474, 74.74% (aprox. 3/4)
+Sementes Rugosas (Recessivo), $r r$, 1850, 25.26% (aprox. 1/4)
+Total Consolidado, -, 7324, 100.00% (3 : 1)
 ```
 
 **Resultado Pré-executado:**
-![Resultado table](site/assets/exemplos/table_exemplo.png)
+![Resultado table](site/assets/exemplos/table_mendel.png)
 
 #### 3.4. Química Estrutural 2D (`openchemlib` e `openbabel`)
 
@@ -224,12 +224,13 @@ Renderização vetorial SVG de estruturas químicas a partir de notação SMILES
 
 ```openchemlib
 %% layout.width=45% layout.max_width=300pt
-%% title="Molécula de Ácido Acetilsalicílico (Aspirina)"
-CC(=O)Oc1ccccc1C(=O)O
+%% title="Estrutura do 17β-Estradiol (Hormônio Estrogênio)"
+%% layout.width=50% layout.max_width=350pt
+C[C@]12CC[C@@H]3c4ccc(O)cc4CC[C@H]3[C@@H]1CC[C@@H]2O
 ```
 
 **Resultado Pré-executado:**
-![Resultado openchemlib](site/assets/exemplos/quimica_aspirina.png)
+![Resultado openchemlib](site/assets/exemplos/quimica_estradiol.png)
 
 #### 3.5. Diagramas Técnicos (`d2`, `mermaid`, `plantuml`, `graphviz`)
 
