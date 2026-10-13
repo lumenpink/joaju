@@ -75,6 +75,7 @@ if (!is.null(target_aff_col)) {
 }
 
 # 5. Relações de Gêmeos
+ped_relation <- NULL
 if ("gemeo_com" %in% names(df) && any(!is.na(df$gemeo_com) & df$gemeo_com != "" & df$gemeo_com != "0")) {
     rel_rows <- list()
     for (i in 1:nrow(df)) {
@@ -90,7 +91,7 @@ if ("gemeo_com" %in% names(df) && any(!is.na(df$gemeo_com) & df$gemeo_com != "" 
     }
     if (length(rel_rows) > 0) {
         rel_mat <- do.call(rbind, rel_rows)
-        df$relation <- matrix(c(
+        ped_relation <- matrix(c(
             match(rel_mat[, 1], df$id),
             match(rel_mat[, 2], df$id),
             as.numeric(rel_mat[, 3])
@@ -107,7 +108,7 @@ ped_args <- list(
 )
 if (!is.null(df$affected)) ped_args$affected <- df$affected
 if (!is.null(df$status))   ped_args$status   <- as.numeric(df$status)
-if (!is.null(df$relation)) ped_args$relation <- df$relation
+if (!is.null(ped_relation)) ped_args$relation <- ped_relation
 if ("famid" %in% names(df)) ped_args$famid   <- df$famid
 
 ped <- do.call(pedigree, ped_args)
