@@ -8,6 +8,11 @@ test('Conformidade GOST: Arquitetura de Navegação e Usabilidade do Site', asyn
   const siteDir = path.join(rootDir, 'site');
   const motoresDir = path.join(siteDir, 'motores');
 
+  const rawVersion = fs.readFileSync(path.join(rootDir, 'VERSION'), 'utf8').trim();
+  const shortVersion = rawVersion.includes('+') ? rawVersion.split('+')[0] : rawVersion;
+  const expectedBadge = `v${shortVersion}</span>`;
+  const expectedFooter = `joaju v${rawVersion}`;
+
   const motores = [
     'pedtools.html',
     'kinship2.html',
@@ -28,7 +33,7 @@ test('Conformidade GOST: Arquitetura de Navegação e Usabilidade do Site', asyn
         html.includes('<a href="#" class="brand">'),
       'Brand na home deve ser link navegável'
     );
-    assert.ok(html.includes('v0.1.0</span>'), 'Brand deve exibir versão v0.1.0');
+    assert.ok(html.includes(expectedBadge), `Brand deve exibir versão ${expectedBadge}`);
     assert.ok(html.includes('href="#motores">Motores'), 'Navbar deve ter link para Motores');
     assert.ok(html.includes('href="#perfis">Perfis'), 'Navbar deve ter link para Perfis');
     assert.ok(
@@ -36,14 +41,18 @@ test('Conformidade GOST: Arquitetura de Navegação e Usabilidade do Site', asyn
       'Navbar deve ter link para Guia Rápido'
     );
     assert.ok(html.includes('href="#api">API Local'), 'Navbar deve ter link para API Local');
+    assert.ok(
+      html.includes(expectedFooter),
+      `Rodapé deve conter versão completa ${expectedFooter}`
+    );
   });
 
   await t.test('todas as páginas de motores possuem cabeçalho uniforme sem estilos inline', () => {
     for (const file of motores) {
       const html = fs.readFileSync(path.join(motoresDir, file), 'utf8');
       assert.ok(
-        html.includes('<a href="../index.html" class="brand">') && html.includes('v0.1.0</span>'),
-        `${file} deve possuir brand canônica apontando para ../index.html com badge v0.1.0`
+        html.includes('<a href="../index.html" class="brand">') && html.includes(expectedBadge),
+        `${file} deve possuir brand canônica apontando para ../index.html com badge ${expectedBadge}`
       );
       assert.ok(
         !html.includes(
@@ -58,6 +67,10 @@ test('Conformidade GOST: Arquitetura de Navegação e Usabilidade do Site', asyn
       assert.ok(
         html.includes('href="../index.html#perfis">Perfis</a>'),
         `${file} deve ter link para Perfis na navbar`
+      );
+      assert.ok(
+        html.includes(expectedFooter),
+        `${file} rodapé deve conter versão completa ${expectedFooter}`
       );
     }
   });
