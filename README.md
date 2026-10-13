@@ -33,8 +33,8 @@ flowchart TD
 
         subgraph Preprocess [Pré-processamento Dinâmico]
             direction LR
-            H_BLK["```kinship2 / ```pedtools"] -->|CSV + Diretivas %%| R_ENG[Rscript pedtools / kinship2]
-            M_BLK["```mermaid"] -->|Código + Diretivas %%| KRK[Kroki Gateway + Chromium Headless]
+            H_BLK["Bloco kinship2 / pedtools"] -->|CSV + Diretivas %%| R_ENG[Rscript pedtools / kinship2]
+            M_BLK["Bloco mermaid"] -->|Código + Diretivas %%| KRK[Kroki Gateway + Chromium Headless]
             R_ENG -->|Vetor SVG| TYP_INJ1[Injeção Typst Raw Block]
             KRK -->|PNG Alta Resolução| TYP_INJ2[Injeção Typst Raw Block]
         end
@@ -105,124 +105,202 @@ docker compose up -d --build
 O orquestrador estará ativo em `http://localhost:3000`.
 
 ## ✍️ Guia de Uso no Obsidian
-
-### 1. Frontmatter (YAML)
-
-Defina o padrão de citação no cabeçalho da nota. O Joaju selecionará o arquivo `.csl` correspondente em `/data`:
-
+ 
+### 1. Frontmatter (YAML) e Perfis Tipográficos Suportados
+ 
+O Joaju oferece suporte a três perfis tipográficos oficiais configuráveis no cabeçalho YAML da nota:
+ 
 ```yaml
 ---
-titulo: Análise Genético-Clínica da Linhagem Familiar
-autor: Dra. Lumen
-perfil: vancouver # Opções: 'vancouver' ou 'abnt'
+titulo: Elaboração de Heredograma Familiar e Análise Genético-Clínica
+subtitulo: Estudo de Caso Ambulatorial e Herança Autossômica Recessiva
+autor: Equipe de Genética Médica
+instituicao: Universidade Federal de Santa Catarina
+local: Florianópolis
+ano: 2026
+perfil: trabalho-ufsc # Opções: 'trabalho-ufsc', 'abnt' ou 'vancouver'
 ---
 ```
+ 
+#### 📚 Comparativo de Perfis de Compilação
+ 
+| Perfil (`perfil:`) | Finalidade e Descrição | Regras Tipográficas / Template | Citação / CSL | Variáveis Suportadas no YAML |
+|---|---|---|---|---|
+| **`trabalho-ufsc`** | Trabalhos acadêmicos, relatórios e monografias da UFSC | Capa institucional automática, folha de rosto, margens 3cm/2cm, paginação a partir da folha 2 | `trabalho-ufsc.csl` (ABNT/UFSC) | `titulo`, `subtitulo`, `autor`, `instituicao`, `local`, `ano`, `fonte`, `tamanho` |
+| **`abnt`** | Artigos científicos gerais em conformidade com ABNT NBR 14724 | Margens ABNT (sup./esq.: 3cm, inf./dir.: 2cm), espaçamento 1.5, numeração NBR 6024 | `abnt.csl` (Associação Brasileira de Normas Técnicas) | `titulo`, `autor`, `subtitulo`, `fonte`, `tamanho` |
+| **`vancouver`** | Artigos e relatórios na área biomédica e da saúde | Estilo numérico internacional biomédico, referências ordenadas por citação no texto | `vancouver.csl` (ICMJE / NLM) | `titulo`, `autor`, `subtitulo`, `fonte`, `tamanho` |
+ 
+#### ⚙️ Dicionário de Variáveis do YAML
+ 
+* **`perfil`**: Identificador do perfil (`trabalho-ufsc`, `abnt` ou `vancouver`). Padrão: `abnt`.
+* **`titulo`**: Título principal da publicação ou trabalho acadêmico.
+* **`subtitulo`**: Subtítulo opcional (renderizado após dois-pontos ou abaixo do título conforme o perfil).
+* **`autor`**: Nome do autor, discente ou autores do documento.
+* **`instituicao`**: (Específico de `trabalho-ufsc`) Nome da universidade, centro e curso para a capa padronizada.
+* **`local`**: (Específico de `trabalho-ufsc`) Cidade da instituição (ex.: `Florianópolis`).
+* **`ano`**: (Específico de `trabalho-ufsc`) Ano da entrega acadêmica (ex.: `2026`).
+* **`fonte`**: Família tipográfica do documento Typst (padrão: `Liberation Sans`).
+* **`tamanho`**: Tamanho do corpo de texto principal (padrão: `12pt`).
+ 
+---
+ 
+### 2. Catálogo de Motores & Módulos Suportados
+ 
+O Joaju inclui motores especializados para diagramação científica, heredogramas clínicos, química estrutural e tabelas acadêmicas. A documentação completa de cada motor com exemplos está disponível no site [joaju.2lp.in](https://joaju.2lp.in/#motores) e no cofre do Obsidian (`00_meta/joaju/`).
+ 
+| Motor | Finalidade | Diretivas Joaju (`%%`) | Parâmetros do Motor Nativo / R | Documentação Completa |
+|---|---|---|---|---|
+| **`pedtools`** | **Principal:** Heredogramas clínicos modernos (pedsuite R) | `layout.width`, `layout.max_width`, `src`/`file` | `cex`, `symbolsize`, `foldLabs`, `margins`, `addSpace`, `col`, `lwd`, `lty`, `fill`, `plot_width`, `plot_height`, `legend`, `legend.type` | [pedtools.html](https://joaju.2lp.in/motores/pedtools.html) |
+| **`kinship2`** | **Legado:** Heredogramas clínicos em phase-out | `layout.width`, `layout.max_width`, `src`/`file` | `cex`, `symbolsize`, `branch`, `density`, `angle`, `col`, `lwd`, `lty`, `plot_width`, `plot_height`, `legend`, `legend.type` | [kinship2.html](https://joaju.2lp.in/motores/kinship2.html) |
+| **`table`** | Tabelas acadêmicas ABNT NBR 14724 e APA | `caption`/`title`, `note`/`fonte`, `align`, `columns`, `layout.width`, `src`/`file` | - | [table.html](https://joaju.2lp.in/motores/table.html) |
+| **`openchemlib`** | Química estrutural 2D via SMILES | `title`, `layout.width`, `layout.max_width`, `width`, `height`, `file`/`src` | - | [quimica.html](https://joaju.2lp.in/motores/quimica.html) |
+| **`openbabel`** | Química estrutural 2D via MOL/SDF | `title`, `layout.width`, `layout.max_width`, `file`/`src` | - | [quimica.html](https://joaju.2lp.in/motores/quimica.html) |
+| **`mermaid`** | Fluxogramas, sequências, Gantt via Kroki | `layout.width`, `layout.max_width`, `src`/`file` | - | [mermaid.html](https://joaju.2lp.in/motores/mermaid.html) |
+| **`d2`** | Diagramação declarativa moderna de sistemas | `layout.width`, `layout.max_width`, `src`/`file` | - | [d2.html](https://joaju.2lp.in/motores/d2.html) |
+| **`plantuml`** | Diagramas UML e engenharia de software | `layout.width`, `layout.max_width`, `src`/`file` | - | [plantuml.html](https://joaju.2lp.in/motores/plantuml.html) |
+| **`graphviz`** | Grafos e redes em linguagem DOT | `layout.width`, `layout.max_width`, `src`/`file` | - | [graphviz.html](https://joaju.2lp.in/motores/graphviz.html) |
+| **`gist`** | Inclusão de scripts analíticos externos | `url`, `file`, `title` | - | [gist.html](https://joaju.2lp.in/motores/gist.html) |
 
-### 2. Heredogramas Clínicos (`pedtools` e `kinship2`)
+---
 
-O Joaju oferece suporte a dois motores especializados em genética clínica:
+### 3. Detalhamento dos Motores e Exemplos Práticos
 
-* **`pedtools` (Recomendado):** Padrão moderno do ecossistema pedsuite em R, com suporte robusto a fundadores múltiplos, casamentos consanguíneos e formatação padronizada.
-* **`kinship2`:** Motor de heredogramas clínicos baseado no pacote `kinship2` em R.
+#### 3.1. Heredogramas Clínicos (`pedtools` - Recomendado)
 
-#### Exemplo Completo com `pedtools`
-
-````markdown
-### Análise Genealógica da Linhagem
+O motor `pedtools` padroniza árvores genealógicas com auto-dimensionamento vertical proporcional às gerações, divisão perfeita de heterozigotos (*half-fill*), marcação de probanda com respiro e legendas integradas.
 
 ```pedtools
-%% layout.width=85% layout.max_width=520pt
-%% title="Linhagem Familiar - Fibrose Cística"
-id,   fid,  mid,  sex, aff
-I:1,    0,    0,    1,   1
-I:2,    0,    0,    2,   1
-II:1, I:1,  I:2,    1,   2
-II:2, I:1,  I:2,    2,   1
+%% layout.width=95% layout.max_width=720pt cex=0.85 symbolsize=1.25 legend=c("Normal (M)","Normal (F)","Afetado (M)","Afetada (F)","Probanda") legend.type=c("sq_empty","circ_empty","sq_solid","circ_solid","proband")
+id,pai,mae,sex,fenotipo,proband,label
+1,0,0,M,wt,0,I-1 [Normal]
+2,0,0,F,afetado,0,I-2 [Afetada]
+3,1,2,M,het,0,II-1 [Portador]
+4,1,2,F,afetado,1,II-2 [Afetada]
+5,1,2,M,wt,0,II-3 [Normal]
 ```
-````
 
-#### Importação de Dados Externos (`%% src=` ou `%% file=`)
+**Resultado Pré-executado:**
+![Resultado pedtools](site/assets/exemplos/pedtools_g2.png)
 
-Você pode separar os dados genealógicos do arquivo Markdown, referenciando arquivos locais anexos ou URLs remotas:
+* **Colunas CSV**: `id`, `pai` (ou `fid`), `mae` (ou `mid`), `sex` (`M`/`F`/`1`/`2`), `fenotipo` (`wt`, `het`, `afetado`, `?`), `proband` (`1`/`0`), `label` (suporta `\n` via colchetes), `status` (`1`/`falecido`).
+* **Tipos de Legenda**: `sq_empty`, `circ_empty`, `sq_half`, `circ_half`, `sq_solid`, `circ_solid`, `suspect`, `proband`.
 
-````markdown
-```pedtools
-%% src=attachments/familia_silva.csv
-%% layout.width=80%
+#### 3.2. Heredogramas Legado (`kinship2` - Phase-out)
+
+Permanece no Joaju para compatibilidade com notas antigas:
+
+```kinship2
+%% layout.width=90% layout.max_width=600pt cex=0.88 symbolsize=2.85 legend=c("Normal (M)","Portadora (F)","Afetado (M)","Probanda") legend.type=c("sq_empty","circ_half","sq_solid","proband")
+id,pai,mae,sex,fenotipo,proband,label
+1,0,0,M,wt,0,I.1
+2,0,0,F,het,0,I.2
+3,1,2,M,afetado,1,II.1 [Afetado]
+4,1,2,F,wt,0,II.2 [Normal]
 ```
-````
 
-### 3. Química Estrutural 2D (`openchemlib` e `openbabel`)
+**Resultado Pré-executado:**
+![Resultado kinship2](site/assets/exemplos/kinship2_exemplo.png)
 
-Renderize estruturas moleculares 2D em SVG vetorial de alta resolução a partir de notação SMILES, fórmulas ou arquivos MOL/SDF:
+#### 3.3. Tabelas Acadêmicas (`table`)
 
-````markdown
+Transforma dados CSV em tabelas tipográficas conforme ABNT NBR 14724 e APA:
+
+```table
+%% caption="Distribuição Fenotípica e Frequências Observadas"
+%% align=l, c, c, r
+%% note="Fonte: Elaboração própria com base nos prontuários ambulatoriais (2026)."
+Fenótipo Observado, Genótipo Provável, Casos (N), Frequência (%)
+Castanho Normal, $B B$, 14, 35.0%
+Castanho Heterozigoto, $B b$, 20, 50.0%
+Olhos Claros, $b b$, 6, 15.0%
+```
+
+**Resultado Pré-executado:**
+![Resultado table](site/assets/exemplos/table_exemplo.png)
+
+#### 3.4. Química Estrutural 2D (`openchemlib` e `openbabel`)
+
+Renderização vetorial SVG de estruturas químicas a partir de notação SMILES ou arquivos MOL:
+
 ```openchemlib
+%% layout.width=45% layout.max_width=300pt
 %% title="Molécula de Ácido Acetilsalicílico (Aspirina)"
 CC(=O)Oc1ccccc1C(=O)O
 ```
-````
 
-Também suporta referência a arquivos de moléculas na pasta de anexos:
+**Resultado Pré-executado:**
+![Resultado openchemlib](site/assets/exemplos/quimica_aspirina.png)
 
-````markdown
-```openchemlib
-%% file=attachments/cafeina.mol
-```
-````
+#### 3.5. Diagramas Técnicos (`d2`, `mermaid`, `plantuml`, `graphviz`)
 
-### 4. Tabelas Acadêmicas (`table`)
-
-Transforma arquivos CSV ou dados tabulares em tabelas com tipografia acadêmica estrita (estilo APA/ABNT com réguas horizontais superior, intermediária e inferior, e alinhamento numérico):
-
-````markdown
-```table
-%% caption="Resultados dos Grupos de Teste Clínico"
-%% src=attachments/tabela_resultados.csv
-```
-````
-
-### 5. Diagramas Técnicos (`d2`, `plantuml`, `graphviz`, `mermaid`)
-
-Suporte completo a diagramas arquiteturais e de fluxo sem injeção de HTML no editor:
-
-````markdown
+##### Diagrama D2
 ```d2
-%% width=75%
+%% width=75% max-width=500pt
 coleta: Coleta de Sangue -> sequenciamento: Sequenciamento NGS
 sequenciamento -> analise: Análise Bioinformática
 analise -> laudo: Laudo Médico
 ```
-````
 
-````markdown
+**Resultado Pré-executado:**
+![Resultado d2](site/assets/exemplos/d2_exemplo.png)
+
+##### Diagrama Mermaid
 ```mermaid
-%% width=75% max-width=500pt
+%% width=80% max-width=550pt
 graph TD
     A[Coleta de Amostra] --> B[Sequenciamento NGS]
     B --> C{Variante Patogênica?}
     C -->|Sim| D[Aconselhamento Genético]
     C -->|Não| E[Seguimento Clínico]
 ```
-````
 
-### 6. Inclusão de Gists do Fuxico (`gist`)
+**Resultado Pré-executado:**
+![Resultado mermaid](site/assets/exemplos/mermaid_exemplo.png)
 
-Permite embutir código-fonte ou scripts analíticos (R, Python, Julia, SQL, etc.) hospedados como gists no Fuxico (`https://2lp.in/{slug}`) diretamente no texto renderizado, sem poluição visual ou duplicação no cofre:
-
-````markdown
-```gist
-%% url=https://2lp.in/abc123
-%% file=analise_sobrevivencia.R
-%% title="Script R: Curva de Sobrevivência Kaplan-Meier"
+##### Diagrama PlantUML
+```plantuml
+@startuml
+skinparam monochrome true
+skinparam defaultFontName "Liberation Sans"
+autonumber
+Médico -> Joaju: Submete Markdown
+Joaju -> Kroki: Renderiza diagramas
+Joaju -> Pandoc: Resolve referências (.bib)
+Joaju -> Typst: Compila PDF final
+Joaju --> Médico: Retorna PDF ABNT/Vancouver
+@enduml
 ```
-````
 
-* **Diretiva `%% url=` (Obrigatória):** URL do gist no Fuxico.
-* **Diretiva `%% file=` (Opcional):** Arquivo específico do gist multi-arquivo a ser extraído. Se omitido, busca o primeiro arquivo do repositório/gist.
-* **Diretiva `%% title=` (Opcional):** Legenda editorial associada ao código em formato de figura Typst.
-* **Cache em Memória:** As requisições de rede para o Fuxico são cacheadas em memória para evitar buscas redundantes durante re-compilações frequentes.
-* **Resiliência e Fallbacks:** Se o link estiver indisponível ou a rede falhar, o compilador insere um card de aviso estilizado com o link direto, sem interromper o pipeline acadêmico.
+**Resultado Pré-executado:**
+![Resultado plantuml](site/assets/exemplos/plantuml_exemplo.png)
+
+##### Grafo Graphviz DOT
+```graphviz
+digraph RedeGenica {
+    rankdir=LR;
+    node [shape=box, style=rounded, fontname="Liberation Sans"];
+    TP53 -> MDM2 [label="regula"];
+    MDM2 -> TP53 [label="inibe", style=dashed];
+    TP53 -> CDKN1A [label="induz"];
+    CDKN1A -> "Parada do Ciclo";
+}
+```
+
+**Resultado Pré-executado:**
+![Resultado graphviz](site/assets/exemplos/graphviz_exemplo.png)
+
+#### 3.6. Inclusão de Scripts Analíticos (`gist`)
+
+Embutimento resiliente de scripts computacionais (R, Python, Julia, SQL) hospedados externamente:
+
+```gist
+%% url=https://gist.github.com/exemplo/calculo_frequencias
+%% file=calculo_frequencias.R
+%% title="Script R: Cálculo de Frequências Alélicas de Hardy-Weinberg"
+```
+
+**Resultado Pré-executado:**
+![Resultado gist](site/assets/exemplos/gist_exemplo.png)
 
 ### 7. Integração via Templater no Obsidian
 

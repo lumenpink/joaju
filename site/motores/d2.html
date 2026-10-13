@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor d2 — Diagramação Declarativa Moderna | Joaju</title>
+    <meta name="description" content="Documentação do motor d2 no Joaju: sintaxe declarativa para arquitetura de sistemas, topologias de microsserviços e diretivas de escala.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="logo-icon">📐</span>
+                    <span class="brand-name">Joaju</span>
+                </a>
+                <span class="badge">d2</span>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <nav class="breadcrumb">
+            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>d2</strong>
+        </nav>
+
+        <section class="section">
+            <div class="hero-badge">ARQUITETURA DE SISTEMAS</div>
+            <h1>Motor d2 — Diagramação Declarativa Moderna</h1>
+            <p>O motor <code>d2</code> oferece uma das linguagens mais elegantes e limpas para desenho de arquiteturas de sistemas, topologias de microsserviços e pipelines analíticos. Ele compila código declarativo em gráficos vetoriais SVG de alta nitidez.</p>
+
+            <h2>⚙️ Diretivas de Configuração (%%)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Diretiva</th>
+                        <th>Sinônimos</th>
+                        <th>Tipo</th>
+                        <th>Padrão</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>layout.width</code></td>
+                        <td><code>width</code></td>
+                        <td>String</td>
+                        <td><code>75%</code></td>
+                        <td>Largura do diagrama no corpo da página (ex.: <code>80%</code>, <code>12cm</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>layout.max_width</code></td>
+                        <td><code>max-width</code></td>
+                        <td>String</td>
+                        <td><code>500pt</code></td>
+                        <td>Largura máxima em pontos tipográficos.</td>
+                    </tr>
+                    <tr>
+                        <td><code>src</code></td>
+                        <td><code>file</code></td>
+                        <td>String</td>
+                        <td>-</td>
+                        <td>Importa o código D2 a partir de arquivo <code>.d2</code> anexo.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🧪 Exemplos Práticos</h2>
+
+            <h3>1. Pipeline de Dados Clínicos</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (d2 pipeline)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```d2
+%% width=80% max-width=520pt
+coleta: Coleta de Sangue Periférico {
+  shape: oval
+}
+extracao: Extração Automatizada de DNA
+ngs: Sequenciamento NovaSeq 6000 {
+  shape: cylinder
+}
+bioinfo: Pipeline Bioinformático (GATK / Joaju) {
+  shape: rectangle
+}
+laudo: Laudo Clínico Final {
+  shape: document
+}
+
+coleta -> extracao: Envio Refrigerado
+extracao -> ngs: Amostra QC Aprovada
+ngs -> bioinfo: Arquivos FASTQ brutos
+bioinfo -> laudo: Variantes Filtradas (VCF)
+```</code></pre>
+            </div>
+
+            <h3>2. Arquitetura em Camadas com Contêineres</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (d2 containers)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```d2
+%% width=85% max-width=580pt
+frontend: Camada de Apresentação {
+  obsidian: Obsidian Vault (Markdown)
+  templater: Templater Hotkey
+  obsidian -> templater: Disparo Ctrl+Alt+B
+}
+
+backend: Servidor Local Joaju {
+  router: Express Gateway (:3000)
+  preprocessor: Pré-processador Dinâmico
+  r_engine: Rscript (Pedtools)
+  kroki: Kroki Multi-engine
+
+  router -> preprocessor: Parse de Diretivas %%
+  preprocessor -> r_engine: Tabelas Clínicas
+  preprocessor -> kroki: Diagramas D2/Mermaid
+}
+
+compilador: Núcleo Tipográfico {
+  pandoc: Pandoc Citeproc (Zotero)
+  typst: Typst Compiler (ABNT NBR 14724)
+  pandoc -> typst: AST Estruturada
+}
+
+frontend.templater -> backend.router: POST /compile (JSON)
+backend.preprocessor -> compilador.pandoc: Markdown Normalizado
+compilador.typst -> frontend.obsidian: Buffer Binário PDF
+```</code></pre>
+            </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/d2_exemplo.png" alt="Resultado d2" loading="lazy"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-canonical">
+            <div class="footer-line footer-line-identity">
+                Documentação Oficial e Repositório Aberto Joaju
+            </div>
+            <div class="footer-line footer-line-metadata">
+                Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="../LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../app.js"></script>
+</body>
+</html>

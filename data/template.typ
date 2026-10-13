@@ -34,7 +34,7 @@
   set par(
     justify: true,
     leading: 0.65em,
-    first-line-indent: 1.25cm
+    first-line-indent: (amount: 1.25cm, all: true)
   )
 
   // 3. Hierarquia de Títulos (NBR 6024)

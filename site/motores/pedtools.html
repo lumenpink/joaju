@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor pedtools — Heredogramas Clínicos | Joaju</title>
+    <meta name="description" content="Documentação completa do motor pedtools no Joaju: parâmetros de layout, opções repassadas ao R pedtools, half-fill e exemplos práticos.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="logo-icon">📐</span>
+                    <span class="brand-name">Joaju</span>
+                </a>
+                <span class="badge">pedtools</span>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <nav class="breadcrumb">
+            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>pedtools</strong>
+        </nav>
+
+        <section class="section">
+            <div class="hero-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">MOTOR PRINCIPAL RECOMENDADO</div>
+            <h1>Motor pedtools — Heredogramas Clínicos</h1>
+            <p>O motor <code>pedtools</code> é o padrão moderno do Joaju para produção de árvores genealógicas clínicas em conformidade com as diretrizes da <em>National Society of Genetic Counselors</em> (NSGC). Ele implementa auto-dimensionamento vertical proporcional ao número de gerações, representação de heterozigotos divididos ao meio (<em>half-fill</em>), probanda com folga geométrica e legendas em polegadas físicas.</p>
+
+            <div class="callout-info">
+                <strong>Dica de Uso:</strong> Utilize blocos com delimitador <code>```pedtools</code> em suas notas Markdown no Obsidian. O Joaju compilará o gráfico vetorial SVG e o incluirá no PDF Typst automaticamente.
+            </div>
+
+            <h2>📋 Estrutura da Tabela de Entrada (CSV)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Coluna</th>
+                        <th>Sinônimos</th>
+                        <th>Obrigatória</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>-</td>
+                        <td><strong>Sim</strong></td>
+                        <td>Identificador unívoco do indivíduo (número ou código textual).</td>
+                    </tr>
+                    <tr>
+                        <td><code>pai</code></td>
+                        <td><code>fid</code>, <code>dadid</code></td>
+                        <td><strong>Sim</strong></td>
+                        <td>ID do pai biológico (<code>0</code> ou vazio para fundadores).</td>
+                    </tr>
+                    <tr>
+                        <td><code>mae</code></td>
+                        <td><code>mid</code>, <code>momid</code></td>
+                        <td><strong>Sim</strong></td>
+                        <td>ID da mãe biológica (<code>0</code> ou vazio para fundadores).</td>
+                    </tr>
+                    <tr>
+                        <td><code>sex</code></td>
+                        <td><code>sexo</code></td>
+                        <td><strong>Sim</strong></td>
+                        <td>Sexo: <code>M</code>/<code>1</code> (Macho, quadrado), <code>F</code>/<code>2</code> (Fêmea, círculo), <code>3</code>/<code>?</code> (Losango).</td>
+                    </tr>
+                    <tr>
+                        <td><code>fenotipo</code></td>
+                        <td><code>aff</code>, <code>affected</code></td>
+                        <td>Não</td>
+                        <td>Condição clínica: <code>wt</code> (vazado), <code>het</code>/<code>carrier</code> (dividido ao meio), <code>afetado</code>/<code>hom</code> (sólido), <code>?</code>/<code>suspeita</code> (interrogação).</td>
+                    </tr>
+                    <tr>
+                        <td><code>proband</code></td>
+                        <td><code>probanda</code></td>
+                        <td>Não</td>
+                        <td><code>1</code> ou <code>sim</code> para desenhar a seta diagnóstica ↗ <strong>P</strong> apontando para o canto inferior esquerdo com respiro.</td>
+                    </tr>
+                    <tr>
+                        <td><code>label</code></td>
+                        <td><code>rotulo</code></td>
+                        <td>Não</td>
+                        <td>Texto exibido abaixo do símbolo. Quebra em duas linhas automaticamente ao encontrar colchetes (ex.: <code>II-1 [Azul bb]</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>status</code></td>
+                        <td><code>falecido</code></td>
+                        <td>Não</td>
+                        <td><code>1</code> ou <code>falecido</code> para adicionar a barra diagonal de óbito.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>⚙️ Diretivas de Configuração (%%)</h2>
+            <p>Diretivas iniciadas por <code>%%</code> na primeira linha do bloco controlam o layout e são repassadas diretamente ao motor R:</p>
+
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Diretiva / Parâmetro</th>
+                        <th>Tipo</th>
+                        <th>Padrão</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>layout.width</code> / <code>width</code></td>
+                        <td>String</td>
+                        <td><code>85%</code></td>
+                        <td>Largura relativa do heredograma no PDF gerado.</td>
+                    </tr>
+                    <tr>
+                        <td><code>layout.max_width</code> / <code>max-width</code></td>
+                        <td>String</td>
+                        <td><code>720pt</code></td>
+                        <td>Largura máxima em pontos para não extrapolar a mancha da página.</td>
+                    </tr>
+                    <tr>
+                        <td><code>cex</code></td>
+                        <td>Numérico</td>
+                        <td><code>0.85</code></td>
+                        <td>Fator de escala da fonte dos rótulos sob cada nó da árvore.</td>
+                    </tr>
+                    <tr>
+                        <td><code>symbolsize</code></td>
+                        <td>Numérico</td>
+                        <td><code>1.3</code></td>
+                        <td>Fator de escala do tamanho dos quadrados, círculos e losangos.</td>
+                    </tr>
+                    <tr>
+                        <td><code>foldLabs</code></td>
+                        <td>Booleano</td>
+                        <td><code>FALSE</code></td>
+                        <td>Quebra automática de rótulos do pedtools (desativada para preservar quebra manual do Joaju).</td>
+                    </tr>
+                    <tr>
+                        <td><code>plot_width</code></td>
+                        <td>Numérico</td>
+                        <td><em>Auto</em></td>
+                        <td>Largura forçada do SVG em polegadas (sobrescreve auto-cálculo de colunas).</td>
+                    </tr>
+                    <tr>
+                        <td><code>plot_height</code></td>
+                        <td>Numérico</td>
+                        <td><em>Auto</em></td>
+                        <td>Altura forçada do SVG em polegadas (sobrescreve proporção vertical por gerações).</td>
+                    </tr>
+                    <tr>
+                        <td><code>margins</code></td>
+                        <td>Vetor</td>
+                        <td><code>c(9.0, 0.8, 0.8, 0.8)</code></td>
+                        <td>Margens em linhas de texto no R (inferior acomoda a legenda).</td>
+                    </tr>
+                    <tr>
+                        <td><code>legend</code></td>
+                        <td>Vetor R</td>
+                        <td><code>NULL</code></td>
+                        <td>Lista de rótulos da legenda inferior: <code>c("Item 1", "Item 2")</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>legend.type</code></td>
+                        <td>Vetor R</td>
+                        <td><code>NULL</code></td>
+                        <td>Tipos dos símbolos da legenda: <code>sq_empty</code>, <code>circ_empty</code>, <code>sq_half</code>, <code>circ_half</code>, <code>sq_solid</code>, <code>circ_solid</code>, <code>suspect</code>, <code>proband</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>src</code> / <code>file</code></td>
+                        <td>String</td>
+                        <td>-</td>
+                        <td>Carrega os dados genealógicos a partir de um arquivo CSV anexo.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🧪 Exemplos Práticos</h2>
+
+            <h3>1. Duas Gerações (G2) com Segregação e Probanda</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (pedtools G2)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/pedtools_g2.png" alt="Resultado pedtools G2" loading="lazy"></div>
+                <pre><code>```pedtools
+%% layout.width=95% layout.max_width=720pt cex=0.85 symbolsize=1.25 legend=c("Normal (M)","Normal (F)","Afetado (M)","Afetada (F)","Probanda") legend.type=c("sq_empty","circ_empty","sq_solid","circ_solid","proband")
+id,pai,mae,sex,fenotipo,proband,label
+1,0,0,M,wt,0,I-1 [Normal]
+2,0,0,F,afetado,0,I-2 [Afetada]
+3,1,2,M,het,0,II-1 [Portador]
+4,1,2,F,afetado,1,II-2 [Afetada]
+5,1,2,M,wt,0,II-3 [Normal]
+```</code></pre>
+            </div>
+
+            <h3>2. Três Gerações (G3) com Múltiplos Casamentos e Heterozigotos</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (pedtools G3)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/pedtools_g3.png" alt="Resultado pedtools G3" loading="lazy"></div>
+                <pre><code>```pedtools
+%% layout.width=98% layout.max_width=750pt cex=0.85 symbolsize=1.25 legend=c("Castanho Indet. (F)","Heterozigoto (M)","Heterozigota (F)","Olhos Claros (M)","Olhos Claros (F)","Probanda") legend.type=c("circ_empty","sq_half","circ_half","sq_solid","circ_solid","proband")
+id,pai,mae,sex,fenotipo,proband,label
+1,0,0,M,het,0,I-1 [Cast Bb]
+2,0,0,F,afetado,0,I-2 [Az/Vd bb]
+3,1,2,M,afetado,1,II-1 [Azul bb]
+4,1,2,M,het,0,II-2 [Cast Bb]
+5,1,2,F,het,0,II-3 [Cast Bb]
+6,0,0,F,wt,0,II-4 [Cast B_]
+7,0,0,F,afetado,0,II-5 [Verde bb]
+8,0,0,F,het,0,II-6 [Cast Bb]
+9,0,0,F,afetado,0,II-7 [Verde bb]
+10,3,6,F,het,0,III-1 [Cast Bb]
+11,3,7,M,afetado,0,III-2 [Azul bb]
+12,3,8,F,afetado,0,III-3 [Azul bb]
+13,4,9,F,het,0,III-4 [Cast Bb]
+```</code></pre>
+            </div>
+
+            <h3>3. Cinco Gerações (G5) Profundas com Escala Compacta</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (pedtools G5)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/pedtools_g5.png" alt="Resultado pedtools G5" loading="lazy"></div>
+                <pre><code>```pedtools
+%% layout.width=95% layout.max_width=720pt cex=0.85 symbolsize=1.25 legend=c("Normal (M)","Normal (F)","Heterozigoto (M)","Heterozigota (F)","Afetado (M)","Probanda") legend.type=c("sq_empty","circ_empty","sq_half","circ_half","sq_solid","proband")
+id,pai,mae,sex,fenotipo,proband,label
+1,0,0,M,wt,0,I-1 [Normal]
+2,0,0,F,afetado,0,I-2 [Afetada]
+3,1,2,M,het,0,II-1 [Portador]
+4,0,0,F,wt,0,II-2 [Normal]
+5,1,2,F,het,0,II-3 [Portadora]
+6,3,4,M,het,0,III-1 [Portador]
+7,0,0,F,wt,0,III-2 [Normal]
+8,3,4,F,wt,0,III-3 [Normal]
+9,6,7,M,het,0,IV-1 [Portador]
+10,0,0,F,wt,0,IV-2 [Normal]
+11,6,7,F,wt,0,IV-3 [Normal]
+12,9,10,M,afetado,1,V-1 [Afetado]
+13,9,10,F,het,0,V-2 [Portadora]
+```</code></pre>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-canonical">
+            <div class="footer-line footer-line-identity">
+                Documentação Oficial e Repositório Aberto Joaju
+            </div>
+            <div class="footer-line footer-line-metadata">
+                Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="../LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../app.js"></script>
+</body>
+</html>

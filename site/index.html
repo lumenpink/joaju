@@ -7,14 +7,14 @@
     <!-- Metadados Primários -->
     <title>Joaju — Compilador de Diagramas Acadêmicos & Gráficos Científicos</title>
     <meta name="description" content="Compilador declarativo para diagramas acadêmicos e gráficos científicos com Typst, normas ABNT NBR 14724, orquestração multi-engine Kroki e heredogramas.">
-    <link rel="canonical" href="https://joaju.2lp.in/">
+    <link rel="canonical" href="https://joaju.joaju.local/">
 
     <!-- Metadados Sociais Open Graph / KokoroSim Anti-Truncamento (50-70 chars título, 120-160 chars descrição) -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://joaju.2lp.in/">
+    <meta property="og:url" content="https://joaju.joaju.local/">
     <meta property="og:title" content="Joaju — Academic Diagram Compiler & Scientific Graphics Pipeline">
     <meta property="og:description" content="Declarative compiler for academic diagrams and scientific graphics with Typst, ABNT NBR 14724 templates, Kroki multi-engine, and clinical pedigrees.">
-    <meta property="og:image" content="https://joaju.2lp.in/assets/og_preview.png">
+    <meta property="og:image" content="https://joaju.joaju.local/assets/og_preview.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:type" content="image/png">
@@ -22,10 +22,10 @@
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://joaju.2lp.in/">
+    <meta name="twitter:url" content="https://joaju.joaju.local/">
     <meta name="twitter:title" content="Joaju — Academic Diagram Compiler & Scientific Graphics Pipeline">
     <meta name="twitter:description" content="Declarative compiler for academic diagrams and scientific graphics with Typst, ABNT NBR 14724 templates, Kroki multi-engine, and clinical pedigrees.">
-    <meta name="twitter:image" content="https://joaju.2lp.in/assets/og_preview.png">
+    <meta name="twitter:image" content="https://joaju.joaju.local/assets/og_preview.png">
 
     <link rel="stylesheet" href="style.css">
 
@@ -72,11 +72,9 @@
             </div>
             <nav class="nav-links">
                 <a href="#features">Recursos</a>
+                <a href="#motores">Motores & Módulos</a>
                 <a href="#quickstart">Guia Rápido</a>
-                <a href="#diagrams">Diagramas</a>
-                <a href="#pedigrees">Heredogramas</a>
                 <a href="#api">API Local</a>
-                <a href="http://localhost:3000/" target="_blank" rel="noopener" class="btn-playground">Web Playground ↗</a>
                 <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
             </nav>
         </div>
@@ -90,8 +88,8 @@
                 Transforme Markdown declarativo em PDFs acadêmicos e gráficos vetoriais estritamente formatados conforme a ABNT NBR 14724, com suporte a diagramas multi-engine (Kroki, Mermaid) e extensão para heredogramas clínicos.
             </p>
             <div class="hero-actions">
-                <a href="http://localhost:3000/" target="_blank" rel="noopener" class="btn-primary">Abrir Web Playground Local</a>
-                <a href="#quickstart" class="btn-secondary">Documentação da API</a>
+                <a href="#motores" class="btn-primary">Explorar Motores & Configurações</a>
+                <a href="#quickstart" class="btn-secondary">Guia Rápido</a>
             </div>
         </section>
 
@@ -104,7 +102,7 @@
             <div class="card">
                 <div class="card-icon">⚡</div>
                 <h3>Tipografia Vetorial com Typst</h3>
-                <p>Diagramação moderna de alta performance com templates ABNT NBR 14724 e suporte a perfis bibliográficos CSL (ABNT e Vancouver).</p>
+                <p>Diagramação de alta velocidade com três perfis bibliográficos CSL integrados: <code>trabalho-ufsc</code> (capa institucional padronizada), <code>abnt</code> (NBR 14724) e <code>vancouver</code> (biomédico).</p>
             </div>
             <div class="card">
                 <div class="card-icon">🛡️</div>
@@ -114,7 +112,68 @@
             <div class="card">
                 <div class="card-icon">🧬</div>
                 <h3>Extensão: Heredogramas Clínicos</h3>
-                <p>Módulo especializado para geração de heredogramas no padrão NSGC via motor R (kinship2) para publicações biomédicas e genéticas.</p>
+                <p>Módulo especializado para geração de heredogramas no padrão NSGC via motor R (pedtools e kinship2) para publicações biomédicas e genéticas.</p>
+            </div>
+        </section>
+
+        <section id="motores" class="section">
+            <h2>🧩 Motores e Módulos Disponíveis</h2>
+            <p>Selecione um motor para ver a documentação exaustiva de parâmetros, opções repassadas aos motores nativos e múltiplos exemplos práticos prontos para uso:</p>
+
+            <div class="grid-features">
+                <a href="motores/pedtools.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #10b981;">
+                    <div class="card-icon">🧬</div>
+                    <h3>pedtools <span class="badge" style="background:#10b981; color:#fff;">Principal</span></h3>
+                    <p>Heredogramas clínicos modernos (pedsuite R) com auto-dimensionamento vertical proporcional às gerações, half-fill e legendas.</p>
+                </a>
+
+                <a href="motores/kinship2.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #f59e0b;">
+                    <div class="card-icon">🕰️</div>
+                    <h3>kinship2 <span class="badge" style="background:#f59e0b; color:#fff;">Legado</span></h3>
+                    <p>Motor legado de heredogramas clínicos baseado em kinship2 para compatibilidade retroativa com notas existentes.</p>
+                </a>
+
+                <a href="motores/table.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #3b82f6;">
+                    <div class="card-icon">📋</div>
+                    <h3>table</h3>
+                    <p>Tabelas com tipografia acadêmica estrita (padrão APA/ABNT com 3 réguas horizontais, alinhamento numérico e notas de rodapé).</p>
+                </a>
+
+                <a href="motores/quimica.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #8b5cf6;">
+                    <div class="card-icon">⚗️</div>
+                    <h3>openchemlib & openbabel</h3>
+                    <p>Renderização vetorial SVG de estruturas químicas 2D a partir de notação SMILES e arquivos MOL/SDF.</p>
+                </a>
+
+                <a href="motores/mermaid.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #ec4899;">
+                    <div class="card-icon">📊</div>
+                    <h3>mermaid</h3>
+                    <p>Fluxogramas, sequências, classes, estados, gitgraph e gráficos de Gantt renderizados via Kroki em alta resolução.</p>
+                </a>
+
+                <a href="motores/d2.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #06b6d4;">
+                    <div class="card-icon">📐</div>
+                    <h3>d2</h3>
+                    <p>Linguagem moderna de diagramação declarativa para arquitetura de sistemas, topologias de rede e fluxos de dados.</p>
+                </a>
+
+                <a href="motores/plantuml.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #f97316;">
+                    <div class="card-icon">☕</div>
+                    <h3>plantuml</h3>
+                    <p>Diagramas UML clássicos e de engenharia de software (casos de uso, componentes, sequência e pacotes).</p>
+                </a>
+
+                <a href="motores/graphviz.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #64748b;">
+                    <div class="card-icon">🕸️</div>
+                    <h3>graphviz</h3>
+                    <p>Grafos direcionados e não-direcionados, autômatos finitos e redes de relacionamentos em linguagem DOT.</p>
+                </a>
+
+                <a href="motores/gist.html" class="card" style="text-decoration: none; color: inherit; display: block; border-left: 4px solid #a855f7;">
+                    <div class="card-icon">📜</div>
+                    <h3>gist</h3>
+                    <p>Inclusão resiliente de scripts analíticos (R, Python, Julia, SQL) hospedados no repositório externo (Gist) com cache em memória.</p>
+                </a>
             </div>
         </section>
 
@@ -139,6 +198,57 @@ cccp serve --demo
 npm test
 npm run test:coverage</code></pre>
             </div>
+        </section>
+
+        <section id="perfis" class="section">
+            <h2>📚 Perfis Tipográficos Suportados (YAML Frontmatter)</h2>
+            <p>Configure o comportamento visual e o padrão bibliográfico no cabeçalho da sua nota no Obsidian:</p>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (Cabeçalho YAML)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>---
+titulo: Elaboração de Heredograma Familiar e Análise Genético-Clínica
+subtitulo: Estudo de Caso Ambulatorial e Herança Autossômica Recessiva
+autor: Equipe de Genética Médica
+instituicao: Universidade Federal de Santa Catarina
+local: Florianópolis
+ano: 2026
+perfil: trabalho-ufsc # Opções: 'trabalho-ufsc', 'abnt' ou 'vancouver'
+---</code></pre>
+            </div>
+
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Perfil (<code>perfil:</code>)</th>
+                        <th>Finalidade e Regras Tipográficas</th>
+                        <th>Estilo de Citação / CSL</th>
+                        <th>Variáveis Suportadas no YAML</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>trabalho-ufsc</code></td>
+                        <td>Trabalhos acadêmicos e monografias da UFSC. Gera capa institucional padronizada, folha de rosto, margens oficiais (3cm/2cm) e paginação no canto superior direito a partir da folha 2.</td>
+                        <td><code>trabalho-ufsc.csl</code> (ABNT/UFSC)</td>
+                        <td><code>titulo</code>, <code>subtitulo</code>, <code>autor</code>, <code>instituicao</code>, <code>local</code>, <code>ano</code>, <code>fonte</code>, <code>tamanho</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>abnt</code></td>
+                        <td>Artigos científicos gerais e relatórios técnicos. Segue rigorosamente a ABNT NBR 14724 com espaçamento 1.5, numeração progressiva de seções (NBR 6024) e referências alfabéticas autor-data.</td>
+                        <td><code>abnt.csl</code> (NBR 6023)</td>
+                        <td><code>titulo</code>, <code>subtitulo</code>, <code>autor</code>, <code>fonte</code>, <code>tamanho</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>vancouver</code></td>
+                        <td>Artigos e comunicações nas áreas médica, biológica e da saúde. Citações numéricas sequenciais entre parênteses no texto e referências ordenadas por ordem de aparição conforme padrão ICMJE/NLM.</td>
+                        <td><code>vancouver.csl</code> (ICMJE)</td>
+                        <td><code>titulo</code>, <code>subtitulo</code>, <code>autor</code>, <code>fonte</code>, <code>tamanho</code></td>
+                    </tr>
+                </tbody>
+            </table>
         </section>
 
         <section id="diagrams" class="section">
@@ -205,10 +315,10 @@ id,pai,mae,sex,fenotipo,label
     <footer class="site-footer">
     <div class="footer-canonical">
       <div class="footer-line footer-line-identity">
-        Orgulhosamente produzido por uma <a href="https://travesti.2lp.in/pt/" target="_blank" rel="noopener">travesti latina</a> 🏳️‍⚧️ :)
+        Documentação Oficial e Repositório Aberto Joaju
       </div>
       <div class="footer-line footer-line-metadata">
-        joaju v0.1.0-dev.26+20260929.b7d8e3f • por <a href="https://lumen.pink" target="_blank" rel="noopener">Lumen Pink</a> • Brasil 🇧🇷 • <a href="LICENSE" target="_blank" rel="noopener">Apache-2.0</a>
+        Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
       </div>
     </div>
   </footer>

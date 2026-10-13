@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor mermaid — Diagramas e Fluxos | Joaju</title>
+    <meta name="description" content="Documentação do motor mermaid no Joaju: fluxogramas, diagramas de sequência, classes, estados e Gantt com controle fino de escala.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="logo-icon">📐</span>
+                    <span class="brand-name">Joaju</span>
+                </a>
+                <span class="badge">mermaid</span>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <nav class="breadcrumb">
+            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>mermaid</strong>
+        </nav>
+
+        <section class="section">
+            <div class="hero-badge">DIAGRAMAS DECLARATIVOS KROKI</div>
+            <h1>Motor mermaid — Diagramas e Fluxos</h1>
+            <p>O motor <code>mermaid</code> renderiza fluxogramas, sequências, diagramas de classe, máquinas de estado e gráficos de Gantt via Kroki com Chromium Headless. As figuras são rasterizadas em alta resolução e ajustadas harmoniosamente às margens da página.</p>
+
+            <h2>⚙️ Diretivas de Configuração (%%)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Diretiva</th>
+                        <th>Sinônimos</th>
+                        <th>Tipo</th>
+                        <th>Padrão</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>layout.width</code></td>
+                        <td><code>width</code></td>
+                        <td>String</td>
+                        <td><code>75%</code></td>
+                        <td>Largura relativa do diagrama na mancha impressa (ex.: <code>80%</code>, <code>14cm</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>layout.max_width</code></td>
+                        <td><code>max-width</code></td>
+                        <td>String</td>
+                        <td><code>500pt</code></td>
+                        <td>Largura máxima em pontos tipográficos para prevenir overflow.</td>
+                    </tr>
+                    <tr>
+                        <td><code>src</code></td>
+                        <td><code>file</code></td>
+                        <td>String</td>
+                        <td>-</td>
+                        <td>Importa código Mermaid a partir de arquivo <code>.mmd</code> anexo.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🧪 Exemplos Práticos</h2>
+
+            <h3>1. Fluxograma de Decisão Clínica (Flowchart)</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (mermaid flowchart)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```mermaid
+%% width=85% max-width=550pt
+graph TD
+    A([Paciente com Suspeita Genética]) --> B[Anamnese & Levantamento Familiar]
+    B --> C{Padrão Familiar Evidente?}
+    C -->|Sim| D[Painel NGS Direcionado]
+    C -->|Não / Inconclusivo| E[Sequenciamento Completo do Exoma - WES]
+    D --> F[Interpretação de Variantes ACMG]
+    E --> F
+    F --> G{Variante Patogênica?}
+    G -->|Confirmada| H([Laudo Molecular & Aconselhamento])
+    G -->|VUS / Negativo| I([Seguimento Clínico & Reavaliação])
+```</code></pre>
+            </div>
+
+            <h3>2. Diagrama de Sequência de Atendimento (Sequence Diagram)</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (mermaid sequence)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```mermaid
+%% width=90% max-width=600pt
+sequenceDiagram
+    autonumber
+    actor P as Paciente
+    participant M as Médico Assistente
+    participant L as Laboratório de Genômica
+    participant S as Sistema Joaju
+
+    P->>M: Consulta inicial e consentimento
+    M->>L: Envio de amostra e requisição NGS
+    L->>L: Sequenciamento e chamada de variantes
+    L-->>M: Liberação dos dados FASTQ/VCF
+    M->>S: Processamento da nota clínica e heredograma
+    S-->>M: Emissão de relatório formatado ABNT
+    M->>P: Entrega de laudo e conduta clínica
+```</code></pre>
+            </div>
+
+            <h3>3. Cronograma de Projeto de Pesquisa (Gantt Chart)</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (mermaid gantt)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```mermaid
+%% width=95% max-width=650pt
+gantt
+    title Cronograma do Projeto de Pesquisa Clínica
+    dateFormat  YYYY-MM-DD
+    section Ética & Coleta
+    Aprovação CEP/Conep       :done,    des1, 2026-01-01, 2026-02-28
+    Recrutamento de Famílias   :active,  des2, 2026-03-01, 2026-06-30
+    section Laboratório
+    Extração & NGS            :         des3, 2026-07-01, 2026-09-30
+    section Análise & Publicação
+    Validação Pedtools/Joaju   :         des4, 2026-10-01, 2026-11-15
+    Escrita do Artigo Final    :         des5, 2026-11-16, 2026-12-31
+```</code></pre>
+            </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/mermaid_exemplo.png" alt="Resultado mermaid" loading="lazy"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-canonical">
+            <div class="footer-line footer-line-identity">
+                Documentação Oficial e Repositório Aberto Joaju
+            </div>
+            <div class="footer-line footer-line-metadata">
+                Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="../LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../app.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor gist — Inclusão de Scripts do Fuxico | Joaju</title>
+    <meta name="description" content="Documentação do motor gist no Joaju: inclusão de scripts analíticos do repositório externo (Gist), cache em memória, legendas e fallbacks.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="logo-icon">📐</span>
+                    <span class="brand-name">Joaju</span>
+                </a>
+                <span class="badge">gist</span>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <nav class="breadcrumb">
+            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>gist</strong>
+        </nav>
+
+        <section class="section">
+            <div class="hero-badge">SCRIPTS ANALÍTICOS REMOTOS // FUXICO</div>
+            <h1>Motor gist — Inclusão de Scripts do Fuxico</h1>
+            <p>O motor <code>gist</code> permite embutir scripts de análise de dados (R, Python, Julia, SQL, Bash) hospedados na plataforma <strong>Fuxico</strong> (<code>https://gist.github.com/{id}</code>) diretamente no texto acadêmico, com realce de sintaxe nativo no Typst e cache em memória para re-compilações instantâneas.</p>
+
+            <h2>⚙️ Diretivas de Configuração (%%)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Diretiva</th>
+                        <th>Obrigatória</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>url</code></td>
+                        <td><strong>Sim</strong></td>
+                        <td>String</td>
+                        <td>URL pública do gist no Fuxico (ex.: <code>https://gist.github.com/exemplo/abc123</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>file</code></td>
+                        <td>Não</td>
+                        <td>String</td>
+                        <td>Nome do arquivo específico para gists com múltiplos arquivos. Se omitido, captura o primeiro arquivo.</td>
+                    </tr>
+                    <tr>
+                        <td><code>title</code> / <code>titulo</code></td>
+                        <td>Não</td>
+                        <td>String</td>
+                        <td>Legenda editorial numerada associada ao código no Typst.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🛡️ Cache em Memória e Resiliência</h2>
+            <ul>
+                <li><strong>Cache Local:</strong> As chamadas para os gists são cacheadas em memória pelo servidor Joaju, garantindo que o compilador não realize downloads redundantes a cada compilação de nota.</li>
+                <li><strong>Resiliência de Rede:</strong> Se a conexão falhar ou o link retornar erro 404, o compilador insere um card de aviso tipográfico com o link de acesso direto, prevenindo qualquer quebra no pipeline de compilação da publicação.</li>
+            </ul>
+
+            <h2>🧪 Exemplos Práticos</h2>
+
+            <h3>1. Script R com Legenda Editorial</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (gist R)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```gist
+%% url=https://gist.github.com/exemplo/calculo_hw
+%% file=calculo_frequencias.R
+%% title="Script R: Cálculo de Frequências Alélicas de Hardy-Weinberg"
+```</code></pre>
+            </div>
+
+            <h3>2. Pipeline de Bioinformática em Python</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (gist Python)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```gist
+%% url=https://gist.github.com/exemplo/pipeline_vcf
+%% file=filtragem_variantes.py
+%% title="Script Python: Filtragem de Variantes de Alta Confiança no VCF"
+```</code></pre>
+            </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/gist_exemplo.png" alt="Resultado gist" loading="lazy"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-canonical">
+            <div class="footer-line footer-line-identity">
+                Documentação Oficial e Repositório Aberto Joaju
+            </div>
+            <div class="footer-line footer-line-metadata">
+                Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="../LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../app.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor plantuml — Modelagem de Software & UML | Joaju</title>
+    <meta name="description" content="Documentação do motor plantuml no Joaju: diagramas de casos de uso, componentes, sequência e diretivas de escala.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="logo-icon">📐</span>
+                    <span class="brand-name">Joaju</span>
+                </a>
+                <span class="badge">plantuml</span>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <nav class="breadcrumb">
+            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>plantuml</strong>
+        </nav>
+
+        <section class="section">
+            <div class="hero-badge">ENGENHARIA DE SOFTWARE & UML</div>
+            <h1>Motor plantuml — Modelagem de Software & UML</h1>
+            <p>O motor <code>plantuml</code> fornece suporte à consagrada suíte UML clássica (casos de uso, componentes, sequência, pacotes, atividades e classes) através do gateway Kroki integrado ao Joaju. Os diagramas são gerados em formato vetorial SVG.</p>
+
+            <h2>⚙️ Diretivas de Configuração (%%)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Diretiva</th>
+                        <th>Sinônimos</th>
+                        <th>Tipo</th>
+                        <th>Padrão</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>layout.width</code></td>
+                        <td><code>width</code></td>
+                        <td>String</td>
+                        <td><code>75%</code></td>
+                        <td>Largura do diagrama na mancha do papel (ex.: <code>80%</code>, <code>14cm</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>layout.max_width</code></td>
+                        <td><code>max-width</code></td>
+                        <td>String</td>
+                        <td><code>500pt</code></td>
+                        <td>Largura máxima permitida em pontos tipográficos.</td>
+                    </tr>
+                    <tr>
+                        <td><code>src</code></td>
+                        <td><code>file</code></td>
+                        <td>String</td>
+                        <td>-</td>
+                        <td>Importa código PlantUML a partir de arquivo <code>.puml</code> anexo.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🧪 Exemplos Práticos</h2>
+
+            <h3>1. Diagrama de Casos de Uso (UML Use Case)</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (plantuml usecase)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```plantuml
+%% width=80% max-width=520pt
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Médico Geneticista" as Medico
+actor "Bioinformata" as Bioinfo
+actor "Paciente" as Paciente
+
+rectangle "Sistema Joaju" {
+  usecase "Cadastrar Levantamento Familiar" as UC1
+  usecase "Compilar Heredograma Clínico" as UC2
+  usecase "Executar Pipeline NGS" as UC3
+  usecase "Emitir Laudo ABNT/Vancouver" as UC4
+  usecase "Acessar Resultado Online" as UC5
+}
+
+Medico --> UC1
+Medico --> UC2
+Medico --> UC4
+Bioinfo --> UC3
+Paciente --> UC5
+UC2 ..> UC1 : <<include>>
+UC4 ..> UC2 : <<include>>
+@enduml
+```</code></pre>
+            </div>
+
+            <h3>2. Diagrama de Componentes de Software</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (plantuml components)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```plantuml
+%% width=85% max-width=560pt
+@startuml
+skinparam componentStyle uml2
+
+package "Obsidian Workspace" {
+  [Markdown Notes] as MD
+  [Templater Plugin] as TP
+}
+
+package "Joaju Stack (Docker)" {
+  [Express Server :3000] as API
+  [Pandoc Filter Engine] as FILTER
+  [Rscript Pedtools] as R
+  [Typst Compiler 0.11] as TYP
+}
+
+cloud "Kroki Gateway" {
+  [Mermaid / D2 / PlantUML] as KROKI
+}
+
+MD -> TP : Atalho
+TP --> API : POST /compile
+API --> FILTER : Markdown AST
+FILTER --> R : Blocos pedtools
+FILTER --> KROKI : Blocos PlantUML
+FILTER --> TYP : Typst Intermediate
+TYP --> API : Binário PDF
+API --> TP : Resposta 200 OK
+@enduml
+```</code></pre>
+            </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/plantuml_exemplo.png" alt="Resultado plantuml" loading="lazy"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-canonical">
+            <div class="footer-line footer-line-identity">
+                Documentação Oficial e Repositório Aberto Joaju
+            </div>
+            <div class="footer-line footer-line-metadata">
+                Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="../LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../app.js"></script>
+</body>
+</html>

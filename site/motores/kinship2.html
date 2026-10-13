@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor kinship2 — Heredogramas Legado | Joaju</title>
+    <meta name="description" content="Documentação do motor legado kinship2 no Joaju: compatibilidade retroativa, opções repassadas ao R plot.pedigree e exemplos.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="logo-icon">📐</span>
+                    <span class="brand-name">Joaju</span>
+                </a>
+                <span class="badge">kinship2</span>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <nav class="breadcrumb">
+            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>kinship2</strong>
+        </nav>
+
+        <section class="section">
+            <div class="hero-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">MOTOR LEGADO // EM DESCONTINUAÇÃO</div>
+            <h1>Motor kinship2 — Heredogramas Legado</h1>
+            <p>O motor <code>kinship2</code> foi a primeira implementação de heredogramas do Joaju. Atualmente, ele permanece disponível exclusivamente para compatibilidade com notas existentes. Para novos trabalhos, recomendamos a migração para o motor <a href="pedtools.html" style="color: var(--primary);">pedtools</a>.</p>
+
+            <div class="callout-warning">
+                <strong>Atenção:</strong> O motor kinship2 está em processo de descontinuação (<em>phase-out</em>). Novos recursos clínicos (como proporcionalidade multi-geracional e half-fill perfeito) recebem suporte ativo prioritário no motor <code>pedtools</code>.
+            </div>
+
+            <h2>📋 Estrutura da Tabela de Entrada (CSV)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Coluna</th>
+                        <th>Sinônimos</th>
+                        <th>Obrigatória</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>-</td>
+                        <td><strong>Sim</strong></td>
+                        <td>Identificador do indivíduo.</td>
+                    </tr>
+                    <tr>
+                        <td><code>dadid</code></td>
+                        <td><code>pai</code>, <code>fid</code></td>
+                        <td><strong>Sim</strong></td>
+                        <td>ID do pai biológico (<code>0</code> para fundador).</td>
+                    </tr>
+                    <tr>
+                        <td><code>momid</code></td>
+                        <td><code>mae</code>, <code>mid</code></td>
+                        <td><strong>Sim</strong></td>
+                        <td>ID da mãe biológica (<code>0</code> para fundadora).</td>
+                    </tr>
+                    <tr>
+                        <td><code>sex</code></td>
+                        <td><code>sexo</code></td>
+                        <td><strong>Sim</strong></td>
+                        <td>Sexo: <code>1</code>/<code>M</code> (Macho), <code>2</code>/<code>F</code> (Fêmea), <code>3</code> (Desconhecido), <code>4</code>/<code>T</code> (Feto).</td>
+                    </tr>
+                    <tr>
+                        <td><code>affected</code></td>
+                        <td><code>fenotipo</code>, <code>afetado</code></td>
+                        <td>Não</td>
+                        <td>Condição: <code>1</code>/<code>hom</code> (afetado), <code>het</code>/<code>portador</code> (portador), <code>?</code> (suspeito).</td>
+                    </tr>
+                    <tr>
+                        <td><code>status</code></td>
+                        <td><code>falecido</code></td>
+                        <td>Não</td>
+                        <td><code>1</code> ou <code>falecido</code> para barra de óbito.</td>
+                    </tr>
+                    <tr>
+                        <td><code>proband</code></td>
+                        <td><code>probando</code></td>
+                        <td>Não</td>
+                        <td><code>1</code> ou <code>sim</code> para seta de probando.</td>
+                    </tr>
+                    <tr>
+                        <td><code>label</code></td>
+                        <td><code>rotulo</code></td>
+                        <td>Não</td>
+                        <td>Texto exibido sob o símbolo.</td>
+                    </tr>
+                    <tr>
+                        <td><code>gemeo_com</code></td>
+                        <td>-</td>
+                        <td>Não</td>
+                        <td>ID do irmão gêmeo para ligar os ramos.</td>
+                    </tr>
+                    <tr>
+                        <td><code>tipo_gemeo</code></td>
+                        <td>-</td>
+                        <td>Não</td>
+                        <td><code>MZ</code> (Monozigótico) ou <code>DZ</code> (Dizigótico).</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>⚙️ Opções Repassadas ao Motor R (plot.pedigree)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Diretiva / Parâmetro</th>
+                        <th>Tipo</th>
+                        <th>Padrão</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>cex</code></td>
+                        <td>Numérico</td>
+                        <td><code>0.92</code></td>
+                        <td>Tamanho da fonte dos rótulos sob cada símbolo no R kinship2.</td>
+                    </tr>
+                    <tr>
+                        <td><code>symbolsize</code></td>
+                        <td>Numérico</td>
+                        <td><code>3.2</code></td>
+                        <td>Escala física dos símbolos no kinship2.</td>
+                    </tr>
+                    <tr>
+                        <td><code>branch</code></td>
+                        <td>Numérico</td>
+                        <td><code>0.35</code></td>
+                        <td>Comprimento e curvatura das ramificações de parentesco.</td>
+                    </tr>
+                    <tr>
+                        <td><code>density</code></td>
+                        <td>Vetor R</td>
+                        <td><code>c(-1, -1)</code></td>
+                        <td>Densidade de preenchimento/hachura (-1 para preenchimento sólido).</td>
+                    </tr>
+                    <tr>
+                        <td><code>angle</code></td>
+                        <td>Vetor R</td>
+                        <td><code>c(0, 0)</code></td>
+                        <td>Ângulo em graus das linhas de preenchimento.</td>
+                    </tr>
+                    <tr>
+                        <td><code>col</code></td>
+                        <td>String / Vetor</td>
+                        <td><code>"black"</code></td>
+                        <td>Cor das bordas e linhas do pedigree.</td>
+                    </tr>
+                    <tr>
+                        <td><code>legend</code></td>
+                        <td>Vetor R</td>
+                        <td><code>NULL</code></td>
+                        <td>Rótulos da legenda vetorial inferior.</td>
+                    </tr>
+                    <tr>
+                        <td><code>legend.type</code></td>
+                        <td>Vetor R</td>
+                        <td><code>NULL</code></td>
+                        <td>Tipos da legenda: <code>sq_empty</code>, <code>circ_half</code>, <code>sq_solid</code>, <code>proband</code>, etc.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🧪 Exemplos Práticos</h2>
+
+            <h3>1. Heredograma com Probanda e Heterozigoto</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (kinship2)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```kinship2
+%% layout.width=90% layout.max_width=600pt cex=0.88 symbolsize=2.85 legend=c("Normal (M)","Portadora (F)","Afetado (M)","Probanda") legend.type=c("sq_empty","circ_half","sq_solid","proband")
+id,pai,mae,sex,fenotipo,proband,label
+1,0,0,M,wt,0,I.1
+2,0,0,F,het,0,I.2
+3,1,2,M,afetado,1,II.1 [Afetado]
+4,1,2,F,wt,0,II.2 [Normal]
+```</code></pre>
+            </div>
+
+            <h3>2. Gêmeos Monozigóticos (MZ)</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (kinship2 com gêmeos)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```kinship2
+%% layout.width=85% layout.max_width=520pt cex=0.90 symbolsize=2.9
+id,pai,mae,sex,fenotipo,gemeo_com,tipo_gemeo,label
+1,0,0,M,wt,0,,Pai
+2,0,0,F,wt,0,,Mãe
+3,1,2,M,wt,4,MZ,Gêmeo 1
+4,1,2,M,wt,3,MZ,Gêmeo 2
+```</code></pre>
+            </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/kinship2_exemplo.png" alt="Resultado kinship2" loading="lazy"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-canonical">
+            <div class="footer-line footer-line-identity">
+                Documentação Oficial e Repositório Aberto Joaju
+            </div>
+            <div class="footer-line footer-line-metadata">
+                Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="../LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../app.js"></script>
+</body>
+</html>

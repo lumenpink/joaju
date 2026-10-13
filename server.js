@@ -130,12 +130,15 @@ async function preprocessPedigrees(markdown, sessionId, workspaceDir = null) {
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed.startsWith('%%')) {
-        // Remove o %% e captura os pares chave=valor, aceitando c(...) do R
+        // Remove o %% e captura os pares chave=valor, aceitando c(...) com parênteses e strings
         const directiveText = trimmed.replace(/^%%\s*/, '');
-        const pairs = directiveText.match(/[\w.-]+=(?:c\([^)]+\)|"[^"]*"|'[^']*'|[^\s]+)/g) || [];
+        const directiveRegex =
+          /([\w.-]+)\s*=\s*(c\((?:[^()]*|\([^()]*\))*\)|"(?:\\.|[^"\\])*"|'[^']*'|[^\s]+)/g;
+        let dMatch;
 
-        for (const pair of pairs) {
-          const [key, val] = pair.split(/=(.*)/s);
+        while ((dMatch = directiveRegex.exec(directiveText)) !== null) {
+          const key = dMatch[1];
+          const val = dMatch[2];
           // Dimensões do bloco Typst na página A4
           if (key === 'layout.width' || (key === 'width' && /[%a-z]/i.test(val))) {
             layoutWidth = normalizeDimension(val, '80%');
@@ -161,7 +164,8 @@ async function preprocessPedigrees(markdown, sessionId, workspaceDir = null) {
         ? `/app/${scriptFile}`
         : path.join(__dirname, scriptFile);
       cp.execSync(
-        `Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`
+        `Rscript "${scriptPath}" "${csvPath}" "${svgPath}" "${rArgsString.replace(/"/g, '\\"')}"`,
+        { env: { ...process.env, LANG: 'C.utf8', LC_ALL: 'C.utf8' } }
       );
 
       if (fs.existsSync(svgPath)) {
@@ -658,16 +662,36 @@ async function preprocessTables(markdown, sessionId, workspaceDir = null) {
       }
 
       const totalRows = dataRows.length + 1;
-      const colDef = Array(numCols).fill('1fr').join(', ');
+      const colDef =
+        directives.columns || directives.colunas || Array(numCols).fill('1fr').join(', ');
 
-      const headerCells = headers.map((h) => `[*${escapeTypst(h)}*]`).join(', ');
+      const formatCell = (val) => {
+        if (!val) return '';
+        let s = String(val).trim();
+        // Converte expressões matemáticas simples $...$ tratando identificadores multiletras como strings no Typst
+        s = s.replace(/\$([^$]+)\$/g, (m, math) => {
+          const tm = math.trim();
+          // Trata casos específicos do Typst como ii -> "ii", B_ -> B\_
+          if (tm === 'ii') return '$"ii"$';
+          if (tm === 'bb') return '$"bb"$';
+          if (tm === 'Bb') return '$"Bb"$';
+          if (tm === 'BB') return '$"BB"$';
+          if (tm === 'B_') return '$B\\_$';
+          return `$${tm}$`;
+        });
+        s = s.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+        s = s.replace(/(?<!\\)\[/g, '\\[').replace(/(?<!\\)\]/g, '\\]');
+        return s;
+      };
+
+      const headerCells = headers.map((h) => `[*${formatCell(h)}*]`).join(', ');
 
       const bodyCells = dataRows
         .map((row) => {
           const cells = [];
           for (let i = 0; i < numCols; i++) {
             const val = row[i] !== undefined ? row[i] : '';
-            cells.push(`[${escapeTypst(val)}]`);
+            cells.push(`[${formatCell(val)}]`);
           }
           return cells.join(', ');
         })
@@ -849,9 +873,12 @@ function renderSingleKinship(rawContent, sessionId = 'preview') {
     const trimmed = line.trim();
     if (trimmed.startsWith('%%')) {
       const directiveText = trimmed.replace(/^%%\s*/, '');
-      const pairs = directiveText.match(/[\w.-]+=(?:c\([^)]+\)|"[^"]*"|'[^']*'|[^\s]+)/g) || [];
-      for (const pair of pairs) {
-        const [key, val] = pair.split(/=(.*)/s);
+      const directiveRegex =
+        /([\w.-]+)\s*=\s*(c\((?:[^()]*|\([^()]*\))*\)|"(?:\\.|[^"\\])*"|'[^']*'|[^\s]+)/g;
+      let dMatch;
+      while ((dMatch = directiveRegex.exec(directiveText)) !== null) {
+        const key = dMatch[1];
+        const val = dMatch[2];
         if (
           key !== 'layout.width' &&
           key !== 'width' &&
@@ -924,9 +951,12 @@ function renderSinglePedtools(rawContent, sessionId = 'preview') {
     const trimmed = line.trim();
     if (trimmed.startsWith('%%')) {
       const directiveText = trimmed.replace(/^%%\s*/, '');
-      const pairs = directiveText.match(/[\w.-]+=(?:c\([^)]+\)|"[^"]*"|'[^']*'|[^\s]+)/g) || [];
-      for (const pair of pairs) {
-        const [key, val] = pair.split(/=(.*)/s);
+      const directiveRegex =
+        /([\w.-]+)\s*=\s*(c\((?:[^()]*|\([^()]*\))*\)|"(?:\\.|[^"\\])*"|'[^']*'|[^\s]+)/g;
+      let dMatch;
+      while ((dMatch = directiveRegex.exec(directiveText)) !== null) {
+        const key = dMatch[1];
+        const val = dMatch[2];
         if (
           key !== 'layout.width' &&
           key !== 'width' &&
@@ -1446,6 +1476,12 @@ app.post('/compile', async (req, res) => {
       markdown = req.body;
     }
 
+    if (!markdown || markdown.trim().length === 0) {
+      return res
+        .status(400)
+        .json({ error: 'Conteúdo Markdown está vazio ou não pôde ser lido do arquivo/ZIP.' });
+    }
+
     const baseDir = workspaceDir || os.tmpdir();
     const tempMd = path.join(baseDir, `input_${id}.md`);
     const tempTypstOutput = path.join(baseDir, `conteudo_${id}.typ`);
@@ -1454,7 +1490,7 @@ app.post('/compile', async (req, res) => {
 
     // 🔍 Extrai metadados do YAML para automação bibliográfica
     // Procura o perfil (abnt, vancouver, etc.) condicionalmente
-    const metaMatch = markdown.match(/^---[\s\S]*?perfil:\s*(\w+)[\s\S]*?---/);
+    const metaMatch = markdown.match(/^---[\s\S]*?perfil:\s*([a-zA-Z0-9_-]+)[\s\S]*?---/);
     const profile = metaMatch ? metaMatch[1] : 'abnt';
 
     // 🔄 ORQUESTRADORES DE PRÉ-PROCESSAMENTO
@@ -1468,6 +1504,9 @@ app.post('/compile', async (req, res) => {
     // Suporte genérico a blocos nativos: ```typst -> <typst>
     cleanMarkdown = cleanMarkdown.replace(/```typst\n([\s\S]*?)\n```/g, '$1');
 
+    // Normalização de quebras de linha em listas: garante linha em branco antes de listas para o Pandoc
+    cleanMarkdown = cleanMarkdown.replace(/([^\n])\n(\d+\.\s+|[-*]\s+)/g, '$1\n\n$2');
+
     fs.writeFileSync(tempMd, cleanMarkdown);
 
     // 1️⃣ ETAPA 1: Pandoc + Citeproc (Maturação Bibliográfica)
@@ -1479,16 +1518,46 @@ app.post('/compile', async (req, res) => {
     // Injeta suporte a réguas horizontais do Pandoc e função min no escopo do arquivo Typst
     if (fs.existsSync(tempTypstOutput)) {
       let originalTypst = fs.readFileSync(tempTypstOutput, 'utf8');
+      // Remove âncoras/labels geradas automaticamente pelo Pandoc em títulos com caracteres acentuados
+      // (ex: <introdução-...> ou <análise-...>) que contêm caracteres não-ASCII e vazam como texto no Typst
+      originalTypst = originalTypst.replace(/<[^\s<>]*[^\u0020-\u007E][^\s<>]*>/gu, '');
       // Escapa caracteres '<' que não compõem labels válidos do Typst para evitar 'unclosed label'
       originalTypst = originalTypst.replace(/(?<!\\)<(?![a-zA-Z0-9_\-:]+>)/g, '\\<');
+
+      // Torna as tabelas do Pandoc proporcionais e autoajustáveis:
+      originalTypst = originalTypst.replace(
+        /#table\(\s*columns:\s*\([^)]+\),([^\n]*\n\s*align:\s*\([^)]+\),\s*table\.header\(\[Código\],\s*\[Filiação\],\s*\[Sexo\],\s*\[Fenótipo ABO\])/g,
+        '#table(columns: (auto, auto, auto, auto, 1fr), inset: 4.5pt,$1'
+      );
+      originalTypst = originalTypst.replace(
+        /#table\(\s*columns:\s*\([^)]+\),([^\n]*\n\s*align:\s*\([^)]+\),\s*table\.header\(\[Código\],\s*\[Filiação\],\s*\[Sexo\],\s*\[Fenótipo\s*Observado\])/g,
+        '#table(columns: (auto, auto, auto, auto, auto, 1fr), inset: 4.5pt,$1'
+      );
+      originalTypst = originalTypst.replace(
+        /#table\(\s*columns:\s*\([^)]+\),([^\n]*\n\s*align:\s*\([^)]+\),\s*table\.header\(\[Código\],\s*\[Filiação\],\s*\[Sexo\],\s*\[Condição Relatada)/g,
+        '#table(columns: (auto, auto, auto, 1.4fr, 1.2fr), inset: 4.5pt,$1'
+      );
+
       const patchedTypst = `#let horizontalrule = line(length: 100%, stroke: 0.5pt + luma(180))\n#let min(a, b) = if type(a) == ratio { a } else if type(b) == ratio { b } else if type(a) == int { calc.min(a * 1pt, b) } else if type(b) == int { calc.min(a, b * 1pt) } else { calc.min(a, b) }\n${originalTypst}`;
       fs.writeFileSync(tempTypstOutput, patchedTypst);
     }
 
     // 2️⃣ ETAPA 2: Typst (Diagramação Rápida)
+    const tituloMatch = markdown.match(/^---[\s\S]*?titulo:\s*"?([^"\n]+?)"?\s*$/m);
+    const autorMatch = markdown.match(/^---[\s\S]*?autor:\s*"?([^"\n]+?)"?\s*$/m);
+    const subtituloMatch = markdown.match(/^---[\s\S]*?subtitulo:\s*"?([^"\n]+?)"?\s*$/m);
+    const docTitulo = tituloMatch ? tituloMatch[1].trim() : 'Trabalho Acadêmico';
+    const docAutor = autorMatch ? autorMatch[1].trim() : 'Discente';
+    const docSubtitulo = subtituloMatch ? subtituloMatch[1].trim() : '';
+
+    let templateImport = '#import "/data/template.typ": abnt\n#show: doc => abnt(doc)';
+    if (profile === 'trabalho-ufsc' && fs.existsSync('/data/trabalho-ufsc.typ')) {
+      const subArg = docSubtitulo ? `, subtitulo: "${docSubtitulo.replace(/"/g, '\\"')}"` : '';
+      templateImport = `#import "/data/trabalho-ufsc.typ": trabalho_ufsc\n#show: doc => trabalho_ufsc(doc, titulo: "${docTitulo.replace(/"/g, '\\"')}", autor: "${docAutor.replace(/"/g, '\\"')}"${subArg})`;
+    }
+
     const typstWrapper = `
-#import "/data/template.typ": abnt
-#show: doc => abnt(doc)
+${templateImport}
 #let horizontalrule = line(length: 100%, stroke: 0.5pt + luma(180))
 
 #include "${tempTypstOutput}"

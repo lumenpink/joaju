@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor table — Tabelas Acadêmicas | Joaju</title>
+    <meta name="description" content="Documentação do motor table no Joaju: formatação de tabelas acadêmicas ABNT/APA, réguas horizontais, alinhamento numérico e notas de rodapé.">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="logo-icon">📐</span>
+                    <span class="brand-name">Joaju</span>
+                </a>
+                <span class="badge">table</span>
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <nav class="breadcrumb">
+            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>table</strong>
+        </nav>
+
+        <section class="section">
+            <div class="hero-badge">TIPOGRAFIA ACADÊMICA ABNT / APA</div>
+            <h1>Motor table — Tabelas Acadêmicas</h1>
+            <p>O motor <code>table</code> converte dados em formato CSV ou texto tabular em tabelas acadêmicas com padrão tipográfico rigoroso. Ele aplica automaticamente as três réguas horizontais obrigatórias (topo, cabeçalho e base), alinhamento de texto por coluna e notas institucionais de rodapé, sem permitir grades verticais.</p>
+
+            <h2>⚙️ Diretivas de Configuração (%%)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Diretiva</th>
+                        <th>Sinônimos</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>caption</code></td>
+                        <td><code>title</code>, <code>titulo</code></td>
+                        <td>String</td>
+                        <td>Título editorial posicionado acima da tabela no PDF e no preview.</td>
+                    </tr>
+                    <tr>
+                        <td><code>note</code></td>
+                        <td><code>fonte</code>, <code>source</code></td>
+                        <td>String</td>
+                        <td>Nota de rodapé ou fonte bibliográfica posicionada abaixo da régua inferior.</td>
+                    </tr>
+                    <tr>
+                        <td><code>align</code></td>
+                        <td>-</td>
+                        <td>String</td>
+                        <td>Alinhamento das colunas: <code>l</code> (esquerda), <code>c</code> (centro), <code>r</code> (direita). Ex: <code>l, c, r</code> ou <code>llr</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>columns</code></td>
+                        <td><code>colunas</code></td>
+                        <td>String</td>
+                        <td>Larguras fracionárias ou fixas Typst. Ex: <code>2fr, 1fr, 80pt</code> ou <code>auto, 1fr</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>layout.width</code></td>
+                        <td><code>width</code></td>
+                        <td>String</td>
+                        <td>Largura total da tabela na mancha do papel (padrão: <code>100%</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>src</code></td>
+                        <td><code>file</code></td>
+                        <td>String</td>
+                        <td>Caminho para arquivo CSV anexo para carregar os dados brutos.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🧪 Exemplos Práticos</h2>
+
+            <h3>1. Tabela Básica com Alinhamento por Coluna e Nota de Rodapé</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (table)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```table
+%% caption="Distribuição Fenotípica e Genotípica da Prole F1"
+%% align=l, c, c, r
+%% note="Fonte: Prontuários ambulatoriais de genética médica (2026)."
+Fenótipo Observado, Genótipo Provável, Casos (N), Frequência (%)
+Castanho Normal, $B B$, 14, 35.0%
+Castanho Heterozigoto, $B b$, 20, 50.0%
+Olhos Azuis / Verdes, $b b$, 6, 15.0%
+Total Consolidado, -, 40, 100.0%
+```</code></pre>
+            </div>
+
+            <h3>2. Tabela com Larguras Proporcionais de Coluna</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Markdown (table com columns)</span>
+                    <button class="btn-copy" onclick="copyCode(this)">Copiar</button>
+                </div>
+                <pre><code>```table
+%% caption="Parâmetros Fisiológicos Comparativos nos Grupos de Estudo"
+%% columns=2fr, 1fr, 1fr, 1.5fr
+%% align=l, c, c, r
+%% layout.width=95%
+%% note="Dados expressos em média ± desvio padrão. p < 0.05 vs. Controle."
+Parâmetro Avaliado, Grupo Controle, Grupo Intervenção, Nível de Significância
+Pressão Arterial Sistólica (mmHg), 120 ± 8, 115 ± 6, p = 0.042
+Frequência Cardíaca (bpm), 72 ± 5, 68 ± 4, p = 0.018
+Glicemia de Jejum (mg/dL), 88 ± 7, 84 ± 5, p = 0.081
+```</code></pre>
+            </div>
+            <div class="example-result"><div class="example-result-title">Resultado da Renderização</div><img src="../assets/exemplos/table_exemplo.png" alt="Resultado table" loading="lazy"></div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-canonical">
+            <div class="footer-line footer-line-identity">
+                Documentação Oficial e Repositório Aberto Joaju
+            </div>
+            <div class="footer-line footer-line-metadata">
+                Joaju • Orquestrador Declarativo e Compilador Acadêmico • <a href="../LICENSE" target="_blank" rel="noopener">Licença Apache-2.0</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../app.js"></script>
+</body>
+</html>
