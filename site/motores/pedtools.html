@@ -8,26 +8,48 @@
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-    <header class="navbar">
+        <header class="navbar">
         <div class="nav-container">
-            <div class="brand">
-                <a href="../index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="logo-icon">📐</span>
-                    <span class="brand-name">Joaju</span>
-                </a>
-                <span class="badge">pedtools</span>
-            </div>
+            <a href="../index.html" class="brand">
+                <span class="logo-icon">📐</span>
+                <span class="brand-name">Joaju</span>
+                <span class="badge">v0.1.0</span>
+            </a>
             <nav class="nav-links">
-                <a href="../index.html#motores">Todos os Motores</a>
+                <a href="../index.html">Início</a>
+                <a href="../index.html#motores">Motores</a>
+                <a href="../index.html#perfis">Perfis</a>
                 <a href="../index.html#quickstart">Guia Rápido</a>
+                <a href="../index.html#api">API Local</a>
                 <a href="https://codeberg.org/lumenpink/joaju" target="_blank" rel="noopener" class="nav-github">Codeberg ↗</a>
             </nav>
         </div>
     </header>
 
     <main class="content-wrapper">
-        <nav class="breadcrumb">
-            <a href="../index.html">Início</a> &gt; <span>Motores</span> &gt; <strong>pedtools</strong>
+                <nav class="breadcrumb" aria-label="Navegação estrutural">
+            <ol>
+                <li><a href="../index.html">Início</a></li>
+                <li class="separator" aria-hidden="true">/</li>
+                <li><a href="../index.html#motores">Motores</a></li>
+                <li class="separator" aria-hidden="true">/</li>
+                <li aria-current="page"><strong>pedtools</strong></li>
+            </ol>
+        </nav>
+
+        <nav class="subnav-motores" aria-label="Alternar entre motores">
+            <span class="subnav-title">Motores:</span>
+            <ul class="subnav-pills">
+                <li><a href="pedtools.html" class="motor-pill active">🧬 pedtools</a></li>
+                <li><a href="kinship2.html" class="motor-pill">🕰️ kinship2</a></li>
+                <li><a href="quimica.html" class="motor-pill">⚗️ química</a></li>
+                <li><a href="table.html" class="motor-pill">📋 table</a></li>
+                <li><a href="mermaid.html" class="motor-pill">📊 mermaid</a></li>
+                <li><a href="d2.html" class="motor-pill">📐 d2</a></li>
+                <li><a href="plantuml.html" class="motor-pill">☕ plantuml</a></li>
+                <li><a href="graphviz.html" class="motor-pill">🕸️ graphviz</a></li>
+                <li><a href="gist.html" class="motor-pill">📜 gist</a></li>
+            </ul>
         </nav>
 
         <section class="section">
@@ -261,6 +283,13 @@ id,pai,mae,sex,fenotipo,proband,label
 ```</code></pre>
             </div>
         </section>
+        <nav class="motor-pagination" aria-label="Navegação entre páginas de motores">
+            <div></div>
+            <a href="kinship2.html" class="pagination-btn next">
+            <span class="pagination-label">Próximo Motor →</span>
+            <span class="pagination-title">🕰️ kinship2</span>
+        </a>
+        </nav>
     </main>
 
         <footer class="site-footer">
