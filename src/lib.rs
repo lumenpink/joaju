@@ -42,7 +42,21 @@ pub async fn render_handler(
     Json<engine::pedigree::RenderResponse>,
     (StatusCode, Json<engine::pedigree::RenderErrorResponse>),
 > {
-    match engine::pedigree::render_pedigree(&payload.code, payload.format.as_deref()) {
+    let is_chem = payload
+        .format
+        .as_deref()
+        .map(|f| matches!(f, "openchemlib" | "openbabel"))
+        .unwrap_or(false)
+        || payload.code.contains("```openchemlib")
+        || payload.code.contains("```openbabel");
+
+    let result = if is_chem {
+        engine::chem::render_chem(&payload.code, payload.format.as_deref())
+    } else {
+        engine::pedigree::render_pedigree(&payload.code, payload.format.as_deref())
+    };
+
+    match result {
         Ok((fmt, svg)) => Ok(Json(engine::pedigree::RenderResponse {
             format: fmt,
             r#type: "svg".to_string(),
