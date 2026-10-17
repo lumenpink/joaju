@@ -22,3 +22,9 @@ test-results/
 playwright-report/
 .DS_Store
 Thumbs.db
+.antigravity/
+
+
+# Added by cargo
+
+/target

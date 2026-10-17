@@ -1,0 +1,8 @@
+[package]
+name = "joaju"
+version = "0.2.0-dev.1"
+edition = "2021"
+description = "Orquestrador tipográfico acadêmico e compilador científico nativo em Rust"
+license = "Apache-2.0"
+
+[dependencies]
