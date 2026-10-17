@@ -149,5 +149,8 @@ id,pai,mae,sex,fenotipo
     let body = response.into_body().collect().await.unwrap().to_bytes();
     let json: Value = serde_json::from_slice(&body).unwrap();
     let svg = json["svg"].as_str().unwrap();
-    assert!(svg.contains("<line"), "Gêmeos MZ devem gerar linha horizontal de ligação");
+    assert!(
+        svg.contains("<line"),
+        "Gêmeos MZ devem gerar linha horizontal de ligação"
+    );
 }

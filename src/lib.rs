@@ -1,4 +1,12 @@
-use axum::{extract::State, http::Method, response::Json, routing::get, Router};
+pub mod engine;
+
+use axum::{
+    extract::State,
+    http::{Method, StatusCode},
+    response::Json,
+    routing::{get, post},
+    Router,
+};
 use serde::Serialize;
 use std::sync::Arc;
 use std::time::Instant;
@@ -28,6 +36,25 @@ pub async fn health_handler(State(state): State<Arc<AppState>>) -> Json<HealthRe
     })
 }
 
+pub async fn render_handler(
+    Json(payload): Json<engine::pedigree::RenderRequest>,
+) -> Result<
+    Json<engine::pedigree::RenderResponse>,
+    (StatusCode, Json<engine::pedigree::RenderErrorResponse>),
+> {
+    match engine::pedigree::render_pedigree(&payload.code, payload.format.as_deref()) {
+        Ok((fmt, svg)) => Ok(Json(engine::pedigree::RenderResponse {
+            format: fmt,
+            r#type: "svg".to_string(),
+            svg,
+        })),
+        Err(err) => Err((
+            StatusCode::BAD_REQUEST,
+            Json(engine::pedigree::RenderErrorResponse { error: err }),
+        )),
+    }
+}
+
 pub fn create_app() -> Router {
     let state = Arc::new(AppState {
         start_time: Instant::now(),
@@ -41,6 +68,7 @@ pub fn create_app() -> Router {
 
     Router::new()
         .route("/health", get(health_handler))
+        .route("/render", post(render_handler))
         .nest_service("/locales", ServeDir::new("locales"))
         .nest_service("/site", ServeDir::new("site"))
         .nest_service("/public", ServeDir::new("public"))
