@@ -1,4 +1,6 @@
-use joaju::preprocessor::{preprocess_gists, preprocess_images, preprocess_tables, render_single_table};
+use joaju::preprocessor::{
+    preprocess_gists, preprocess_images, preprocess_tables, render_single_table,
+};
 
 #[test]
 fn test_spec_render_abnt_three_line_table() {
@@ -17,10 +19,22 @@ Centro-Oeste | 16.287.000 | 8,0"#;
     assert!(typst.contains("#figure("), "Deve gerar #figure");
     assert!(typst.contains("caption: [População das Regiões do Brasil]"));
     assert!(typst.contains("#table("));
-    assert!(typst.contains("stroke: none"), "Tabela ABNT tem bordas laterais transparentes");
-    assert!(typst.contains("table.hline()"), "Tabela ABNT possui as 3 linhas mestras horizontais");
-    assert!(typst.contains("table.header("), "Cabeçalho com linha inferior");
-    assert!(typst.contains("Fonte: IBGE (2022)"), "Nota de rodapé da tabela com Fonte");
+    assert!(
+        typst.contains("stroke: none"),
+        "Tabela ABNT tem bordas laterais transparentes"
+    );
+    assert!(
+        typst.contains("table.hline"),
+        "Tabela ABNT possui as linhas mestras horizontais"
+    );
+    assert!(
+        typst.contains("table.header("),
+        "Cabeçalho com linha inferior"
+    );
+    assert!(
+        typst.contains("Fonte: IBGE (2022)"),
+        "Nota de rodapé da tabela com Fonte"
+    );
     assert!(typst.contains("Nota: Dados censitários consolidados."));
 }
 
@@ -37,7 +51,10 @@ A | B
 Texto posterior."#;
 
     let processed = preprocess_tables(markdown);
-    assert!(!processed.contains("```table"), "O bloco fence deve ser substituído por typst");
+    assert!(
+        !processed.contains("```table"),
+        "O bloco fence deve ser substituído por typst"
+    );
     assert!(processed.contains("#figure("));
 }
 
@@ -66,4 +83,12 @@ Sam,24,Pendente"#;
     let typst = render_single_table(csv_input).expect("CSV delimitado por vírgula");
     assert!(typst.contains("Lumen"));
     assert!(typst.contains("Ativo"));
+}
+
+#[test]
+fn test_spec_preprocess_gists_in_markdown() {
+    let markdown = "Código:\n```gist\nfn main() {}\n```";
+    let processed = preprocess_gists(markdown);
+    assert!(!processed.contains("```gist"));
+    assert!(processed.contains("fn main() {}"));
 }

@@ -1,4 +1,5 @@
 pub mod engine;
+pub mod preprocessor;
 
 use axum::{
     extract::State,
@@ -49,6 +50,36 @@ pub async fn render_handler(
         .unwrap_or(false)
         || payload.code.contains("```openchemlib")
         || payload.code.contains("```openbabel");
+
+    let is_table = payload
+        .format
+        .as_deref()
+        .map(|f| f == "table")
+        .unwrap_or(false)
+        || payload.code.contains("```table");
+
+    if is_table {
+        let clean = payload.code.trim();
+        let body = if clean.starts_with("```table") {
+            clean
+                .trim_start_matches("```table")
+                .trim_end_matches("```")
+                .trim()
+        } else {
+            clean
+        };
+        return match preprocessor::render_single_table(body) {
+            Ok(typst) => Ok(Json(engine::pedigree::RenderResponse {
+                format: "table".to_string(),
+                r#type: "typst".to_string(),
+                svg: typst,
+            })),
+            Err(err) => Err((
+                StatusCode::BAD_REQUEST,
+                Json(engine::pedigree::RenderErrorResponse { error: err }),
+            )),
+        };
+    }
 
     let result = if is_chem {
         engine::chem::render_chem(&payload.code, payload.format.as_deref())
