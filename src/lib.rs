@@ -1,9 +1,10 @@
+pub mod compiler;
 pub mod engine;
 pub mod preprocessor;
 
 use axum::{
     extract::State,
-    http::{Method, StatusCode},
+    http::{header, HeaderMap, HeaderValue, Method, StatusCode},
     response::Json,
     routing::{get, post},
     Router,
@@ -100,6 +101,23 @@ pub async fn render_handler(
     }
 }
 
+pub async fn compile_handler(
+    Json(payload): Json<compiler::CompileRequest>,
+) -> Result<(HeaderMap, Vec<u8>), (StatusCode, String)> {
+    let md = payload.markdown.unwrap_or_default();
+    match compiler::compile_markdown_to_pdf(&md) {
+        Ok(pdf_bytes) => {
+            let mut headers = HeaderMap::new();
+            headers.insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/pdf"),
+            );
+            Ok((headers, pdf_bytes))
+        }
+        Err(err) => Err((StatusCode::BAD_REQUEST, err)),
+    }
+}
+
 pub fn create_app() -> Router {
     let state = Arc::new(AppState {
         start_time: Instant::now(),
@@ -114,6 +132,7 @@ pub fn create_app() -> Router {
     Router::new()
         .route("/health", get(health_handler))
         .route("/render", post(render_handler))
+        .route("/compile", post(compile_handler))
         .nest_service("/locales", ServeDir::new("locales"))
         .nest_service("/site", ServeDir::new("site"))
         .nest_service("/public", ServeDir::new("public"))
