@@ -1,6 +1,7 @@
 pub mod compiler;
 pub mod engine;
 pub mod preprocessor;
+pub mod unfurl;
 
 use axum::{
     extract::State,
@@ -118,6 +119,41 @@ pub async fn compile_handler(
     }
 }
 
+pub async fn unfurl_handler(
+    Json(payload): Json<unfurl::UnfurlRequest>,
+) -> Result<Json<unfurl::UnfurlResponse>, (StatusCode, Json<unfurl::UnfurlErrorResponse>)> {
+    let url = match payload.url {
+        Some(u) if !u.trim().is_empty() => u.trim().to_string(),
+        _ => {
+            return Err((
+                StatusCode::BAD_REQUEST,
+                Json(unfurl::UnfurlErrorResponse {
+                    ok: false,
+                    error: "Parâmetro \"url\" é obrigatório.".to_string(),
+                }),
+            ));
+        }
+    };
+
+    match unfurl::unfurl_url(&url, payload.archive).await {
+        Ok(resp) => Ok(Json(resp)),
+        Err(err) => {
+            let status = if err.contains("Protocolo inválido") || err.contains("URL inválida") {
+                StatusCode::BAD_REQUEST
+            } else {
+                StatusCode::UNPROCESSABLE_ENTITY
+            };
+            Err((
+                status,
+                Json(unfurl::UnfurlErrorResponse {
+                    ok: false,
+                    error: err,
+                }),
+            ))
+        }
+    }
+}
+
 pub fn create_app() -> Router {
     let state = Arc::new(AppState {
         start_time: Instant::now(),
@@ -133,6 +169,7 @@ pub fn create_app() -> Router {
         .route("/health", get(health_handler))
         .route("/render", post(render_handler))
         .route("/compile", post(compile_handler))
+        .route("/unfurl", post(unfurl_handler))
         .nest_service("/locales", ServeDir::new("locales"))
         .nest_service("/site", ServeDir::new("site"))
         .nest_service("/public", ServeDir::new("public"))

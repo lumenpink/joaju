@@ -3,7 +3,7 @@ use axum::http::{header, Request, StatusCode};
 use base64::{engine::general_purpose, Engine as _};
 use http_body_util::BodyExt;
 use joaju::create_app;
-use joaju::unfurl::{extract_metadata_from_html, UnfurlResponse};
+use joaju::unfurl::extract_metadata_from_html;
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
@@ -91,7 +91,10 @@ fn test_spec_extract_metadata_from_html() {
     let target_url = "https://saude.org/artigos/genetica-medica";
     let meta = extract_metadata_from_html(html, target_url, false).unwrap();
 
-    assert_eq!(meta.title.as_deref(), Some("Novo Avanço na Genética Médica"));
+    assert_eq!(
+        meta.title.as_deref(),
+        Some("Novo Avanço na Genética Médica")
+    );
     assert_eq!(
         meta.description.as_deref(),
         Some("Pesquisadores identificam variante patogênica associada à cardiopatia.")
@@ -100,13 +103,13 @@ fn test_spec_extract_metadata_from_html() {
         meta.image_url.as_deref(),
         Some("https://saude.org/imagens/cardio.png")
     );
-    assert_eq!(
-        meta.site_name.as_deref(),
-        Some("Portal Saúde & Genética")
-    );
+    assert_eq!(meta.site_name.as_deref(), Some("Portal Saúde & Genética"));
     assert_eq!(meta.author.as_deref(), Some("Dra. Lumen Pink"));
     assert_eq!(meta.date.as_deref(), Some("2026-10-15"));
-    assert_eq!(meta.favicon_url.as_deref(), Some("https://saude.org/favicon.svg"));
+    assert_eq!(
+        meta.favicon_url.as_deref(),
+        Some("https://saude.org/favicon.svg")
+    );
     assert_eq!(meta.domain, "saude.org");
     assert!(meta.has_article);
     assert_eq!(meta.reading_time_min, 1);
@@ -138,4 +141,54 @@ fn test_spec_extract_metadata_with_archive_generates_pdf() {
     let pdf_bytes = general_purpose::STANDARD.decode(pdf_b64).unwrap();
     assert!(pdf_bytes.len() > 100);
     assert_eq!(&pdf_bytes[0..5], b"%PDF-");
+}
+
+#[test]
+fn test_mutation_extract_metadata_twitter_cards_and_relative_favicon() {
+    let html = r#"<!DOCTYPE html>
+<html>
+<head>
+    <meta name="twitter:title" content="Twitter Card Title" />
+    <meta name="twitter:description" content="Twitter Card Description" />
+    <meta name="twitter:image" content="/assets/card.jpg" />
+    <meta name="author" content="Reporter Baquara" />
+    <link rel="shortcut icon" href="/static/custom.ico" />
+</head>
+<body>
+    <div>Apenas uma nota breve sobre atualizações do laboratório.</div>
+</body>
+</html>"#;
+
+    let target_url = "https://noticias.org/lab/updates";
+    let meta = extract_metadata_from_html(html, target_url, false).unwrap();
+
+    assert_eq!(meta.title.as_deref(), Some("Twitter Card Title"));
+    assert_eq!(
+        meta.description.as_deref(),
+        Some("Twitter Card Description")
+    );
+    assert_eq!(
+        meta.image_url.as_deref(),
+        Some("https://noticias.org/assets/card.jpg")
+    );
+    assert_eq!(meta.author.as_deref(), Some("Reporter Baquara"));
+    assert_eq!(
+        meta.favicon_url.as_deref(),
+        Some("https://noticias.org/static/custom.ico")
+    );
+    assert_eq!(meta.domain, "noticias.org");
+    assert!(!meta.has_article);
+}
+
+#[test]
+fn test_mutation_extract_metadata_empty_body_fallback() {
+    let html =
+        r#"<!DOCTYPE html><html><head><title>Página Vazia</title></head><body></body></html>"#;
+    let target_url = "https://vazio.org";
+    let meta = extract_metadata_from_html(html, target_url, false).unwrap();
+
+    assert_eq!(meta.title.as_deref(), Some("Página Vazia"));
+    assert_eq!(meta.reading_time_min, 1);
+    assert!(!meta.has_article);
+    assert_eq!(meta.domain, "vazio.org");
 }
