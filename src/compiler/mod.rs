@@ -4,9 +4,13 @@ use regex::Regex;
 use serde::Deserialize;
 use typst_as_lib::TypstEngine;
 
+static TEMPLATE_UFSC: &str = include_str!("../../data/trabalho-ufsc.typ");
+static TEMPLATE_ABNT: &str = include_str!("../../data/template.typ");
+
 #[derive(Debug, Deserialize)]
 pub struct CompileRequest {
     pub markdown: Option<String>,
+    pub template: Option<String>,
 }
 
 pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
@@ -84,13 +88,25 @@ pub fn convert_markdown_to_typst(md: &str) -> String {
 }
 
 pub fn compile_markdown_to_pdf(markdown: &str) -> Result<Vec<u8>, String> {
+    compile_markdown_to_pdf_with_options(markdown, None)
+}
+
+pub fn compile_markdown_to_pdf_with_options(
+    markdown: &str,
+    template_override: Option<&str>,
+) -> Result<Vec<u8>, String> {
     let clean_md = markdown.trim();
     if clean_md.is_empty() {
         return Err("Conteúdo Markdown vazio".to_string());
     }
 
     let mut title = "Documento Acadêmico".to_string();
+    let mut subtitle: Option<String> = None;
     let mut author = "".to_string();
+    let mut institution = "".to_string();
+    let mut city = "".to_string();
+    let mut year = "".to_string();
+    let mut template_name = template_override.map(|s| s.to_string());
 
     let mut body_md = clean_md;
     if let Some(stripped) = clean_md.strip_prefix("---") {
@@ -103,8 +119,18 @@ pub fn compile_markdown_to_pdf(markdown: &str) -> Result<Vec<u8>, String> {
                     let val = v.trim().trim_matches('"').trim_matches('\'').to_string();
                     if key == "titulo" || key == "title" {
                         title = val;
+                    } else if key == "subtitulo" || key == "subtitle" {
+                        subtitle = Some(val);
                     } else if key == "autor" || key == "author" {
                         author = val;
+                    } else if key == "instituicao" || key == "institution" {
+                        institution = val;
+                    } else if key == "local" || key == "city" {
+                        city = val;
+                    } else if key == "ano" || key == "year" {
+                        year = val;
+                    } else if (key == "template" || key == "modelo") && template_name.is_none() {
+                        template_name = Some(val);
                     }
                 }
             }
@@ -118,22 +144,66 @@ pub fn compile_markdown_to_pdf(markdown: &str) -> Result<Vec<u8>, String> {
     processed = convert_markdown_to_typst(&processed);
 
     let mut typst_code = String::new();
-    typst_code.push_str(
-        "#set page(paper: \"a4\", margin: (top: 2.5cm, bottom: 2.5cm, left: 3cm, right: 2cm))\n",
-    );
-    typst_code.push_str("#set text(size: 11pt, lang: \"pt\")\n");
-    typst_code.push_str("#set par(justify: true, leading: 0.75em)\n\n");
 
-    typst_code.push_str(&format!("= {}\n\n", title));
-    if !author.is_empty() {
-        typst_code.push_str(&format!("*{}*\n\n", author));
+    match template_name.as_deref() {
+        Some("trabalho-ufsc") | Some("ufsc") => {
+            typst_code.push_str("#import \"trabalho-ufsc.typ\": trabalho_ufsc\n\n");
+            typst_code.push_str("#show: doc => trabalho_ufsc(\n  doc,\n");
+            if !institution.is_empty() {
+                typst_code.push_str(&format!(
+                    "  instituicao: \"{}\",\n",
+                    institution.replace('"', "\\\"")
+                ));
+            }
+            if !author.is_empty() {
+                typst_code.push_str(&format!("  autor: \"{}\",\n", author.replace('"', "\\\"")));
+            }
+            typst_code.push_str(&format!("  titulo: \"{}\",\n", title.replace('"', "\\\"")));
+            if let Some(ref sub) = subtitle {
+                typst_code.push_str(&format!("  subtitulo: \"{}\",\n", sub.replace('"', "\\\"")));
+            }
+            if !city.is_empty() {
+                typst_code.push_str(&format!("  local: \"{}\",\n", city.replace('"', "\\\"")));
+            }
+            if !year.is_empty() {
+                typst_code.push_str(&format!("  ano: \"{}\",\n", year.replace('"', "\\\"")));
+            }
+            typst_code.push_str(")\n\n");
+            typst_code.push_str(&processed);
+        }
+        Some("abnt") | Some("artigo") => {
+            typst_code.push_str("#import \"template.typ\": abnt\n\n");
+            typst_code.push_str("#show: doc => abnt(doc)\n\n");
+            typst_code.push_str(&format!("= {}\n\n", title));
+            if !author.is_empty() {
+                typst_code.push_str(&format!("*{}*\n\n", author));
+            }
+            typst_code.push_str("#v(0.5cm)\n\n");
+            typst_code.push_str(&processed);
+        }
+        _ => {
+            typst_code.push_str(
+                "#set page(paper: \"a4\", margin: (top: 2.5cm, bottom: 2.5cm, left: 3cm, right: 2cm))\n",
+            );
+            typst_code.push_str("#set text(size: 11pt, lang: \"pt\")\n");
+            typst_code.push_str("#set par(justify: true, leading: 0.75em)\n\n");
+
+            typst_code.push_str(&format!("= {}\n\n", title));
+            if !author.is_empty() {
+                typst_code.push_str(&format!("*{}*\n\n", author));
+            }
+            typst_code.push_str("#v(0.5cm)\n\n");
+            typst_code.push_str(&processed);
+        }
     }
-    typst_code.push_str("#v(0.5cm)\n\n");
-    typst_code.push_str(&processed);
 
     let engine = TypstEngine::builder()
         .search_fonts_with(typst_as_lib::typst_kit_options::TypstKitFontOptions::default())
-        .with_static_source_file_resolver([("main.typ", typst_code.as_str())])
+        .with_static_source_file_resolver([
+            ("main.typ", typst_code.as_str()),
+            ("trabalho-ufsc.typ", TEMPLATE_UFSC),
+            ("template.typ", TEMPLATE_ABNT),
+        ])
         .with_static_file_resolver(assets.iter().map(|(n, b)| (n.as_str(), b.as_slice())))
         .build();
 

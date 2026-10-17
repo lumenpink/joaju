@@ -123,7 +123,10 @@ template: trabalho-ufsc
 "#;
 
     // Versão 1 (apenas introdução)
-    let md_v1 = format!("{}\n# Introdução\n\nPrimeiro rascunho no Mandu.", frontmatter);
+    let md_v1 = format!(
+        "{}\n# Introdução\n\nPrimeiro rascunho no Mandu.",
+        frontmatter
+    );
     let payload_v1 = json!({ "markdown": md_v1 });
 
     let response_v1 = app
@@ -168,4 +171,111 @@ template: trabalho-ufsc
     assert!(pdf_v2.len() > pdf_v1.len());
     assert_eq!(&pdf_v1[0..5], b"%PDF-");
     assert_eq!(&pdf_v2[0..5], b"%PDF-");
+}
+
+#[tokio::test]
+async fn test_mutation_template_with_missing_fields_defaults_cleanly() {
+    let app = create_app();
+
+    let input_markdown = r#"---
+template: trabalho-ufsc
+---
+
+# Título do Trabalho Sem Autor Nem Instituição Declarados
+
+Corpo do documento."#;
+
+    let payload = json!({
+        "markdown": input_markdown
+    });
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/compile")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let pdf_bytes = response.into_body().collect().await.unwrap().to_bytes();
+    assert!(pdf_bytes.len() > 500);
+    assert_eq!(&pdf_bytes[0..5], b"%PDF-");
+}
+
+#[tokio::test]
+async fn test_mutation_payload_template_override_takes_precedence_over_frontmatter() {
+    let app = create_app();
+
+    // Frontmatter diz ABNT, mas o payload força trabalho-ufsc (com capa)
+    let input_markdown = r#"---
+titulo: Estudo de Caso Genético
+autor: Dr. Baquara
+template: abnt
+---
+
+# Introdução
+
+Corpo sob template UFSC forçado pelo payload."#;
+
+    let payload = json!({
+        "markdown": input_markdown,
+        "template": "trabalho-ufsc"
+    });
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/compile")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let pdf_bytes = response.into_body().collect().await.unwrap().to_bytes();
+    assert!(pdf_bytes.len() > 1000);
+    assert_eq!(&pdf_bytes[0..5], b"%PDF-");
+}
+
+#[tokio::test]
+async fn test_mutation_unknown_template_falls_back_to_default_cleanly() {
+    let app = create_app();
+
+    let input_markdown = r#"---
+titulo: Documento com Template Inexistente
+template: formato-alienigena-v9
+---
+
+# Capítulo 1
+
+Texto normal que deve compilar via fallback padrão."#;
+
+    let payload = json!({
+        "markdown": input_markdown
+    });
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/compile")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let pdf_bytes = response.into_body().collect().await.unwrap().to_bytes();
+    assert!(pdf_bytes.len() > 500);
+    assert_eq!(&pdf_bytes[0..5], b"%PDF-");
 }

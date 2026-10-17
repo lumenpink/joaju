@@ -106,7 +106,7 @@ pub async fn compile_handler(
     Json(payload): Json<compiler::CompileRequest>,
 ) -> Result<(HeaderMap, Vec<u8>), (StatusCode, String)> {
     let md = payload.markdown.unwrap_or_default();
-    match compiler::compile_markdown_to_pdf(&md) {
+    match compiler::compile_markdown_to_pdf_with_options(&md, payload.template.as_deref()) {
         Ok(pdf_bytes) => {
             let mut headers = HeaderMap::new();
             headers.insert(
