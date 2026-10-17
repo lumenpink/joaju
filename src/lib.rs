@@ -138,7 +138,10 @@ pub async fn unfurl_handler(
     match unfurl::unfurl_url(&url, payload.archive).await {
         Ok(resp) => Ok(Json(resp)),
         Err(err) => {
-            let status = if err.contains("Protocolo inválido") || err.contains("URL inválida") {
+            let status = if err.contains("Protocolo inválido")
+                || err.contains("URL inválida")
+                || err.contains("não é permitido")
+            {
                 StatusCode::BAD_REQUEST
             } else {
                 StatusCode::UNPROCESSABLE_ENTITY

@@ -33,6 +33,34 @@ pub fn render_pedigree(
         (forced_format.unwrap_or("pedtools"), raw_code)
     };
 
+    let clean = content.trim();
+    if clean.is_empty() {
+        return Err("Heredograma vazio".to_string());
+    }
+
+    let mut data_lines = 0;
+    for line in clean.lines() {
+        let t = line.trim();
+        if t.is_empty() || t.starts_with('#') || t.starts_with("%%") {
+            continue;
+        }
+        let cols: Vec<&str> = if t.contains(',') {
+            t.split(',').collect()
+        } else {
+            t.split_whitespace().collect()
+        };
+        if cols.len() < 4 {
+            return Err(format!(
+                "Linha de heredograma malformada (mínimo de 4 colunas): '{}'",
+                t
+            ));
+        }
+        data_lines += 1;
+    }
+    if data_lines == 0 {
+        return Err("Nenhum indivíduo encontrado no heredograma".to_string());
+    }
+
     let (ped, directives) = Ped::from_text(content).map_err(|e| e.to_string())?;
 
     let layout_opts = LayoutOptions::default();

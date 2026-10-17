@@ -208,6 +208,20 @@ pub async fn unfurl_url(target_url: &str, archive: bool) -> Result<UnfurlRespons
         return Err("Protocolo inválido. Apenas http e https são permitidos.".to_string());
     }
 
+    if let Some(host) = parsed_url.host_str() {
+        let host_lower = host.to_lowercase();
+        if host_lower == "localhost"
+            || host_lower == "127.0.0.1"
+            || host_lower == "::1"
+            || host_lower.starts_with("192.168.")
+            || host_lower.starts_with("10.")
+            || host_lower.starts_with("172.16.")
+            || host_lower.ends_with(".local")
+        {
+            return Err("Acesso a endereços locais ou privados não é permitido.".to_string());
+        }
+    }
+
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(12))
         .build()
