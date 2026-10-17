@@ -508,4 +508,10 @@ Este repositório adota as diretrizes do padrão **GOST v1.0.0-draft** (perfil `
 
 ## 📄 Licença
 
-Projeto desenvolvido para automação acadêmica e clínica sob licença [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Este projeto é software livre e de código aberto distribuído sob a licença **Apache-2.0**:
+
+| Componente | Licença | Arquivo |
+| :--- | :--- | :--- |
+| **Código-Fonte e Core** | Apache-2.0 | [`LICENSE`](LICENSE) |
+| **Logotipos e Identidade** | CC-BY-ND-4.0 | [`LICENSE-LOGO`](LICENSE-LOGO) |
+| **Mídias e Ilustrações** | CC-BY-SA-4.0 | [`LICENSE-MEDIA`](LICENSE-MEDIA) |
