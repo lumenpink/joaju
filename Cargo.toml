@@ -23,6 +23,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 pedigreers = { path = "../pedigreers" }
 regex = "1"
+chematic-smiles = "1.1"
+chematic-depict = { version = "1.1", default-features = false }
 
 [dev-dependencies]
 reqwest = { version = "0.12", features = ["json"] }
