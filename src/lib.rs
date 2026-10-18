@@ -78,7 +78,9 @@ pub async fn render_handler(
             })),
             Err(err) => Err((
                 StatusCode::BAD_REQUEST,
-                Json(engine::pedigree::RenderErrorResponse { error: err }),
+                Json(engine::pedigree::RenderErrorResponse {
+                    error: err.to_string(),
+                }),
             )),
         };
     }

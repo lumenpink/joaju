@@ -38,8 +38,47 @@ pub fn render_pedigree(
         return Err("Heredograma vazio".to_string());
     }
 
+    // Resolução SSOT (Ticket #21) via ssot-rs
+    let (directives, body) = ssot_rs::split_block_content(content);
+    let is_ssrot_block = directives.contains_key("src")
+        || directives.contains_key("file")
+        || directives.contains_key("select")
+        || directives.contains_key("where");
+
+    let resolved_ped_text = if is_ssrot_block {
+        let dataset = if let Some(src_path) = directives
+            .get("src")
+            .or_else(|| directives.get("file"))
+            .or_else(|| directives.get("arquivo"))
+        {
+            ssot_rs::Dataset::from_file(src_path).map_err(|e| e.to_string())?
+        } else {
+            ssot_rs::Dataset::from_csv(&body).map_err(|e| e.to_string())?
+        };
+
+        let select_expr = directives.get("select").map(|s| s.as_str());
+        let where_expr = directives.get("where").map(|s| s.as_str());
+        let queried = dataset
+            .apply_query(select_expr, where_expr)
+            .map_err(|e| e.to_string())?;
+
+        let csv_output = queried.to_csv().map_err(|e| e.to_string())?;
+
+        // Preserva diretivas de layout, legendas, etc.
+        let mut final_text = String::new();
+        for (k, v) in &directives {
+            if k != "src" && k != "file" && k != "arquivo" && k != "select" && k != "where" {
+                final_text.push_str(&format!("%% {}={}\n", k, v));
+            }
+        }
+        final_text.push_str(&csv_output);
+        final_text
+    } else {
+        content.to_string()
+    };
+
     let mut data_lines = 0;
-    for line in clean.lines() {
+    for line in resolved_ped_text.lines() {
         let t = line.trim();
         if t.is_empty() || t.starts_with('#') || t.starts_with("%%") {
             continue;
@@ -61,7 +100,7 @@ pub fn render_pedigree(
         return Err("Nenhum indivíduo encontrado no heredograma".to_string());
     }
 
-    let (ped, directives) = Ped::from_text(content).map_err(|e| e.to_string())?;
+    let (ped, parsed_directives) = Ped::from_text(&resolved_ped_text).map_err(|e| e.to_string())?;
 
     let layout_opts = LayoutOptions::default();
     let layout = ped
@@ -69,8 +108,8 @@ pub fn render_pedigree(
         .map_err(|e| e.to_string())?;
 
     let mut render_opts = RenderOptions::default();
-    if directives.has_legend() {
-        render_opts.legend = Some(directives.to_legend_config());
+    if parsed_directives.has_legend() {
+        render_opts.legend = Some(parsed_directives.to_legend_config());
     }
 
     let svg = ped.render_svg(&layout, &render_opts);

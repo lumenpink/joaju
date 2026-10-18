@@ -22,6 +22,9 @@ serde_json = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 pedigreers = { path = "../pedigreers" }
+ssot-rs = { path = "../ssot-rs" }
+table-rs = { path = "../table-rs" }
+unfurl-rs = { path = "../unfurl-rs" }
 regex = "1"
 chematic-smiles = "1.1"
 chematic-depict = { version = "1.1", default-features = false }
