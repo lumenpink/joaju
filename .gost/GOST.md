@@ -7,6 +7,7 @@
 ### 🌳 Árvore de Herança e Precedência Resolvida:
 1. Camada 1: `https://gost.2lp.in/SPEC.md`
 2. Camada 2: `https://kollontai.2lp.in/profile.md`
+3. Camada Local Soberana: `CUSTOM.md`
 
 ---
 
@@ -1430,4 +1431,14 @@ Para garantir segurança, integridade e atualização contínua de imagens de co
    - **Acionamento por Webhook (`WATCHTOWER_HTTP_API_TOKEN`):** Disparo autenticado via POST HTTP disparado automaticamente pelo pipeline de CI/CD do Codeberg após a publicação da nova imagem no registry.
 
 ---
+
+<!-- ===================================================================== -->
+<!-- CAMADA LOCAL SOBERANA: CUSTOM.md (Precedência Máxima do Repositório) -->
+<!-- ===================================================================== -->
+
+# Local GOST Directives & Overrides
+
+## Language & Documentation Standards
+- **Mandatory Language:** All subcrate documentation, docstrings, module documentation, metadata (`Cargo.toml`), commit messages, tickets, and forge issues **MUST** be written in English.
+- **Terminology Guidelines:** Do NOT use colloquial or ideologically charged terms such as *"sovereign"*, *"soberano"*, or equivalents. Use standard, professional engineering terminology (e.g., *"high-performance"*, *"deterministic"*, *"robust"*, *"resilient"*).
 
