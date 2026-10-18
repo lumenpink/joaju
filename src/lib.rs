@@ -1,3 +1,19 @@
+//! # Joaju
+//!
+//! Orquestrador tipográfico acadêmico e compilador científico nativo em Rust.
+//!
+//! > ⚠️ **Aviso de Versão em Desenvolvimento Ativo (pre-1.0 / dev)**: O Joaju encontra-se
+//! > em desenvolvimento inicial ativo (`0.2.x`). A API e contratos HTTP estão sujeitos a
+//! > melhorias e ajustes antes da versão estável 1.0.0.
+//!
+//! ## Exemplo Rápido
+//!
+//! ```rust
+//! use joaju::create_app;
+//!
+//! let app = create_app();
+//! ```
+
 pub mod compiler;
 pub mod engine;
 pub mod preprocessor;

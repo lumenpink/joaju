@@ -1,8 +1,15 @@
 # Joaju (djo-a-DJÚ)
 
-> **Joaju** (*Guarani*): Elo, união recíproca, conexão, aresta.
->
-> Orquestrador declarativo local e compilador acadêmico para produção de diagramas e gráficos científicos, com extensão para heredogramas clínicos.
+[![crates.io](https://img.shields.io/crates/v/joaju.svg)](https://crates.io/crates/joaju)
+[![docs.rs](https://docs.rs/joaju/badge.svg)](https://docs.rs/joaju)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![GOST](https://img.shields.io/badge/GOST-1.1.0-emerald.svg)](https://codeberg.org/lumenpink/gost)
+
+> **Joaju** (*Guarani*): Elo, união recíproca, conexão, aresta.  
+> Orquestrador declarativo local e compilador acadêmico científico nativo em Rust para produção tipográfica em Typst, gráficos, tabelas ABNT e heredogramas clínicos.
+
+> ⚠️ **Aviso de Versão em Desenvolvimento Ativo (pre-1.0 / dev)**  
+> O Joaju encontra-se em desenvolvimento inicial ativo (`0.2.x`). A API e endpoints HTTP estão em constante evolução antes da estabilização da versão 1.0.0. Feedback e contribuições são muito bem-vindos!
 
 ## 📌 Visão Geral
 
