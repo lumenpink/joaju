@@ -1,4 +1,4 @@
-use pedigreers::prelude::*;
+use pedigree_rs::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 

@@ -1776,7 +1776,7 @@ dependencies = [
  "chematic-depict",
  "chematic-smiles",
  "http-body-util",
- "pedigreers",
+ "pedigree-rs",
  "regex",
  "reqwest",
  "scraper",
@@ -2301,7 +2301,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pedigreers"
+name = "pedigree-rs"
 version = "0.1.0-dev.1"
 dependencies = [
  "clap",
@@ -2309,6 +2309,7 @@ dependencies = [
  "petgraph",
  "serde",
  "serde_json",
+ "ssot-rs",
  "thiserror",
 ]
 
