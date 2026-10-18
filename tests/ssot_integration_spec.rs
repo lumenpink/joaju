@@ -94,3 +94,34 @@ fn test_ssot_with_official_pedigree_headers() {
 
     let _ = fs::remove_file(csv_path);
 }
+
+#[test]
+fn test_ssot_combined_text_and_numeric_filters() {
+    let csv_content = r#"id,pai,mae,sex,geracao,status,fenotipo
+1,0,0,M,1,ativo,wt
+2,0,0,F,1,ativo,wt
+3,1,2,M,2,inativo,afetado
+4,1,2,F,2,ativo,afetado
+"#;
+    let tmp_dir = std::env::temp_dir();
+    let csv_path = tmp_dir.join("joaju_ssot_combined.csv");
+    fs::write(&csv_path, csv_content).expect("falha ao criar CSV combinado");
+
+    let md = format!(
+        r#"# Estudo com Filtros Compostos
+
+```pedtools
+%% src={}
+%% select=id, pai, mae, sex, fenotipo
+%% where=geracao <= 2 and status == ativo
+```
+"#,
+        csv_path.display()
+    );
+
+    let (processed_md, assets) = joaju::compiler::preprocess_code_blocks(&md);
+    assert_eq!(assets.len(), 1);
+    assert!(processed_md.contains("#image(\"asset_ped_0.svg\")"));
+
+    let _ = fs::remove_file(csv_path);
+}
