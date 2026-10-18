@@ -201,9 +201,19 @@ id,pai,mae,sex,fenotipo,proband,label
 **Resultado Pré-executado:**
 ![Resultado kinship2](site/assets/exemplos/kinship2_exemplo.png)
 
-#### 3.3. Tabelas Acadêmicas (`table`)
+#### 3.3. Tabelas Acadêmicas (`table`) & Fonte Única de Dados (SSOT)
 
-Transforma dados CSV em tabelas tipográficas conforme ABNT NBR 14724 e APA:
+Transforma dados CSV em tabelas tipográficas de 3 linhas conforme ABNT NBR 14724 e APA, com suporte a **Fonte Única de Dados (SSOT)** compartilhada via crate `ssot-rs`:
+
+```table
+%% src=dados/familia.csv
+%% title=Tabela 1 – Fenótipos do Sistema ABO da Família
+%% select=id, pai, mae, sexo, fenotipo_abo
+%% where=geracao <= 2
+%% note=Fonte: Elaborado pelos autores a partir do SSOT (2026).
+```
+
+Tabelas inline diretas também são suportadas com delimitação por vírgula ou markdown (`|`):
 
 ```table
 %% caption="Segregação Fenotípica e Genotípica na Geração F2 de Ervilhas (Pisum sativum)"
