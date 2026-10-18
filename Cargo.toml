@@ -1,8 +1,8 @@
 [package]
 name = "joaju"
-version = "0.2.0-dev.1"
+version = "0.1.0"
 edition = "2021"
-description = "Orquestrador tipográfico acadêmico e compilador científico nativo em Rust"
+description = "A scientific academic compiler and typographical orchestrator in Rust for Typst, clinical pedigrees, and tables"
 license = "Apache-2.0"
 repository = "https://codeberg.org/lumenpink/joaju"
 homepage = "https://codeberg.org/lumenpink/joaju"
