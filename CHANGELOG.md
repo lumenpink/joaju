@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 ### Features
+  - (pipeline) fonte unica de dados SSOT via CSV com projecoes e filtros (closes #21)
+  - (modularizacao) desacoplamento soberano em crates ssot-rs, table-rs e unfurl-rs (#21)
   - add canonical engines, zip workspace compilation and eliminate legacy tags
   - (render) adicionar motores openchemlib, openbabel e tabelas academicas booktabs
   - (render) adicionar motor pedtools, canonicalizar tags e suportar fontes remotas
