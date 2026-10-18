@@ -1776,14 +1776,15 @@ dependencies = [
  "chematic-depict",
  "chematic-smiles",
  "http-body-util",
- "pedigree-rs",
+ "joaju-csv",
+ "joaju-pedigree",
+ "joaju-table",
+ "joaju-unfurl",
  "regex",
  "reqwest",
  "scraper",
  "serde",
  "serde_json",
- "ssot-rs",
- "table-rs",
  "tokio",
  "tower",
  "tower-http",
@@ -1793,7 +1794,57 @@ dependencies = [
  "typst-as-lib",
  "typst-layout",
  "typst-pdf",
- "unfurl-rs",
+]
+
+[[package]]
+name = "joaju-csv"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "csv",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-pedigree"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "csv",
+ "joaju-csv",
+ "petgraph",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-table"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "joaju-csv",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-unfurl"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "clap",
+ "reqwest",
+ "scraper",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -2298,19 +2349,6 @@ dependencies = [
  "itoa",
  "memchr",
  "ryu",
-]
-
-[[package]]
-name = "pedigree-rs"
-version = "0.1.0-dev.1"
-dependencies = [
- "clap",
- "csv",
- "petgraph",
- "serde",
- "serde_json",
- "ssot-rs",
- "thiserror",
 ]
 
 [[package]]
@@ -3287,18 +3325,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3763264f6b73151db08c50ff20d7d8a0b8796e021cdea7ceedad07b80155fa0e"
 
 [[package]]
-name = "ssot-rs"
-version = "0.1.0-dev.1"
-dependencies = [
- "clap",
- "csv",
- "regex",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
 name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3488,18 +3514,6 @@ checksum = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4"
 dependencies = [
  "core-foundation-sys",
  "libc",
-]
-
-[[package]]
-name = "table-rs"
-version = "0.1.0-dev.1"
-dependencies = [
- "clap",
- "regex",
- "serde",
- "serde_json",
- "ssot-rs",
- "thiserror",
 ]
 
 [[package]]
@@ -4233,20 +4247,6 @@ dependencies = [
  "smallvec",
  "thin-vec",
  "unicode-math-class",
-]
-
-[[package]]
-name = "unfurl-rs"
-version = "0.1.0-dev.1"
-dependencies = [
- "base64 0.22.1",
- "clap",
- "reqwest",
- "scraper",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
 ]
 
 [[package]]

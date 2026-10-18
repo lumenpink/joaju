@@ -1,4 +1,4 @@
-use pedigree_rs::prelude::*;
+use joaju_pedigree::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
@@ -38,8 +38,8 @@ pub fn render_pedigree(
         return Err("Heredograma vazio".to_string());
     }
 
-    // Resolução SSOT (Ticket #21) via ssot-rs
-    let (directives, body) = ssot_rs::split_block_content(content);
+    // Resolução tabular via joaju-csv
+    let (directives, body) = joaju_csv::split_block_content(content);
     let is_ssrot_block = directives.contains_key("src")
         || directives.contains_key("file")
         || directives.contains_key("select")
@@ -51,9 +51,9 @@ pub fn render_pedigree(
             .or_else(|| directives.get("file"))
             .or_else(|| directives.get("arquivo"))
         {
-            ssot_rs::Dataset::from_file(src_path).map_err(|e| e.to_string())?
+            joaju_csv::Dataset::from_file(src_path).map_err(|e| e.to_string())?
         } else {
-            ssot_rs::Dataset::from_csv(&body).map_err(|e| e.to_string())?
+            joaju_csv::Dataset::from_csv(&body).map_err(|e| e.to_string())?
         };
 
         let select_expr = directives.get("select").map(|s| s.as_str());

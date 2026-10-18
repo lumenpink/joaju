@@ -28,10 +28,10 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-pedigree-rs = { version = "0.1.0-dev.1", path = "../pedigree-rs" }
-ssot-rs = { version = "0.1.0-dev.1", path = "../ssot-rs" }
-table-rs = { version = "0.1.0-dev.1", path = "../table-rs" }
-unfurl-rs = { version = "0.1.0-dev.1", path = "../unfurl-rs" }
+joaju-pedigree = { version = "0.1.0", path = "../joaju-pedigree" }
+joaju-csv = { version = "0.1.0", path = "../joaju-csv" }
+joaju-table = { version = "0.1.0", path = "../joaju-table" }
+joaju-unfurl = { version = "0.1.0", path = "../joaju-unfurl" }
 regex = "1"
 chematic-smiles = "1.1"
 chematic-depict = { version = "1.1", default-features = false }

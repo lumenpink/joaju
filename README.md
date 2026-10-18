@@ -210,7 +210,7 @@ id,pai,mae,sex,fenotipo,proband,label
 
 #### 3.3. Tabelas Acadêmicas (`table`) & Fonte Única de Dados (SSOT)
 
-Transforma dados CSV em tabelas tipográficas de 3 linhas conforme ABNT NBR 14724 e APA, com suporte a **Fonte Única de Dados (SSOT)** compartilhada via crate `ssot-rs`:
+Transforma dados CSV em tabelas tipográficas de 3 linhas conforme ABNT NBR 14724 e APA, com suporte a **Fonte Única de Dados (SSOT)** compartilhada via crate `joaju-csv`:
 
 ```table
 %% src=dados/familia.csv
