@@ -5,336 +5,336 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GOST](https://img.shields.io/badge/GOST-1.1.0-emerald.svg)](https://codeberg.org/lumenpink/gost)
 
-> **Joaju** (*Guarani*): Elo, união recíproca, conexão, aresta.  
-> Orquestrador declarativo local e compilador acadêmico científico nativo em Rust para produção tipográfica em Typst, gráficos, tabelas ABNT e heredogramas clínicos.
+> **Joaju** (*Guarani*): Link, reciprocal bond, connection, edge.  
+> Declarative local orchestrator and native scientific academic compiler in Rust for Typst typographical output, charts, academic tables, and clinical pedigrees.
 
-> ⚠️ **Aviso de Versão em Desenvolvimento Ativo (pre-1.0 / dev)**  
-> O Joaju encontra-se em desenvolvimento inicial ativo (`0.2.x`). A API e endpoints HTTP estão em constante evolução antes da estabilização da versão 1.0.0. Feedback e contribuições são muito bem-vindos!
+> ⚠️ **Active Development Notice (pre-1.0 / dev)**  
+> Joaju is currently in early active development (`0.2.x`). The API and HTTP endpoints are evolving prior to stabilizing version 1.0.0. Feedback and contributions are welcome!
 
-## 📌 Visão Geral
+## 📌 Overview
 
-O **Joaju** é um pipeline de diagramação e compilação acadêmica focado em privacidade, controle e proteção de dados (aderência estrita à LGPD) e ergonomia no **Obsidian**. Ele atua como uma ponte entre anotações em Markdown e publicações acadêmicas/técnicas no padrão ABNT ou Vancouver.
+**Joaju** is an academic layout and compilation pipeline focused on privacy, deterministic execution, data protection compliance (strict LGPD alignment), and ergonomic integration with **Obsidian**. It acts as a bridge between Markdown notes and academic/technical publications compliant with standards such as ABNT or Vancouver.
 
-Em vez de sobrecarregar editores de texto com renderizadores pesados ou depender de serviços externos que violam o sigilo de dados, o Joaju encapsula uma stack de microsserviços via Docker que resolve:
+Rather than overloading text editors with heavy renderers or relying on third-party cloud services that compromise data confidentiality, Joaju encapsulates a Docker-backed microservice stack that provides:
 
-1. **Diagramas Multimotor & Gráficos Científicos:** Renderização de fluxogramas, arquiteturas e grafos (Mermaid, Graphviz, PlantUML) através de integração transparente com o Kroki, com controle de escala sem injeção de HTML no editor.
+1. **Multi-Engine Diagrams & Scientific Graphics:** Rendering flowcharts, system architectures, and graphs (Mermaid, Graphviz, PlantUML) via seamless integration with Kroki, featuring layout scale control without injecting HTML into the editor.
 
-2. **Compilação Tipográfica Híbrida:** Uso do Pandoc (`--citeproc`) para resolução bibliográfica robusta integrada ao Zotero, compilando a saída estruturada em alta velocidade com o **Typst** e templates ABNT NBR 14724.
+2. **Hybrid Typographical Compilation:** Leveraging Pandoc (`--citeproc`) for robust bibliographic resolution integrated with Zotero, compiling structured output at high speed with **Typst** and academic templates (e.g., ABNT NBR 14724).
 
-3. **Módulo Especializado de Heredogramas:** Processamento determinístico de árvores genealógicas clínicas via script R nativo (`kinship2`), convertendo tabelas simples em SVGs conformes às diretrizes da *National Society of Genetic Counselors* (NSGC) e da *American College of Medical Genetics* (ACMG).
+3. **Specialized Pedigree Module:** Deterministic processing of clinical pedigrees via native R engines (`kinship2` / `pedtools`), converting tabular records into standards-compliant SVGs aligned with the guidelines of the *National Society of Genetic Counselors* (NSGC) and the *American College of Medical Genetics* (ACMG).
 
-## 🏗️ Arquitetura do Pipeline
+## 🏗️ Pipeline Architecture
 
 ```mermaid
 flowchart TD
     subgraph Obsidian [Obsidian Vault / Desktop & Tablet]
-        MD[Nota Markdown com YAML e blocos declarativos]
-        TP[Script de automação Templater]
-        MD -->|Atalho de Teclado| TP
+        MD["Markdown Note with YAML & Declarative Blocks"]
+        TP["Templater Automation Script"]
+        MD -->|"Hotkey"| TP
     end
 
-    subgraph Docker [Stack Docker Local - Joaju]
+    subgraph Docker [Local Docker Stack - Joaju]
         direction TB
-        SRV[server.js - Orquestrador Node.js :3000]
-        TP -->|POST /compile| SRV
+        SRV["server.js - Node.js Orchestrator :3000"]
+        TP -->|"POST /compile"| SRV
 
-        subgraph Preprocess [Pré-processamento Dinâmico]
+        subgraph Preprocess [Dynamic Preprocessing]
             direction LR
-            H_BLK["Bloco kinship2 / pedtools"] -->|CSV + Diretivas %%| R_ENG[Rscript pedtools / kinship2]
-            M_BLK["Bloco mermaid"] -->|Código + Diretivas %%| KRK[Kroki Gateway + Chromium Headless]
-            R_ENG -->|Vetor SVG| TYP_INJ1[Injeção Typst Raw Block]
-            KRK -->|PNG Alta Resolução| TYP_INJ2[Injeção Typst Raw Block]
+            H_BLK["kinship2 / pedtools Block"] -->|"CSV + %% Directives"| R_ENG["Rscript pedtools / kinship2"]
+            M_BLK["Mermaid Block"] -->|"Code + %% Directives"| KRK["Kroki Gateway + Chromium Headless"]
+            R_ENG -->|"SVG Vector"| TYP_INJ1["Typst Raw Block Injection"]
+            KRK -->|"High-Res PNG"| TYP_INJ2["Typst Raw Block Injection"]
         end
 
         SRV --> Preprocess
 
-        subgraph Compilers [Compilação em Duas Fases]
-            PANDOC[Pandoc Citeproc] -->|Resolve .bib + .csl| TYP_AST[Estrutura Typst Intermediária]
-            TYP_AST --> TYPST[Typst Compiler 0.11.x]
-            TEMPLATE[data/template.typ - NBR 14724] --> TYPST
+        subgraph Compilers [Two-Stage Compilation]
+            PANDOC["Pandoc Citeproc"] -->|"Resolves .bib + .csl"| TYP_AST["Intermediate Typst AST"]
+            TYP_AST --> TYPST["Typst Compiler 0.11.x"]
+            TEMPLATE["data/template.typ - NBR 14724"] --> TYPST
         end
 
         Preprocess --> PANDOC
-        TYPST -->|Buffer Binário PDF| SRV
+        TYPST -->|"PDF Binary Buffer"| SRV
     end
 
-    SRV -->|Retorno HTTP 200| TP
-    TP -->|Gravação local no cofre| PDF[Artigo Final ABNT/Vancouver .pdf]
+    SRV -->|"HTTP 200 Response"| TP
+    TP -->|"Local write to vault"| PDF["Final Article .pdf"]
 ```
 
-## 🗂️ Estrutura de Arquivos
+## 🗂️ File Structure
 
-Para subir o projeto, garanta a seguinte árvore de diretórios:
+The project repository structure is organized as follows:
 
 ```text
 joaju/
-├── Dockerfile              # Imagem Node.js + Pandoc + R (kinship2) + Typst
-├── docker-compose.yml      # Orquestração do compilador e dos serviços Kroki
-├── server.js               # Orquestrador HTTP, regex e despacho dinâmico
-├── plot_pedigree.R         # Motor R para geração de heredogramas clínicos
-├── README.md               # Esta documentação
-└── data/                   # Volume persistente montado no container
-    ├── template.typ        # Regras tipográficas ABNT (NBR 14724)
-    ├── abnt.csl            # Folha de estilo de citação ABNT (NBR 10520)
-    ├── vancouver.csl        # Folha de estilo de citação Vancouver (Medicina)
-    └── referencias.bib     # Arquivo exportado pelo Better BibTeX (Zotero)
+├── Dockerfile              # Container image: Node.js + Pandoc + R (kinship2/pedtools) + Typst
+├── docker-compose.yml      # Service orchestration for compiler and Kroki gateway
+├── server.js               # HTTP orchestrator, regex preprocessors, and dynamic dispatch
+├── plot_pedigree.R         # R engine for clinical pedigree rendering
+├── README.md               # Ecosystem documentation
+└── data/                   # Persistent volume mounted in container
+    ├── template.typ        # Typst typographical rules (NBR 14724)
+    ├── abnt.csl            # ABNT citation style (NBR 10520)
+    ├── vancouver.csl       # Vancouver citation style (Medical / ICMJE)
+    └── referencias.bib     # References exported by Better BibTeX (Zotero)
 ```
 
-## 🚀 Instalação e Execução
+## 🚀 Installation and Setup
 
-### 1. Pré-requisitos
+### 1. Prerequisites
 
-* [Docker](https://docs.docker.com/get-docker/?utm_source=gemini) e Docker Compose instalados;
-* [Obsidian](https://obsidian.md/?utm_source=gemini) com os plugins comunitários **Templater** e suporte a Mermaid ativo.
+* [Docker](https://docs.docker.com/get-docker/?utm_source=gemini) and Docker Compose installed.
+* [Obsidian](https://obsidian.md/?utm_source=gemini) with community plugins **Templater** and active Mermaid support.
 
-### 2. Download dos Estilos CSL
+### 2. Download CSL Styles
 
-Dentro da pasta raiz do projeto, crie a pasta `data/` e baixe os estilos padronizados:
+In the project root directory, ensure the `data/` directory exists and download the standardized styles:
 
 ```bash
 mkdir -p data
 
-# Baixar estilo oficial ABNT
+# Download official ABNT citation style
 curl -fsSL "https://raw.githubusercontent.com/citation-style-language/styles/master/associacao-brasileira-de-normas-tecnicas.csl" -o data/abnt.csl
 
-# Baixar estilo oficial Vancouver
+# Download official Vancouver citation style
 curl -fsSL "https://raw.githubusercontent.com/citation-style-language/styles/master/vancouver.csl" -o data/vancouver.csl
 ```
 
-### 3. Inicialização dos Containers
+### 3. Launching Containers
 
-Execute o build e suba os serviços em segundo plano:
+Build and run the services in the background:
 
 ```bash
 docker compose up -d --build
 ```
 
-O orquestrador estará ativo em `http://localhost:3000`.
+The orchestrator service will be available at `http://localhost:3000`.
 
-## ✍️ Guia de Uso no Obsidian
+## ✍️ Obsidian Usage Guide
  
-### 1. Frontmatter (YAML) e Perfis Tipográficos Suportados
+### 1. Frontmatter (YAML) and Supported Typographical Profiles
  
-O Joaju oferece suporte a três perfis tipográficos oficiais configuráveis no cabeçalho YAML da nota:
+Joaju supports three official typographical profiles configured in the note's YAML frontmatter:
  
 ```yaml
 ---
-titulo: Elaboração de Heredograma Familiar e Análise Genético-Clínica
-subtitulo: Estudo de Caso Ambulatorial e Herança Autossômica Recessiva
-autor: Equipe de Genética Médica
-instituicao: Universidade Federal de Santa Catarina
-local: Florianópolis
+titulo: Family Pedigree Analysis and Clinical Genetics Study
+subtitulo: Outpatient Case Report and Autosomal Recessive Inheritance
+autor: Medical Genetics Team
+instituicao: Federal University of Santa Catarina
+local: Florianopolis
 ano: 2026
-perfil: trabalho-ufsc # Opções: 'trabalho-ufsc', 'abnt' ou 'vancouver'
+perfil: trabalho-ufsc # Options: 'trabalho-ufsc', 'abnt', or 'vancouver'
 ---
 ```
  
-#### 📚 Comparativo de Perfis de Compilação
+#### 📚 Compilation Profiles Comparison
  
-| Perfil (`perfil:`) | Finalidade e Descrição | Regras Tipográficas / Template | Citação / CSL | Variáveis Suportadas no YAML |
+| Profile (`perfil:`) | Purpose & Description | Typographical Rules / Template | Citation / CSL | Supported YAML Variables |
 |---|---|---|---|---|
-| **`trabalho-ufsc`** | Trabalhos acadêmicos, relatórios e monografias da UFSC | Capa institucional automática, folha de rosto, margens 3cm/2cm, paginação a partir da folha 2 | `trabalho-ufsc.csl` (ABNT/UFSC) | `titulo`, `subtitulo`, `autor`, `instituicao`, `local`, `ano`, `fonte`, `tamanho` |
-| **`abnt`** | Artigos científicos gerais em conformidade com ABNT NBR 14724 | Margens ABNT (sup./esq.: 3cm, inf./dir.: 2cm), espaçamento 1.5, numeração NBR 6024 | `abnt.csl` (Associação Brasileira de Normas Técnicas) | `titulo`, `autor`, `subtitulo`, `fonte`, `tamanho` |
-| **`vancouver`** | Artigos e relatórios na área biomédica e da saúde | Estilo numérico internacional biomédico, referências ordenadas por citação no texto | `vancouver.csl` (ICMJE / NLM) | `titulo`, `autor`, `subtitulo`, `fonte`, `tamanho` |
+| **`trabalho-ufsc`** | UFSC academic theses, reports, and monographs | Automated institutional cover, title page, 3cm/2cm margins, pagination from page 2 | `trabalho-ufsc.csl` (ABNT/UFSC) | `titulo`, `subtitulo`, `autor`, `instituicao`, `local`, `ano`, `fonte`, `tamanho` |
+| **`abnt`** | General academic papers conforming to ABNT NBR 14724 | ABNT margins (top/left: 3cm, bottom/right: 2cm), 1.5 line spacing, NBR 6024 numbering | `abnt.csl` (Brazilian National Standards) | `titulo`, `autor`, `subtitulo`, `fonte`, `tamanho` |
+| **`vancouver`** | Biomedical and health science articles and reports | International biomedical numeric style, references sorted by appearance order in text | `vancouver.csl` (ICMJE / NLM) | `titulo`, `autor`, `subtitulo`, `fonte`, `tamanho` |
  
-#### ⚙️ Dicionário de Variáveis do YAML
+#### ⚙️ YAML Frontmatter Variables
  
-* **`perfil`**: Identificador do perfil (`trabalho-ufsc`, `abnt` ou `vancouver`). Padrão: `abnt`.
-* **`titulo`**: Título principal da publicação ou trabalho acadêmico.
-* **`subtitulo`**: Subtítulo opcional (renderizado após dois-pontos ou abaixo do título conforme o perfil).
-* **`autor`**: Nome do autor, discente ou autores do documento.
-* **`instituicao`**: (Específico de `trabalho-ufsc`) Nome da universidade, centro e curso para a capa padronizada.
-* **`local`**: (Específico de `trabalho-ufsc`) Cidade da instituição (ex.: `Florianópolis`).
-* **`ano`**: (Específico de `trabalho-ufsc`) Ano da entrega acadêmica (ex.: `2026`).
-* **`fonte`**: Família tipográfica do documento Typst (padrão: `Liberation Sans`).
-* **`tamanho`**: Tamanho do corpo de texto principal (padrão: `12pt`).
+* **`perfil`**: Profile identifier (`trabalho-ufsc`, `abnt`, or `vancouver`). Default: `abnt`.
+* **`titulo`**: Main title of the publication or academic document.
+* **`subtitulo`**: Optional subtitle (rendered after a colon or beneath the title depending on profile).
+* **`autor`**: Author or author list.
+* **`instituicao`**: (Specific to `trabalho-ufsc`) University, faculty, or department name for standard cover.
+* **`local`**: (Specific to `trabalho-ufsc`) City of the institution (e.g. `Florianopolis`).
+* **`ano`**: (Specific to `trabalho-ufsc`) Year of academic delivery (e.g. `2026`).
+* **`fonte`**: Typographical font family in Typst (default: `Liberation Sans`).
+* **`tamanho`**: Main body font size (default: `12pt`).
  
 ---
  
-### 2. Catálogo de Motores & Módulos Suportados
+### 2. Supported Engines & Module Catalog
  
-O Joaju inclui motores especializados para diagramação científica, heredogramas clínicos, química estrutural e tabelas acadêmicas. A documentação completa de cada motor com exemplos está disponível no site [joaju.2lp.in](https://joaju.2lp.in/#motores) e no cofre do Obsidian (`00_meta/joaju/`).
+Joaju includes specialized engines for scientific diagrams, clinical pedigrees, 2D chemical structures, and academic tables. Complete documentation with interactive examples is available at [joaju.2lp.in](https://joaju.2lp.in/#motores) and in the Obsidian vault documentation (`00_meta/joaju/`).
  
-| Motor | Finalidade | Diretivas Joaju (`%%`) | Parâmetros do Motor Nativo / R | Documentação Completa |
+| Engine | Purpose | Joaju Directives (`%%`) | Native Engine / R Parameters | Full Documentation |
 |---|---|---|---|---|
-| **`pedtools`** | **Principal:** Heredogramas clínicos modernos (pedsuite R) | `layout.width`, `layout.max_width`, `src`/`file` | `cex`, `symbolsize`, `foldLabs`, `margins`, `addSpace`, `col`, `lwd`, `lty`, `fill`, `plot_width`, `plot_height`, `legend`, `legend.type` | [pedtools.html](https://joaju.2lp.in/motores/pedtools.html) |
-| **`kinship2`** | **Legado:** Heredogramas clínicos em phase-out | `layout.width`, `layout.max_width`, `src`/`file` | `cex`, `symbolsize`, `branch`, `density`, `angle`, `col`, `lwd`, `lty`, `plot_width`, `plot_height`, `legend`, `legend.type` | [kinship2.html](https://joaju.2lp.in/motores/kinship2.html) |
-| **`table`** | Tabelas acadêmicas ABNT NBR 14724 e APA | `caption`/`title`, `note`/`fonte`, `align`, `columns`, `layout.width`, `src`/`file` | - | [table.html](https://joaju.2lp.in/motores/table.html) |
-| **`openchemlib`** | Química estrutural 2D via SMILES | `title`, `layout.width`, `layout.max_width`, `width`, `height`, `file`/`src` | - | [quimica.html](https://joaju.2lp.in/motores/quimica.html) |
-| **`openbabel`** | Química estrutural 2D via MOL/SDF | `title`, `layout.width`, `layout.max_width`, `file`/`src` | - | [quimica.html](https://joaju.2lp.in/motores/quimica.html) |
-| **`mermaid`** | Fluxogramas, sequências, Gantt via Kroki | `layout.width`, `layout.max_width`, `src`/`file` | - | [mermaid.html](https://joaju.2lp.in/motores/mermaid.html) |
-| **`d2`** | Diagramação declarativa moderna de sistemas | `layout.width`, `layout.max_width`, `src`/`file` | - | [d2.html](https://joaju.2lp.in/motores/d2.html) |
-| **`plantuml`** | Diagramas UML e engenharia de software | `layout.width`, `layout.max_width`, `src`/`file` | - | [plantuml.html](https://joaju.2lp.in/motores/plantuml.html) |
-| **`graphviz`** | Grafos e redes em linguagem DOT | `layout.width`, `layout.max_width`, `src`/`file` | - | [graphviz.html](https://joaju.2lp.in/motores/graphviz.html) |
-| **`gist`** | Inclusão de scripts analíticos externos | `url`, `file`, `title` | - | [gist.html](https://joaju.2lp.in/motores/gist.html) |
-
+| **`pedtools`** | **Primary:** Modern clinical pedigrees (R pedsuite) | `layout.width`, `layout.max_width`, `src`/`file` | `cex`, `symbolsize`, `foldLabs`, `margins`, `addSpace`, `col`, `lwd`, `lty`, `fill`, `plot_width`, `plot_height`, `legend`, `legend.type` | [pedtools.html](https://joaju.2lp.in/motores/pedtools.html) |
+| **`kinship2`** | **Legacy:** Clinical pedigrees in phase-out | `layout.width`, `layout.max_width`, `src`/`file` | `cex`, `symbolsize`, `branch`, `density`, `angle`, `col`, `lwd`, `lty`, `plot_width`, `plot_height`, `legend`, `legend.type` | [kinship2.html](https://joaju.2lp.in/motores/kinship2.html) |
+| **`table`** | Academic tables (ABNT NBR 14724 & APA) | `caption`/`title`, `note`/`fonte`, `align`, `columns`, `layout.width`, `src`/`file` | - | [table.html](https://joaju.2lp.in/motores/table.html) |
+| **`openchemlib`** | 2D chemical structure via SMILES | `title`, `layout.width`, `layout.max_width`, `width`, `height`, `file`/`src` | - | [quimica.html](https://joaju.2lp.in/motores/quimica.html) |
+| **`openbabel`** | 2D chemical structure via MOL/SDF | `title`, `layout.width`, `layout.max_width`, `file`/`src` | - | [quimica.html](https://joaju.2lp.in/motores/quimica.html) |
+| **`mermaid`** | Flowcharts, sequences, Gantt via Kroki | `layout.width`, `layout.max_width`, `src`/`file` | - | [mermaid.html](https://joaju.2lp.in/motores/mermaid.html) |
+| **`d2`** | Modern declarative system architecture diagrams | `layout.width`, `layout.max_width`, `src`/`file` | - | [d2.html](https://joaju.2lp.in/motores/d2.html) |
+| **`plantuml`** | UML and software engineering diagrams | `layout.width`, `layout.max_width`, `src`/`file` | - | [plantuml.html](https://joaju.2lp.in/motores/plantuml.html) |
+| **`graphviz`** | Graphs and networks in DOT language | `layout.width`, `layout.max_width`, `src`/`file` | - | [graphviz.html](https://joaju.2lp.in/motores/graphviz.html) |
+| **`gist`** | Embedding external analytical scripts | `url`, `file`, `title` | - | [gist.html](https://joaju.2lp.in/motores/gist.html) |
+ 
 ---
-
-### 3. Detalhamento dos Motores e Exemplos Práticos
-
-#### 3.1. Heredogramas Clínicos (`pedtools` - Recomendado)
-
-O motor `pedtools` padroniza árvores genealógicas com auto-dimensionamento vertical proporcional às gerações, divisão perfeita de heterozigotos (*half-fill*), marcação de probanda com respiro e legendas integradas.
-
+ 
+### 3. Detailed Engines & Practical Examples
+ 
+#### 3.1. Clinical Pedigrees (`pedtools` - Recommended)
+ 
+The `pedtools` engine standardizes family pedigrees with automatic vertical generation scaling, exact split half-fills for heterozygotes, proband indicators with padding, and integrated legends.
+ 
 ```pedtools
-%% layout.width=95% layout.max_width=720pt cex=0.85 symbolsize=1.25 legend=c("Normal (M)","Normal (F)","Afetado (M)","Afetada (F)","Probanda") legend.type=c("sq_empty","circ_empty","sq_solid","circ_solid","proband")
+%% layout.width=95% layout.max_width=720pt cex=0.85 symbolsize=1.25 legend=c("Normal (M)","Normal (F)","Affected (M)","Affected (F)","Proband") legend.type=c("sq_empty","circ_empty","sq_solid","circ_solid","proband")
 id,pai,mae,sex,fenotipo,proband,label
 1,0,0,M,wt,0,I-1 [Normal]
-2,0,0,F,afetado,0,I-2 [Afetada]
-3,1,2,M,het,0,II-1 [Portador]
-4,1,2,F,afetado,1,II-2 [Afetada]
+2,0,0,F,afetado,0,I-2 [Affected]
+3,1,2,M,het,0,II-1 [Carrier]
+4,1,2,F,afetado,1,II-2 [Affected]
 5,1,2,M,wt,0,II-3 [Normal]
 ```
-
-**Resultado Pré-executado:**
-![Resultado pedtools](site/assets/exemplos/pedtools_g2.png)
-
-* **Colunas CSV**: `id`, `pai` (ou `fid`), `mae` (ou `mid`), `sex` (`M`/`F`/`1`/`2`), `fenotipo` (`wt`, `het`, `afetado`, `?`), `proband` (`1`/`0`), `label` (suporta `\n` via colchetes), `status` (`1`/`falecido`).
-* **Tipos de Legenda**: `sq_empty`, `circ_empty`, `sq_half`, `circ_half`, `sq_solid`, `circ_solid`, `suspect`, `proband`.
-
-#### 3.2. Heredogramas Legado (`kinship2` - Phase-out)
-
-Permanece no Joaju para compatibilidade com notas antigas:
-
+ 
+**Pre-rendered Output:**
+![pedtools output](site/assets/exemplos/pedtools_g2.png)
+ 
+* **CSV Columns**: `id`, `pai` (or `fid`), `mae` (or `mid`), `sex` (`M`/`F`/`1`/`2`), `fenotipo` (`wt`, `het`, `afetado`, `?`), `proband` (`1`/`0`), `label` (supports `\n` via brackets), `status` (`1`/`deceased`).
+* **Legend Types**: `sq_empty`, `circ_empty`, `sq_half`, `circ_half`, `sq_solid`, `circ_solid`, `suspect`, `proband`.
+ 
+#### 3.2. Legacy Pedigrees (`kinship2` - Phase-out)
+ 
+Retained in Joaju for backward compatibility with legacy clinical notes:
+ 
 ```kinship2
-%% layout.width=90% layout.max_width=600pt cex=0.88 symbolsize=2.85 legend=c("Normal (M)","Portadora (F)","Afetado (M)","Probanda") legend.type=c("sq_empty","circ_half","sq_solid","proband")
+%% layout.width=90% layout.max_width=600pt cex=0.88 symbolsize=2.85 legend=c("Normal (M)","Carrier (F)","Affected (M)","Proband") legend.type=c("sq_empty","circ_half","sq_solid","proband")
 id,pai,mae,sex,fenotipo,proband,label
 1,0,0,M,wt,0,I.1
 2,0,0,F,het,0,I.2
-3,1,2,M,afetado,1,II.1 [Afetado]
+3,1,2,M,afetado,1,II.1 [Affected]
 4,1,2,F,wt,0,II.2 [Normal]
 ```
-
-**Resultado Pré-executado:**
-![Resultado kinship2](site/assets/exemplos/kinship2_exemplo.png)
-
-#### 3.3. Tabelas Acadêmicas (`table`) & Fonte Única de Dados (SSOT)
-
-Transforma dados CSV em tabelas tipográficas de 3 linhas conforme ABNT NBR 14724 e APA, com suporte a **Fonte Única de Dados (SSOT)** compartilhada via crate `joaju-csv`:
-
+ 
+**Pre-rendered Output:**
+![kinship2 output](site/assets/exemplos/kinship2_exemplo.png)
+ 
+#### 3.3. Academic Tables (`table`) & Single Source of Truth (SSOT)
+ 
+Transforms tabular CSV data into clean three-line academic tables conforming to ABNT NBR 14724 and APA styling, with support for shared **Single Source of Truth (SSOT)** datasets via the `joaju-csv` crate:
+ 
 ```table
-%% src=dados/familia.csv
-%% title=Tabela 1 – Fenótipos do Sistema ABO da Família
+%% src=data/family.csv
+%% title=Table 1 – ABO Blood Group Phenotypes in Family Cohort
 %% select=id, pai, mae, sexo, fenotipo_abo
 %% where=geracao <= 2
-%% note=Fonte: Elaborado pelos autores a partir do SSOT (2026).
+%% note=Source: Prepared by authors from SSOT dataset (2026).
 ```
-
-Tabelas inline diretas também são suportadas com delimitação por vírgula ou markdown (`|`):
-
+ 
+Direct inline tables are also supported with comma-delimited or markdown pipe (`|`) formatting:
+ 
 ```table
-%% caption="Segregação Fenotípica e Genotípica na Geração F2 de Ervilhas (Pisum sativum)"
+%% caption="Phenotypic and Genotypic Segregation in F2 Pea Cohort (Pisum sativum)"
 %% align=l, c, c, r
-%% note="Fonte: Gregor Mendel, Versuche über Pflanzen-Hybriden (1866)."
-Fenótipo Observado, Genótipo Provável, Contagem (N), Proporção Observada
-Sementes Lisas (Dominante), $R R$ / $R r$, 5474, 74.74% (aprox. 3/4)
-Sementes Rugosas (Recessivo), $r r$, 1850, 25.26% (aprox. 1/4)
-Total Consolidado, -, 7324, 100.00% (3 : 1)
+%% note="Source: Gregor Mendel, Versuche uber Pflanzen-Hybriden (1866)."
+Observed Phenotype, Probable Genotype, Count (N), Observed Ratio
+Smooth Seeds (Dominant), $R R$ / $R r$, 5474, 74.74% (approx. 3/4)
+Wrinkled Seeds (Recessive), $r r$, 1850, 25.26% (approx. 1/4)
+Consolidated Total, -, 7324, 100.00% (3 : 1)
 ```
-
-**Resultado Pré-executado:**
-![Resultado table](site/assets/exemplos/table_mendel.png)
-
-#### 3.4. Química Estrutural 2D (`openchemlib` e `openbabel`)
-
-Renderização vetorial SVG de estruturas químicas a partir de notação SMILES ou arquivos MOL:
-
+ 
+**Pre-rendered Output:**
+![table output](site/assets/exemplos/table_mendel.png)
+ 
+#### 3.4. 2D Chemical Structures (`openchemlib` and `openbabel`)
+ 
+Vector SVG rendering of molecular structures from SMILES notation or MOL files:
+ 
 ```openchemlib
 %% layout.width=45% layout.max_width=300pt
-%% title="Estrutura do 17β-Estradiol (Hormônio Estrogênio)"
+%% title="Structure of 17β-Estradiol (Estrogen Hormone)"
 %% layout.width=50% layout.max_width=350pt
 C[C@]12CC[C@@H]3c4ccc(O)cc4CC[C@H]3[C@@H]1CC[C@@H]2O
 ```
-
-**Resultado Pré-executado:**
-![Resultado openchemlib](site/assets/exemplos/quimica_estradiol.png)
-
-#### 3.5. Diagramas Técnicos (`d2`, `mermaid`, `plantuml`, `graphviz`)
-
-##### Diagrama D2
+ 
+**Pre-rendered Output:**
+![openchemlib output](site/assets/exemplos/quimica_estradiol.png)
+ 
+#### 3.5. Technical Diagrams (`d2`, `mermaid`, `plantuml`, `graphviz`)
+ 
+##### D2 Diagram
 ```d2
 %% width=75% max-width=500pt
-coleta: Coleta de Sangue -> sequenciamento: Sequenciamento NGS
-sequenciamento -> analise: Análise Bioinformática
-analise -> laudo: Laudo Médico
+blood_sample: Blood Collection -> ngs_sequencing: NGS Sequencing
+ngs_sequencing -> bioinformatics: Bioinformatic Analysis
+bioinformatics -> report: Medical Report
 ```
-
-**Resultado Pré-executado:**
-![Resultado d2](site/assets/exemplos/d2_exemplo.png)
-
-##### Diagrama Mermaid
+ 
+**Pre-rendered Output:**
+![d2 output](site/assets/exemplos/d2_exemplo.png)
+ 
+##### Mermaid Diagram
 ```mermaid
 %% width=80% max-width=550pt
 graph TD
-    A[Coleta de Amostra] --> B[Sequenciamento NGS]
-    B --> C{Variante Patogênica?}
-    C -->|Sim| D[Aconselhamento Genético]
-    C -->|Não| E[Seguimento Clínico]
+    A[Sample Collection] --> B[NGS Sequencing]
+    B --> C{Pathogenic Variant?}
+    C -->|Yes| D[Genetic Counseling]
+    C -->|No| E[Clinical Follow-up]
 ```
-
-**Resultado Pré-executado:**
-![Resultado mermaid](site/assets/exemplos/mermaid_exemplo.png)
-
-##### Diagrama PlantUML
+ 
+**Pre-rendered Output:**
+![mermaid output](site/assets/exemplos/mermaid_exemplo.png)
+ 
+##### PlantUML Diagram
 ```plantuml
 @startuml
 skinparam monochrome true
 skinparam defaultFontName "Liberation Sans"
 autonumber
-Médico -> Joaju: Submete Markdown
-Joaju -> Kroki: Renderiza diagramas
-Joaju -> Pandoc: Resolve referências (.bib)
-Joaju -> Typst: Compila PDF final
-Joaju --> Médico: Retorna PDF ABNT/Vancouver
+Physician -> Joaju: Submits Markdown note
+Joaju -> Kroki: Renders technical diagrams
+Joaju -> Pandoc: Resolves bibliographic references (.bib)
+Joaju -> Typst: Compiles final PDF
+Joaju --> Physician: Returns compiled PDF
 @enduml
 ```
-
-**Resultado Pré-executado:**
-![Resultado plantuml](site/assets/exemplos/plantuml_exemplo.png)
-
-##### Grafo Graphviz DOT
+ 
+**Pre-rendered Output:**
+![plantuml output](site/assets/exemplos/plantuml_exemplo.png)
+ 
+##### Graphviz DOT Graph
 ```graphviz
-digraph RedeGenica {
+digraph GeneNetwork {
     rankdir=LR;
     node [shape=box, style=rounded, fontname="Liberation Sans"];
-    TP53 -> MDM2 [label="regula"];
-    MDM2 -> TP53 [label="inibe", style=dashed];
-    TP53 -> CDKN1A [label="induz"];
-    CDKN1A -> "Parada do Ciclo";
+    TP53 -> MDM2 [label="regulates"];
+    MDM2 -> TP53 [label="inhibits", style=dashed];
+    TP53 -> CDKN1A [label="induces"];
+    CDKN1A -> "Cell Cycle Arrest";
 }
 ```
-
-**Resultado Pré-executado:**
-![Resultado graphviz](site/assets/exemplos/graphviz_exemplo.png)
-
-#### 3.6. Inclusão de Scripts Analíticos (`gist`)
-
-Embutimento resiliente de scripts computacionais (R, Python, Julia, SQL) hospedados externamente:
-
+ 
+**Pre-rendered Output:**
+![graphviz output](site/assets/exemplos/graphviz_exemplo.png)
+ 
+#### 3.6. Analytical Script Embedding (`gist`)
+ 
+Resilient embedding of external computational scripts (R, Python, Julia, SQL):
+ 
 ```gist
-%% url=https://gist.github.com/exemplo/calculo_frequencias
-%% file=calculo_frequencias.R
-%% title="Script R: Cálculo de Frequências Alélicas de Hardy-Weinberg"
+%% url=https://gist.github.com/example/hardy_weinberg_calc
+%% file=hardy_weinberg.R
+%% title="R Script: Hardy-Weinberg Equilibrium Allele Frequencies"
 ```
-
-**Resultado Pré-executado:**
-![Resultado gist](site/assets/exemplos/gist_exemplo.png)
-
-### 7. Integração via Templater no Obsidian
-
-Para disparar a compilação via atalho de teclado:
-
-1. Crie a nota `Compilar Artigo.md` dentro da sua pasta de templates do Obsidian com o código:
-
+ 
+**Pre-rendered Output:**
+![gist output](site/assets/exemplos/gist_exemplo.png)
+ 
+### 7. Obsidian Templater Integration
+ 
+To trigger compilation using a hotkey in Obsidian:
+ 
+1. Create a note named `Compile Article.md` inside your Obsidian templates folder with the following script:
+ 
 ```javascript
 <%*
 const activeFile = app.workspace.getActiveFile();
 if (!activeFile) {
-    new Notice("❌ Nenhuma nota ativa para compilar!");
+    new Notice("❌ No active note to compile!");
     return;
 }
 
-new Notice("⏳ Compilando via Joaju...");
+new Notice("⏳ Compiling via Joaju...");
 
 try {
     const content = await app.vault.read(activeFile);
@@ -360,38 +360,37 @@ try {
         await app.vault.createBinary(pdfPath, buffer);
     }
 
-    new Notice(`✅ PDF gerado: ${activeFile.basename}.pdf`);
+    new Notice(`✅ PDF generated: ${activeFile.basename}.pdf`);
 } catch (err) {
-    new Notice(`❌ Erro no Joaju: ${err.message}`, 10000);
+    new Notice(`❌ Joaju error: ${err.message}`, 10000);
 }
 _%>
 ```
-
-1. Acesse **Configurações > Templater > Template Hotkeys**;
-
-2. Associe `Compilar Artigo.md` ao atalho desejado (ex: `Ctrl + Alt + B`).
-
-## 🛠️ API de Backend
-
+ 
+2. Open **Settings > Templater > Template Hotkeys**;
+3. Assign `Compile Article.md` to your preferred keyboard shortcut (e.g., `Ctrl + Alt + B`).
+ 
+## 🛠️ Backend API
+ 
 ### `GET /`
-
-Interface web interativa (Playground) para edição e preview instantâneo de diagramas e heredogramas clínicos.
-
+ 
+Interactive web playground for instant editing, preview, and validation of diagrams and clinical pedigrees.
+ 
 ### `POST /render`
-
-Renderiza instantaneamente um bloco de heredograma ou diagrama Mermaid isolado, devolvendo o gráfico em formato vetorial SVG.
-
+ 
+Renders an isolated pedigree or Mermaid diagram block, returning the chart in vector SVG format.
+ 
 * **Payload:**
-
+ 
   ```json
   {
     "code": "```kinship2\n%% layout.width=90%\nid,pai,mae,sex,fenotipo\n1,0,0,M,wt\n...\n```"
   }
   ```
-
-* **Respostas:**
-
-  * `200 OK`: JSON contendo o SVG gerado:
+ 
+* **Responses:**
+ 
+  * `200 OK`: JSON containing the generated SVG:
     ```json
     {
       "format": "kinship2",
@@ -399,136 +398,136 @@ Renderiza instantaneamente um bloco de heredograma ou diagrama Mermaid isolado, 
       "svg": "<svg ...>...</svg>"
     }
     ```
-
-  * `400 Bad Request`: Parâmetros inválidos ou código vazio.
-
-  * `500 Internal Server Error`: Erro no motor de renderização (Rscript ou Kroki).
-
+ 
+  * `400 Bad Request`: Invalid parameters or empty code.
+ 
+  * `500 Internal Server Error`: Rendering engine failure (Rscript or Kroki).
+ 
 ### `POST /compile`
-
-Recebe o conteúdo Markdown e compila para PDF acadêmico (Pandoc + Citeproc + Typst). Suporta duas modalidades de envio:
-
-1. **Markdown em Texto Plano (JSON):**
+ 
+Accepts Markdown content and compiles it into an academic PDF (Pandoc + Citeproc + Typst). Supports two submission modes:
+ 
+1. **Plaintext Markdown (JSON):**
    * **Content-Type:** `application/json`
    * **Payload:**
      ```json
      {
-       "markdown": "# Conteúdo do artigo..."
+       "markdown": "# Article content..."
      }
      ```
-
-2. **Pacote de Workspace com Anexos (ZIP):**
-   * **Content-Type:** `application/zip` (ou `application/octet-stream`)
-   * **Payload:** Arquivo binário `.zip` contendo:
-     * `main.md`: Artigo Markdown principal;
-     * `attachments/`: Pasta contendo imagens referenciadas (`![[foto.png]]`, `![[imagem_com_underscore.png|500]]`, `![[foto.png|Legenda]]`), arquivos CSV (`%% src=...`) e arquivos químicos (`%% file=...`). O Joaju normaliza automaticamente wikilinks do Obsidian e imagens locais com caracteres especiais (`_`) para Typst nativo e formatação ABNT.
-   * O Joaju descompacta o arquivo em um workspace efêmero `/tmp/job_<id>/`, permitindo que o Pandoc e o Typst acessem os arquivos diretamente por caminho relativo, eliminando a necessidade de converter dados pesados para Base64. O compilador Typst aplica saneamento automático de caracteres `<` isolados em textos e tabelas para prevenir falhas de `unclosed label`. O diretório temporário é excluído automaticamente logo após a compilação.
-
-* **Respostas:**
-
-  * `200 OK`: Binário `application/pdf` pronto para consumo.
-
-  * `500 Internal Server Error`: Descrição detalhada dos erros emitidos pelo Pandoc, R ou Typst.
-
+ 
+2. **Workspace Package with Attachments (ZIP):**
+   * **Content-Type:** `application/zip` (or `application/octet-stream`)
+   * **Payload:** Binary `.zip` archive containing:
+     * `main.md`: Primary Markdown document;
+     * `attachments/`: Folder containing referenced images (`![[photo.png]]`, `![[image_with_underscore.png|500]]`, `![[photo.png|Caption]]`), CSV files (`%% src=...`), and chemical structure files (`%% file=...`). Joaju automatically normalizes Obsidian wikilinks and filenames containing underscores (`_`) into native Typst syntax with academic styling.
+   * Joaju unpacks the archive into an ephemeral workspace `/tmp/job_<id>/`, enabling Pandoc and Typst to reference relative paths directly without requiring Base64 conversion. The Typst compiler automatically sanitizes isolated `<` characters in text and tables to prevent `unclosed label` syntax errors. The temporary directory is wiped immediately after compilation.
+ 
+* **Responses:**
+ 
+  * `200 OK`: Compiled `application/pdf` binary.
+ 
+  * `500 Internal Server Error`: Detailed error description from Pandoc, R, or Typst.
+ 
 ### `GET /health`
-
-Sonda de integridade operacional (Health Check) para Docker, Kubernetes e scripts de orquestração CCCP.
-
-* **Respostas:**
+ 
+Operational health check endpoint for Docker, Kubernetes, and CCCP orchestration scripts.
+ 
+* **Responses:**
   * `200 OK`:
     ```json
     {
       "status": "ok",
       "name": "joaju",
-      "version": "0.1.0",
+      "version": "0.2.0-dev.1",
       "uptime": 12.34
     }
     ```
-
+ 
 ### `POST /unfurl`
-
-Extrai metadados ricos de uma URL (título, descrição, imagem de capa, domínio, autor, data, tempo de leitura estimado) usando **Readability** + **linkedom** — sem Chromium. Opcionalmente gera um snapshot PDF da página via Readability → Pandoc → Typst.
-
+ 
+Extracts rich metadata from a URL (title, description, cover image, domain, author, publish date, estimated reading time) using **Readability** + **linkedom** without requiring a headless browser. Optionally captures an archival PDF snapshot of the page via Readability → Pandoc → Typst.
+ 
 * **Payload:**
-
+ 
   ```json
   {
-    "url": "https://example.com/artigo",
+    "url": "https://example.com/article",
     "archive": false
   }
   ```
-
-  | Campo | Tipo | Descrição |
+ 
+  | Field | Type | Description |
   |---|---|---|
-  | `url` | string | URL a ser desdobrada. Protocolos suportados: `http`, `https`. |
-  | `archive` | boolean | Se `true`, inclui um snapshot PDF da página em `pdfBase64`. |
-
-* **Respostas:**
-
+  | `url` | string | Target URL to unfurl. Supported schemes: `http`, `https`. |
+  | `archive` | boolean | If `true`, includes an archival PDF snapshot encoded as `pdfBase64`. |
+ 
+* **Responses:**
+ 
   * `200 OK`:
     ```json
     {
       "ok": true,
-      "url": "https://example.com/artigo",
-      "title": "Título da Página",
-      "description": "Resumo extraído do OG ou da meta description.",
+      "url": "https://example.com/article",
+      "title": "Page Title",
+      "description": "Extracted summary from OpenGraph or meta description tag.",
       "imageUrl": "https://example.com/og-image.jpg",
       "faviconUrl": "https://example.com/favicon.ico",
       "domain": "example.com",
       "siteName": "Example",
-      "author": "Autora Silva",
+      "author": "Jane Doe",
       "date": "2025-01-15",
       "readingTimeMin": 4,
       "hasArticle": true,
       "pdfBase64": "JVBERi0x..." 
     }
     ```
-    > `pdfBase64` presente apenas quando `archive: true`.
-
-  * `400 Bad Request`: `url` ausente ou vazio.
-  * `422 Unprocessable Entity`: Protocolo não suportado ou servidor retornou erro HTTP.
-
-## 🛠️ Interfaces de Desenvolvimento CCCP (Serve, Dev & Demo)
-
-O Joaju implementa conformidade total com os comandos do ecossistema **CCCP**:
-
-### 1. Servidor de Desenvolvimento com Recarga Contínua
+    > `pdfBase64` is only present when `archive: true`.
+ 
+  * `400 Bad Request`: Missing or invalid `url`.
+  * `422 Unprocessable Entity`: Unsupported protocol or upstream HTTP error.
+ 
+## 🛠️ CCCP Development Commands (Serve, Dev & Demo)
+ 
+Joaju maintains full alignment with the **CCCP** CLI workflow:
+ 
+### 1. Development Server with Live Reload
 ```bash
-# Via CCCP (delega automaticamente para scripts/dev.sh):
+# Via CCCP (delegates automatically to scripts/dev.sh):
 cccp serve --dev
 
-# Com portas e opções customizadas:
+# With custom port and browser options:
 ./scripts/dev.sh --port 3100 --localhost --open
 
-# Ou via npm:
+# Or via npm:
 npm run dev
 ```
-
-### 2. Modo Demonstração VDNKh (Exposição de Conquistas)
+ 
+### 2. Demonstration Mode (VDNKh Exhibition)
 ```bash
-# Executa rotina de validação e abre o Web Playground com fixtures semeadas em data/demo/:
+# Executes validation routine and opens Web Playground with fixtures seeded in data/demo/:
 cccp serve --demo
 
-# Ou diretamente:
+# Or directly:
 npm run demo
 ```
-
-### 3. Servidor de Pré-visualização Estática
+ 
+### 3. Static Preview Server
 ```bash
-# Serve o Web Playground estático (./public) via Mayak ou Python:
+# Serves static Web Playground (./public) via Mayak or Python:
 cccp serve
 ```
-
-## ⚖️ Conformidade GOST
-
-Este repositório adota as diretrizes do padrão **GOST v1.0.0-draft** (perfil `lumen`). A integridade das especificações e regras de automação são gerenciadas via CLI `cccp` através do diretório `.gost/`.
-
-## 📄 Licença
-
-Este projeto é software livre e de código aberto distribuído sob a licença **Apache-2.0**:
-
-| Componente | Licença | Arquivo |
+ 
+## ⚖️ GOST Compliance
+ 
+This repository adheres to the **GOST v1.1.0** specification (`lumen` profile). Specification integrity and automation rules are audited and managed via the `cccp` CLI across `.gost/`.
+ 
+## 📄 License
+ 
+This project is open-source software distributed under the **Apache-2.0** license:
+ 
+| Component | License | File |
 | :--- | :--- | :--- |
-| **Código-Fonte e Core** | Apache-2.0 | [`LICENSE`](LICENSE) |
-| **Logotipos e Identidade** | CC-BY-ND-4.0 | [`LICENSE-LOGO`](LICENSE-LOGO) |
-| **Mídias e Ilustrações** | CC-BY-SA-4.0 | [`LICENSE-MEDIA`](LICENSE-MEDIA) |
+| **Source Code & Core Engine** | Apache-2.0 | [`LICENSE`](LICENSE) |
+| **Logos & Brand Identity** | CC-BY-ND-4.0 | [`LICENSE-LOGO`](LICENSE-LOGO) |
+| **Media & Illustrations** | CC-BY-SA-4.0 | [`LICENSE-MEDIA`](LICENSE-MEDIA) |
