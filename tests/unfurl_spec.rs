@@ -1,68 +1,20 @@
-use axum::body::Body;
-use axum::http::{header, Request, StatusCode};
 use base64::{engine::general_purpose, Engine as _};
-use http_body_util::BodyExt;
-use joaju::create_app;
-use joaju::unfurl::extract_metadata_from_html;
-use serde_json::{json, Value};
-use tower::ServiceExt;
+use joaju::unfurl::{extract_metadata_from_html, unfurl_url};
 
 #[tokio::test]
 async fn test_spec_unfurl_missing_url_returns_bad_request() {
-    let app = create_app();
-
-    let payload = json!({});
-
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/unfurl")
-                .header(header::CONTENT_TYPE, "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-    let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
-    let body_json: Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert_eq!(body_json["ok"], false);
-    assert!(body_json["error"]
-        .as_str()
-        .unwrap()
-        .contains("Parâmetro \"url\" é obrigatório."));
+    let result = unfurl_url("   ", false).await;
+    assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn test_spec_unfurl_invalid_protocol_returns_error() {
-    let app = create_app();
-
-    let payload = json!({
-        "url": "ftp://files.example.com/doc.pdf"
-    });
-
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/unfurl")
-                .header(header::CONTENT_TYPE, "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-    let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
-    let body_json: Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert_eq!(body_json["ok"], false);
-    assert!(body_json["error"]
-        .as_str()
-        .unwrap()
-        .contains("Protocolo inválido"));
+    let result = unfurl_url("ftp://files.example.com/doc.pdf", false).await;
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(
+        err.contains("Protocolo inválido") || err.contains("protocol") || err.contains("invalid")
+    );
 }
 
 #[test]

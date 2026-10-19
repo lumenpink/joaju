@@ -1,13 +1,8 @@
-use axum::body::Body;
-use axum::http::{header, Request, StatusCode};
-use http_body_util::BodyExt;
-use joaju::create_app;
+use joaju::compiler::compile_markdown_to_pdf;
 use joaju::engine::chem::render_chem;
 use joaju::engine::pedigree::render_pedigree;
 use joaju::preprocessor::table::render_single_table;
-use joaju::unfurl::extract_metadata_from_html;
-use serde_json::json;
-use tower::ServiceExt;
+use joaju::unfurl::{extract_metadata_from_html, unfurl_url};
 
 // =========================================================================
 // 1. MOTOR DE HEREDOGRAMAS CLÍNICOS (PEDIGREE) - CASOS LIMÍTROFES
@@ -129,8 +124,6 @@ fn test_edge_wikilinks_with_spaces_and_accents() {
 
 #[tokio::test]
 async fn test_edge_unfurl_rejects_ssrf_and_private_ips() {
-    let app = create_app();
-
     let private_urls = [
         "http://localhost:3000/admin",
         "http://127.0.0.1:8080/secrets",
@@ -141,23 +134,9 @@ async fn test_edge_unfurl_rejects_ssrf_and_private_ips() {
     ];
 
     for url in private_urls {
-        let payload = json!({ "url": url });
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method("POST")
-                    .uri("/unfurl")
-                    .header(header::CONTENT_TYPE, "application/json")
-                    .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(
-            response.status(),
-            StatusCode::BAD_REQUEST,
+        let result = unfurl_url(url, false).await;
+        assert!(
+            result.is_err(),
             "URL '{}' deveria ser rejeitada por segurança",
             url
         );
@@ -177,10 +156,8 @@ fn test_edge_unfurl_html_without_head_or_title() {
 // 5. COMPILAÇÃO INTEGRAL MULTI-MOTOR (TESTE DE INTEGRAÇÃO EXAUSTIVO)
 // =========================================================================
 
-#[tokio::test]
-async fn test_edge_exhaustive_full_academic_document_compilation() {
-    let app = create_app();
-
+#[test]
+fn test_edge_exhaustive_full_academic_document_compilation() {
     // Documento completo combinando todos os subsistemas em um único documento
     let full_document = r#"---
 titulo: Estudo Multidisciplinar de Genética e Farmacogenômica
@@ -235,29 +212,10 @@ Biodisponibilidade | % | 88.0 | 3.5
 Todos os componentes vetoriais foram compilados in-process com fidelidade tipográfica estrita.
 "#;
 
-    let payload = json!({
-        "markdown": full_document
-    });
+    let result = compile_markdown_to_pdf(full_document);
+    assert!(result.is_ok(), "Compilation failed: {:?}", result.err());
 
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/compile")
-                .header(header::CONTENT_TYPE, "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::OK);
-    assert_eq!(
-        response.headers().get(header::CONTENT_TYPE).unwrap(),
-        "application/pdf"
-    );
-
-    let pdf_bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let pdf_bytes = result.unwrap();
     assert!(pdf_bytes.len() > 5000);
     assert_eq!(&pdf_bytes[0..5], b"%PDF-");
 }

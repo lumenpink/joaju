@@ -9,7 +9,7 @@ homepage = "https://codeberg.org/lumenpink/joaju"
 documentation = "https://docs.rs/joaju"
 readme = "README.md"
 keywords = ["typst", "compiler", "academic", "typesetting", "markdown"]
-categories = ["compilers", "text-processing", "command-line-utilities", "web-programming"]
+categories = ["compilers", "text-processing", "command-line-utilities", "science"]
 authors = ["Lumen Pink <hi@lumen.pink>"]
 
 [lib]
@@ -21,9 +21,8 @@ name = "joaju"
 path = "src/main.rs"
 
 [dependencies]
-axum = "0.8"
+clap = { version = "4.5", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
-tower-http = { version = "0.6", features = ["cors", "fs", "trace"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tracing = "0.1"
@@ -44,5 +43,3 @@ scraper = "0.22"
 base64 = "0.22"
 
 [dev-dependencies]
-tower = { version = "0.5", features = ["util"] }
-http-body-util = "0.1"
