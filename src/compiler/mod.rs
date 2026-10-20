@@ -23,12 +23,58 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
     let res1 = re_ped.replace_all(md, |caps: &regex::Captures| {
         let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
         let fmt = caps.get(1).map(|m| m.as_str());
+
+        let mut custom_height: Option<String> = None;
+        let mut custom_width: Option<String> = None;
+
+        for line in code.lines() {
+            let t = line.trim();
+            if t.starts_with("%%") {
+                let directive_str = t.trim_start_matches('%').trim();
+                for token in directive_str.split_whitespace() {
+                    if let Some((k, v)) = token.split_once('=') {
+                        let k = k.trim().to_lowercase();
+                        let v = v.trim().trim_matches('"').trim_matches('\'');
+                        if k == "height"
+                            || k == "layout.height"
+                            || k == "max_height"
+                            || k == "layout.max_height"
+                        {
+                            custom_height = Some(v.to_string());
+                        } else if (k == "scale" || k == "width" || k == "layout.width")
+                            && !v.is_empty()
+                        {
+                            custom_width = Some(v.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
         match engine::pedigree::render_pedigree(code, fmt) {
             Ok((_, svg)) => {
                 let filename = format!("asset_ped_{}.svg", counter);
                 counter += 1;
                 assets.push((filename.clone(), svg.into_bytes()));
-                format!("\n#block(breakable: false, width: 100%)[#align(center)[#image(\"{}\", width: 100%, fit: \"contain\")]]\n", filename)
+
+                let width_arg = custom_width.unwrap_or_else(|| "100%".to_string());
+                let img_call = match custom_height {
+                    Some(h) => format!(
+                        "#image(\"{}\", width: {}, height: {}, fit: \"contain\")",
+                        filename, width_arg, h
+                    ),
+                    None => {
+                        format!(
+                            "#image(\"{}\", width: {}, fit: \"contain\")",
+                            filename, width_arg
+                        )
+                    }
+                };
+
+                format!(
+                    "\n#block(breakable: false, width: 100%)[#align(center)[{}]]\n",
+                    img_call
+                )
             }
             Err(_) => caps.get(0).unwrap().as_str().to_string(),
         }
@@ -95,6 +141,19 @@ pub fn convert_markdown_to_typst(md: &str) -> String {
         }
 
         if trimmed == "---" || trimmed == "***" || trimmed == "___" {
+            continue;
+        }
+
+        let trimmed_all = line.trim();
+        if trimmed_all == "<pagebreak>"
+            || trimmed_all == "<pagebreak/>"
+            || trimmed_all == "<pagebreak />"
+            || trimmed_all == "<!-- pagebreak -->"
+            || trimmed_all == "<!-- newpage -->"
+            || trimmed_all == "\\pagebreak"
+            || trimmed_all == "\\newpage"
+        {
+            result.push("#pagebreak()".to_string());
             continue;
         }
 

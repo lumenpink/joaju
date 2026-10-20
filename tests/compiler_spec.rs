@@ -1,4 +1,4 @@
-use joaju::compiler::compile_markdown_to_pdf;
+use joaju::compiler::{compile_markdown_to_pdf, convert_markdown_to_typst, preprocess_code_blocks};
 
 #[test]
 fn test_spec_compile_markdown_to_pdf() {
@@ -128,4 +128,55 @@ fn test_spec_compile_comparativo_pedtools_vs_kinship2_document() {
         pdf_bytes,
     )
     .expect("escrita do PDF comparativo deve ter sucesso");
+}
+
+#[test]
+fn test_spec_pagebreak_tags_converted_to_typst() {
+    let md = r#"# Seção 1
+
+Conteúdo da primeira página.
+
+<pagebreak>
+
+# Seção 2
+
+Conteúdo da segunda página.
+
+<!-- pagebreak -->
+
+# Seção 3
+
+Conteúdo da terceira página.
+
+\pagebreak
+
+Fim."#;
+
+    let typst = convert_markdown_to_typst(md);
+    let pagebreaks = typst.lines().filter(|l| l.trim() == "#pagebreak()").count();
+    assert_eq!(
+        pagebreaks, 3,
+        "All 3 pagebreak variants must be converted to #pagebreak()"
+    );
+}
+
+#[test]
+fn test_spec_pedtools_code_block_height_and_scale_directives() {
+    let md = r#"```pedtools
+%% height=16.5cm scale=85%
+1 0 0 1 0
+2 0 0 2 0
+3 1 2 1 1
+```"#;
+
+    let (typst_output, assets) = preprocess_code_blocks(md);
+    assert_eq!(assets.len(), 1);
+    assert!(
+        typst_output.contains("height: 16.5cm"),
+        "Typst image invocation must contain height: 16.5cm, got: {typst_output}"
+    );
+    assert!(
+        typst_output.contains("width: 85%"),
+        "Typst image invocation must contain width: 85%, got: {typst_output}"
+    );
 }
