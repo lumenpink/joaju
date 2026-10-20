@@ -30,3 +30,15 @@ Fim do poema.
     assert!(processed.contains("Decassílabo Heroico"));
     assert!(processed.contains("#grid"));
 }
+
+#[test]
+fn test_preprocess_lirica_with_single_verse() {
+    let md = r#"```lirica
+Minha terra tem palmeiras
+```"#;
+
+    let (processed, assets) = preprocess_code_blocks(md);
+    assert!(assets.is_empty());
+    assert!(!processed.contains("```lirica"));
+    assert!(processed.contains("Redondilha Maior"));
+}
