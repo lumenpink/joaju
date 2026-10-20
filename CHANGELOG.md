@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (registry) migracao das dependencias satelites para o registro soberano lumen e publicacao da crate v0.1.0 (closes #43)
   - (pipeline) fonte unica de dados SSOT via CSV com projecoes e filtros (closes #21)
   - (modularizacao) desacoplamento soberano em crates ssot-rs, table-rs e unfurl-rs (#21)
   - add canonical engines, zip workspace compilation and eliminate legacy tags
