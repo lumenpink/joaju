@@ -49,7 +49,16 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
         }
     });
 
-    (res2.to_string(), assets)
+    let re_lirica = Regex::new(r"(?s)```lirica\s*\n(.*?)```").unwrap();
+    let res3 = re_lirica.replace_all(&res2, |caps: &regex::Captures| {
+        let code = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+        match engine::lirica::render_lirica(code) {
+            Ok(typst) => format!("\n{}\n", typst),
+            Err(_) => caps.get(0).unwrap().as_str().to_string(),
+        }
+    });
+
+    (res3.to_string(), assets)
 }
 
 fn normalize_typst_math_expressions(content: &str) -> String {

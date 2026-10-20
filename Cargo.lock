@@ -1711,6 +1711,7 @@ dependencies = [
  "chematic-smiles",
  "clap",
  "joaju-csv",
+ "joaju-lirica",
  "joaju-pedigree",
  "joaju-table",
  "joaju-unfurl",
@@ -1737,6 +1738,16 @@ dependencies = [
  "clap",
  "csv",
  "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-lirica"
+version = "0.1.0"
+dependencies = [
+ "clap",
  "serde",
  "serde_json",
  "thiserror",
@@ -2619,7 +2630,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
