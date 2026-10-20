@@ -52,4 +52,23 @@ fn test_compile_slides_to_pdf() {
         .expect("PDF compilation of handout failed");
     assert!(handout_bytes.starts_with(b"%PDF-"));
     assert!(handout_bytes.len() > 500);
+
+    let notes_bytes = compile_slides_to_pdf(SAMPLE_SLIDES, PresentationMode::Notes)
+        .expect("PDF compilation of notes failed");
+    assert!(notes_bytes.starts_with(b"%PDF-"));
+    assert!(notes_bytes.len() > 500);
+}
+
+#[test]
+fn test_aspect_ratio_4_3_slides() {
+    let md = "---\ntitle: Standard Deck\nformat: \"4:3\"\n---\n# Slide 1\nConteudo";
+    let typst = render_slides_markup(md, PresentationMode::Slides).unwrap();
+    assert!(typst.contains("presentation-4-3"));
+}
+
+#[test]
+fn test_invalid_notes_delimiter_returns_error() {
+    let broken_md = "???\nOrphan notes";
+    let res = render_slides_markup(broken_md, PresentationMode::Slides);
+    assert!(res.is_err());
 }
