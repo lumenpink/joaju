@@ -1,5 +1,5 @@
 use joaju::engine::slides::{
-    compile_slides_to_pdf, render_slides_markup, PresentationMode, SlideAspectRatio,
+    compile_slides_to_pdf, render_slides_markup, PresentationMode,
 };
 
 const SAMPLE_SLIDES: &str = r#"---

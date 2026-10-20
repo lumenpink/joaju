@@ -50,7 +50,7 @@ EOF
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "-> GitOps dispatch recebido: atualizando crates satelites a partir do registry lumen..."
-          cargo update -p joaju-csv -p joaju-table -p joaju-pedigree -p joaju-unfurl || cargo update
+          cargo update -p joaju-csv -p joaju-table -p joaju-pedigree -p joaju-unfurl -p joaju-lirica -p joaju-slides || cargo update
           if ! git diff --quiet Cargo.lock; then
             echo "-> Alteracoes detectadas em Cargo.lock. Commitando..."
             git config user.name "Lumen Pink (Baquara)"

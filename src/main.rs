@@ -29,6 +29,45 @@ enum Commands {
         /// Typst template profile (e.g. 'abnt', 'trabalho-ufsc', 'vancouver')
         #[arg(short, long, value_name = "TEMPLATE")]
         template: Option<String>,
+
+        /// Compile in presentation slides mode (16:9 / 4:3)
+        #[arg(long, conflicts_with_all = ["handout", "notes"])]
+        slides: bool,
+
+        /// Compile in handout / apostila mode (A4 with thumbnails and notes)
+        #[arg(long, conflicts_with_all = ["slides", "notes"])]
+        handout: bool,
+
+        /// Compile in continuous notes / roteiro mode
+        #[arg(long, conflicts_with_all = ["slides", "handout"])]
+        notes: bool,
+    },
+
+    /// Generate presentation slides, handouts, or speaker notes from Markdown
+    Slides {
+        /// Input Markdown file path (reads from stdin if omitted)
+        #[arg(value_name = "INPUT")]
+        input: Option<PathBuf>,
+
+        /// Output file path (writes to stdout if omitted)
+        #[arg(short, long, value_name = "OUTPUT")]
+        output: Option<PathBuf>,
+
+        /// Generate presentation slides (16:9 / 4:3)
+        #[arg(long, conflicts_with_all = ["handout", "notes"])]
+        slides: bool,
+
+        /// Generate handout / apostila (A4 with thumbnails and notes)
+        #[arg(long, conflicts_with_all = ["slides", "notes"])]
+        handout: bool,
+
+        /// Generate continuous speaker notes / roteiro
+        #[arg(long, conflicts_with_all = ["slides", "handout"])]
+        notes: bool,
+
+        /// Emit raw Typst markup instead of compiling to PDF
+        #[arg(long)]
+        typst: bool,
     },
 
     /// Render isolated pedigree, chemical structure, or table block to SVG/Typst
@@ -78,12 +117,55 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             input,
             output,
             template,
+            slides,
+            handout,
+            notes,
         } => {
             let markdown = read_input(input.as_deref())?;
-            let pdf_bytes =
-                joaju::compile_markdown_to_pdf_with_options(&markdown, template.as_deref())
+            if slides || handout || notes {
+                let mode = if handout {
+                    joaju::engine::slides::PresentationMode::Handout
+                } else if notes {
+                    joaju::engine::slides::PresentationMode::Notes
+                } else {
+                    joaju::engine::slides::PresentationMode::Slides
+                };
+                let pdf_bytes = joaju::engine::slides::compile_slides_to_pdf(&markdown, mode)
                     .map_err(io::Error::other)?;
-            write_output_bytes(output.as_deref(), &pdf_bytes)?;
+                write_output_bytes(output.as_deref(), &pdf_bytes)?;
+            } else {
+                let pdf_bytes =
+                    joaju::compile_markdown_to_pdf_with_options(&markdown, template.as_deref())
+                        .map_err(io::Error::other)?;
+                write_output_bytes(output.as_deref(), &pdf_bytes)?;
+            }
+        }
+        Commands::Slides {
+            input,
+            output,
+            slides: _,
+            handout,
+            notes,
+            typst,
+        } => {
+            let markdown = read_input(input.as_deref())?;
+            let mode = if handout {
+                joaju::engine::slides::PresentationMode::Handout
+            } else if notes {
+                joaju::engine::slides::PresentationMode::Notes
+            } else {
+                joaju::engine::slides::PresentationMode::Slides
+            };
+
+            if typst {
+                let markup = joaju::engine::slides::render_slides_markup(&markdown, mode)
+                    .map_err(io::Error::other)?;
+                write_output_str(output.as_deref(), &markup)?;
+            } else {
+                let pdf_bytes = joaju::engine::slides::compile_slides_to_pdf(&markdown, mode)
+                    .map_err(io::Error::other)?;
+                write_output_bytes(output.as_deref(), &pdf_bytes)?;
+            }
         }
         Commands::Render {
             input,

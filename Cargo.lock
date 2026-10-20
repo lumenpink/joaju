@@ -1713,6 +1713,7 @@ dependencies = [
  "joaju-csv",
  "joaju-lirica",
  "joaju-pedigree",
+ "joaju-slides",
  "joaju-table",
  "joaju-unfurl",
  "regex",
@@ -1761,6 +1762,16 @@ dependencies = [
  "csv",
  "joaju-csv",
  "petgraph",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-slides"
+version = "0.1.0"
+dependencies = [
+ "clap",
  "serde",
  "serde_json",
  "thiserror",

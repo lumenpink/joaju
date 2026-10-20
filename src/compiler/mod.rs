@@ -326,14 +326,25 @@ pub fn compile_markdown_to_pdf_with_options(
     file_resolver_assets.push(("referencias.bib", REFERENCIAS_BIB.as_bytes()));
     file_resolver_assets.push(("trabalho-ufsc.csl", TRABALHO_UFSC_CSL.as_bytes()));
 
+    compile_typst_to_pdf_with_assets(&typst_code, file_resolver_assets)
+}
+
+pub fn compile_typst_to_pdf(typst_code: &str) -> Result<Vec<u8>, String> {
+    compile_typst_to_pdf_with_assets(typst_code, vec![])
+}
+
+pub fn compile_typst_to_pdf_with_assets(
+    typst_code: &str,
+    assets: Vec<(&str, &[u8])>,
+) -> Result<Vec<u8>, String> {
     let engine = TypstEngine::builder()
         .search_fonts_with(typst_as_lib::typst_kit_options::TypstKitFontOptions::default())
         .with_static_source_file_resolver([
-            ("main.typ", typst_code.as_str()),
+            ("main.typ", typst_code),
             ("trabalho-ufsc.typ", TEMPLATE_UFSC),
             ("template.typ", TEMPLATE_ABNT),
         ])
-        .with_static_file_resolver(file_resolver_assets)
+        .with_static_file_resolver(assets)
         .build();
 
     let doc: typst_layout::PagedDocument = engine
