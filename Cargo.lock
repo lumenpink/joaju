@@ -1756,8 +1756,6 @@ dependencies = [
 [[package]]
 name = "joaju-pedigree"
 version = "0.1.0"
-source = "sparse+https://git.2lp.in/api/packages/lumen/cargo/"
-checksum = "b1d829da4cdfae7a2757c45c233e1f4a92df73d4bc094e757bc4a7e0e7b4ed86"
 dependencies = [
  "clap",
  "csv",

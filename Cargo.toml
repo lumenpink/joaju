@@ -47,4 +47,5 @@ base64 = "0.22"
 
 [patch."sparse+https://git.2lp.in/api/packages/lumen/cargo/"]
 joaju-lirica = { path = "../joaju-lirica" }
+joaju-pedigree = { path = "../joaju-pedigree" }
 
