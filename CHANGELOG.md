@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (slides) integrate joaju-slides presentation engine for slides, handouts, and notes (closes #46)
   - (compiler) suporte a quebras de pagina manuais e diretivas de dimensao de heredograma (closes #42)
   - (compiler) integrate joaju-lirica engine for poetic scansion and typst rendering (closes #45)
   - (gitops) esteira rust unificada, publicacao sparse lumen e cascata para joaju-web (closes #44)

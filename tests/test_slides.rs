@@ -1,6 +1,4 @@
-use joaju::engine::slides::{
-    compile_slides_to_pdf, render_slides_markup, PresentationMode,
-};
+use joaju::engine::slides::{compile_slides_to_pdf, render_slides_markup, PresentationMode};
 
 const SAMPLE_SLIDES: &str = r#"---
 title: Fisiologia Cardiovascular - Joaju Integration
