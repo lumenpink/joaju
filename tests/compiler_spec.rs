@@ -64,3 +64,68 @@ CCO
     assert!(pdf_bytes.len() > 100);
     assert_eq!(&pdf_bytes[0..5], b"%PDF-");
 }
+
+#[test]
+fn test_spec_compile_trabalho_ufsc_multiline_instituicao_and_no_dashes() {
+    let md = r#"---
+titulo: ELABORAÇÃO DE HEREDOGRAMA FAMILIAR
+autor: Lumen Müller Lohn Freitas
+instituicao: |-
+  UNIVERSIDADE FEDERAL DE SANTA CATARINA
+  CENTRO DE CIÊNCIAS DA SAÚDE
+  CURSO DE GRADUAÇÃO EM MEDICINA
+perfil: trabalho-ufsc
+ano: 2026
+---
+
+# INTRODUÇÃO
+
+Texto introdutório.
+
+---
+
+# CAPÍTULO 2
+
+Texto do capítulo 2.
+"#;
+
+    let typst = joaju::compiler::convert_markdown_to_typst(md);
+    // Não deve conter linhas com travessões '---' isolados
+    for line in typst.lines() {
+        assert_ne!(
+            line.trim(),
+            "---",
+            "Typst markup must not contain raw '---' horizontal rules"
+        );
+    }
+
+    let result = compile_markdown_to_pdf(md);
+    assert!(
+        result.is_ok(),
+        "Compilation with multiline instituicao failed: {:?}",
+        result.err()
+    );
+    let pdf_bytes = result.unwrap();
+    assert!(pdf_bytes.len() > 100);
+}
+
+#[test]
+fn test_spec_compile_comparativo_pedtools_vs_kinship2_document() {
+    let path =
+        "/home/lumen/obsidian/01_inbox/202610121625 Teste Comparativo Pedtools vs Kinship2.md";
+    let md = std::fs::read_to_string(path).expect("arquivo comparativo deve existir");
+    let result = compile_markdown_to_pdf(&md);
+    assert!(
+        result.is_ok(),
+        "Compilation of comparative test document failed: {:?}",
+        result.err()
+    );
+    let pdf_bytes = result.unwrap();
+    assert!(pdf_bytes.len() > 1000);
+    assert_eq!(&pdf_bytes[0..5], b"%PDF-");
+    std::fs::write(
+        "/home/lumen/obsidian/01_inbox/202610121625 Teste Comparativo Pedtools vs Kinship2.pdf",
+        pdf_bytes,
+    )
+    .expect("escrita do PDF comparativo deve ter sucesso");
+}

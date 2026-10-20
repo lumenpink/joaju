@@ -85,6 +85,10 @@ pub fn convert_markdown_to_typst(md: &str) -> String {
             continue;
         }
 
+        if trimmed == "---" || trimmed == "***" || trimmed == "___" {
+            continue;
+        }
+
         if let Some(rest) = line.strip_prefix("###### ") {
             result.push(format!("====== {}", rest));
         } else if let Some(rest) = line.strip_prefix("##### ") {
@@ -131,10 +135,37 @@ pub fn compile_markdown_to_pdf_with_options(
         if let Some(end_idx) = stripped.find("---") {
             let frontmatter = &stripped[..end_idx];
             body_md = stripped[end_idx + 3..].trim();
-            for line in frontmatter.lines() {
+            let mut lines = frontmatter.lines().peekable();
+            while let Some(line) = lines.next() {
                 if let Some((k, v)) = line.split_once(':') {
                     let key = k.trim().to_lowercase();
-                    let val = v.trim().trim_matches('"').trim_matches('\'').to_string();
+                    let v_trimmed = v.trim();
+                    let val = if v_trimmed == "|-"
+                        || v_trimmed == "|"
+                        || v_trimmed == ">"
+                        || v_trimmed == ">-"
+                        || v_trimmed.is_empty()
+                    {
+                        let mut block_lines = Vec::new();
+                        while let Some(next_line) = lines.peek() {
+                            if next_line.starts_with("  ") || next_line.starts_with('\t') {
+                                block_lines.push(next_line.trim());
+                                lines.next();
+                            } else if next_line.trim().is_empty() {
+                                lines.next();
+                            } else {
+                                break;
+                            }
+                        }
+                        if !block_lines.is_empty() {
+                            block_lines.join("\n")
+                        } else {
+                            v_trimmed.trim_matches('"').trim_matches('\'').to_string()
+                        }
+                    } else {
+                        v_trimmed.trim_matches('"').trim_matches('\'').to_string()
+                    };
+
                     if key == "titulo" || key == "title" {
                         title = val;
                     } else if key == "subtitulo" || key == "subtitle" {
@@ -173,7 +204,7 @@ pub fn compile_markdown_to_pdf_with_options(
             if !institution.is_empty() {
                 typst_code.push_str(&format!(
                     "  instituicao: \"{}\",\n",
-                    institution.replace('"', "\\\"")
+                    institution.replace('\n', "\\n").replace('"', "\\\"")
                 ));
             }
             if !author.is_empty() {
