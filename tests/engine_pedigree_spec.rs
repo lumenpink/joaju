@@ -17,6 +17,10 @@ id,pai,mae,sex,fenotipo
     assert_eq!(format, "pedtools");
     assert!(svg.contains("<svg"), "Response must contain svg tag");
     assert!(svg.contains("</svg>"), "Response must close svg tag");
+    assert!(
+        svg.contains("LEGENDA CLÍNICA"),
+        "legend=auto must produce integrated clinical legend"
+    );
 }
 
 #[test]

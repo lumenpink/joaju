@@ -108,7 +108,9 @@ pub fn render_pedigree(
         .map_err(|e| e.to_string())?;
 
     let mut render_opts = RenderOptions::default();
-    if parsed_directives.has_legend() {
+    if parsed_directives.is_auto_legend() {
+        render_opts.auto_legend = true;
+    } else if parsed_directives.has_legend() {
         render_opts.legend = Some(parsed_directives.to_legend_config());
     }
 
