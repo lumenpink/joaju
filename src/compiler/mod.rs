@@ -6,6 +6,8 @@ use typst_as_lib::TypstEngine;
 
 static TEMPLATE_UFSC: &str = include_str!("../../data/trabalho-ufsc.typ");
 static TEMPLATE_ABNT: &str = include_str!("../../data/template.typ");
+static REFERENCIAS_BIB: &str = include_str!("../../data/referencias.bib");
+static TRABALHO_UFSC_CSL: &str = include_str!("../../data/trabalho-ufsc.csl");
 
 #[derive(Debug, Deserialize)]
 pub struct CompileRequest {
@@ -26,7 +28,7 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
                 let filename = format!("asset_ped_{}.svg", counter);
                 counter += 1;
                 assets.push((filename.clone(), svg.into_bytes()));
-                format!("\n#align(center)[#image(\"{}\")]\n", filename)
+                format!("\n#block(breakable: false, width: 100%)[#align(center)[#image(\"{}\", width: 100%, fit: \"contain\")]]\n", filename)
             }
             Err(_) => caps.get(0).unwrap().as_str().to_string(),
         }
@@ -41,13 +43,29 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
                 let filename = format!("asset_chem_{}.svg", counter);
                 counter += 1;
                 assets.push((filename.clone(), svg.into_bytes()));
-                format!("\n#align(center)[#image(\"{}\")]\n", filename)
+                format!("\n#block(breakable: false, width: 100%)[#align(center)[#image(\"{}\", width: 100%, fit: \"contain\")]]\n", filename)
             }
             Err(_) => caps.get(0).unwrap().as_str().to_string(),
         }
     });
 
     (res2.to_string(), assets)
+}
+
+fn normalize_typst_math_expressions(content: &str) -> String {
+    let re = Regex::new(r"\$([^\$]+)\$").unwrap();
+    re.replace_all(content, |caps: &regex::Captures| {
+        let inner = &caps[1];
+        let mut fixed = inner.to_string();
+        fixed = fixed.replace("ii", "i i");
+        fixed = fixed.replace("Bb", "B b");
+        fixed = fixed.replace("bb", "b b");
+        fixed = fixed.replace("BB", "B B");
+        fixed = fixed.replace(r"B\_", "B \"_\"");
+        fixed = fixed.replace(r"B_", "B \"_\"");
+        format!("${}$", fixed)
+    })
+    .to_string()
 }
 
 pub fn convert_markdown_to_typst(md: &str) -> String {
@@ -129,7 +147,9 @@ pub fn compile_markdown_to_pdf_with_options(
                         city = val;
                     } else if key == "ano" || key == "year" {
                         year = val;
-                    } else if (key == "template" || key == "modelo") && template_name.is_none() {
+                    } else if (key == "template" || key == "modelo" || key == "perfil")
+                        && template_name.is_none()
+                    {
                         template_name = Some(val);
                     }
                 }
@@ -141,6 +161,7 @@ pub fn compile_markdown_to_pdf_with_options(
     let mut processed = preprocess_tables(&code_blocks_processed);
     processed = preprocess_images(&processed);
     processed = preprocess_gists(&processed);
+    processed = normalize_typst_math_expressions(&processed);
     processed = convert_markdown_to_typst(&processed);
 
     let mut typst_code = String::new();
@@ -169,7 +190,9 @@ pub fn compile_markdown_to_pdf_with_options(
                 typst_code.push_str(&format!("  ano: \"{}\",\n", year.replace('"', "\\\"")));
             }
             typst_code.push_str(")\n\n");
-            typst_code.push_str(&processed);
+            let clean_body = processed.replace("= REFERÊNCIAS BIBLIOGRÁFICAS", "");
+            typst_code.push_str(&clean_body);
+            typst_code.push_str("\n\n#bibliography(\"referencias.bib\", title: \"REFERÊNCIAS BIBLIOGRÁFICAS\", style: \"trabalho-ufsc.csl\")\n");
         }
         Some("abnt") | Some("artigo") => {
             typst_code.push_str("#import \"template.typ\": abnt\n\n");
@@ -197,6 +220,13 @@ pub fn compile_markdown_to_pdf_with_options(
         }
     }
 
+    let mut file_resolver_assets: Vec<(&str, &[u8])> = assets
+        .iter()
+        .map(|(n, b)| (n.as_str(), b.as_slice()))
+        .collect();
+    file_resolver_assets.push(("referencias.bib", REFERENCIAS_BIB.as_bytes()));
+    file_resolver_assets.push(("trabalho-ufsc.csl", TRABALHO_UFSC_CSL.as_bytes()));
+
     let engine = TypstEngine::builder()
         .search_fonts_with(typst_as_lib::typst_kit_options::TypstKitFontOptions::default())
         .with_static_source_file_resolver([
@@ -204,7 +234,7 @@ pub fn compile_markdown_to_pdf_with_options(
             ("trabalho-ufsc.typ", TEMPLATE_UFSC),
             ("template.typ", TEMPLATE_ABNT),
         ])
-        .with_static_file_resolver(assets.iter().map(|(n, b)| (n.as_str(), b.as_slice())))
+        .with_static_file_resolver(file_resolver_assets)
         .build();
 
     let doc: typst_layout::PagedDocument = engine
