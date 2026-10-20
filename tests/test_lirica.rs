@@ -21,7 +21,10 @@ Fim do poema.
     let (processed, assets) = preprocess_code_blocks(md);
 
     // Lirica emits native Typst markup, so 0 image assets are generated
-    assert!(assets.is_empty(), "Lirica should not generate binary image assets");
+    assert!(
+        assets.is_empty(),
+        "Lirica should not generate binary image assets"
+    );
 
     // The code block must be replaced with Typst markup
     assert!(!processed.contains("```lirica"));

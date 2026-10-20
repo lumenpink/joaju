@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (compiler) integrate joaju-lirica engine for poetic scansion and typst rendering (closes #45)
   - (gitops) esteira rust unificada, publicacao sparse lumen e cascata para joaju-web (closes #44)
   - (registry) migracao das dependencias satelites para o registro soberano lumen e publicacao da crate v0.1.0 (closes #43)
   - (pipeline) fonte unica de dados SSOT via CSV com projecoes e filtros (closes #21)
