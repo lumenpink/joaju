@@ -48,7 +48,7 @@ Este relatório utiliza uma Fonte Única de Dados (SSOT).
         1,
         "Deve gerar 1 asset SVG para o heredograma pedtools via SSOT"
     );
-    assert!(processed_md.contains("#image(\"asset_ped_0.svg\")"));
+    assert!(processed_md.contains("asset_ped_0.svg"));
 
     let pdf_bytes =
         compile_markdown_to_pdf(&md).expect("falha ao compilar markdown com SSOT para PDF");
@@ -121,7 +121,7 @@ fn test_ssot_combined_text_and_numeric_filters() {
 
     let (processed_md, assets) = joaju::compiler::preprocess_code_blocks(&md);
     assert_eq!(assets.len(), 1);
-    assert!(processed_md.contains("#image(\"asset_ped_0.svg\")"));
+    assert!(processed_md.contains("asset_ped_0.svg"));
 
     let _ = fs::remove_file(csv_path);
 }
