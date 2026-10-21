@@ -20,6 +20,16 @@ if [ ! -f "$WORKFLOW" ]; then
   exit 1
 fi
 
+python3 -c "import yaml; yaml.safe_load(open('$WORKFLOW'))" || {
+  echo "✘ [FALHA] $WORKFLOW possui sintaxe YAML invalida!"
+  exit 1
+}
+
+if ! grep -q "rustup component add" "$WORKFLOW"; then
+  echo "✘ [FALHA] $WORKFLOW nao adiciona componentes rustfmt/clippy!"
+  exit 1
+fi
+
 if ! grep -q "workflow_dispatch:" "$WORKFLOW"; then
   echo "✘ [FALHA] $WORKFLOW nao declara 'workflow_dispatch:'!"
   exit 1
@@ -35,8 +45,18 @@ if ! grep -q "cargo publish --registry lumen" "$WORKFLOW"; then
   exit 1
 fi
 
+if ! grep -q "CANONICAL_VERSION" "$WORKFLOW"; then
+  echo "✘ [FALHA] $WORKFLOW nao sincroniza a versao canonica!"
+  exit 1
+fi
+
 if ! grep -q "repos/lumenpink/joaju-web/actions/workflows/ci.yaml/dispatches" "$WORKFLOW"; then
   echo "✘ [FALHA] $WORKFLOW nao dispara a esteira de joaju-web!"
+  exit 1
+fi
+
+if ! grep -q "repos/lumenpink/mandu/actions/workflows/release-banca.yaml/dispatches" "$WORKFLOW"; then
+  echo "✘ [FALHA] $WORKFLOW nao dispara a esteira de mandu!"
   exit 1
 fi
 

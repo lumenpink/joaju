@@ -28,22 +28,17 @@ jobs:
       - name: "Setup Rust Toolchain"
         run: |
           if ! command -v cargo >/dev/null 2>&1; then
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
+          rustup component add rustfmt clippy 2>/dev/null || true
 
       - name: "Configure Sovereign Lumen Cargo Registry"
         run: |
           mkdir -p "$HOME/.cargo"
-          cat <<'EOF' > "$HOME/.cargo/config.toml"
-[registries.lumen]
-index = "sparse+https://git.2lp.in/api/packages/lumen/cargo/"
-EOF
+          printf '[registries.lumen]\nindex = "sparse+https://git.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
           if [ -n "${{ secrets.LUMEN_REGISTRY_TOKEN }}" ]; then
-            cat <<EOF > "$HOME/.cargo/credentials.toml"
-[registries.lumen]
-token = "${{ secrets.LUMEN_REGISTRY_TOKEN }}"
-EOF
+            printf '[registries.lumen]\ntoken = "%s"\n' "${{ secrets.LUMEN_REGISTRY_TOKEN }}" > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "GitOps — Update Sovereign Satellite Dependencies"
@@ -95,23 +90,20 @@ EOF
           LUMEN_TOKEN: ${{ secrets.LUMEN_REGISTRY_TOKEN }}
         run: |
           mkdir -p "$HOME/.cargo"
-          cat <<'EOF' > "$HOME/.cargo/config.toml"
-[registries.lumen]
-index = "sparse+https://git.2lp.in/api/packages/lumen/cargo/"
-EOF
+          printf '[registries.lumen]\nindex = "sparse+https://git.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
           if [ -n "$LUMEN_TOKEN" ]; then
-            cat <<EOF > "$HOME/.cargo/credentials.toml"
-[registries.lumen]
-token = "$LUMEN_TOKEN"
-EOF
+            printf '[registries.lumen]\ntoken = "%s"\n' "$LUMEN_TOKEN" > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "Publish Crate to Sovereign Lumen Registry"
         run: |
+          CANONICAL_VERSION=$(head -n 1 VERSION | tr -d ' \r\n')
+          echo "-> Sincronizando Cargo.toml para a versao canonica: $CANONICAL_VERSION"
+          sed -i "0,/^version = .*/s//version = \"${CANONICAL_VERSION}\"/" Cargo.toml
           echo "-> Publicando joaju no registry lumen..."
-          cargo publish --registry lumen || echo "::warning::Versao ja publicada ou falha tolerada no registry."
+          cargo publish --registry lumen --allow-dirty || echo "::warning::Versao ja publicada ou falha tolerada no registry."
 
-      - name: "GitOps Cascade — Dispatch Downstream joaju-web"
+      - name: "GitOps Cascade — Dispatch Downstream joaju-web & mandu"
         env:
           CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
         run: |
@@ -122,7 +114,13 @@ EOF
               -H "Content-Type: application/json" \
               "https://codeberg.org/api/v1/repos/lumenpink/joaju-web/actions/workflows/ci.yaml/dispatches" \
               -d '{"ref": "main"}' || true
-            echo "✔ Disparo enviado para joaju-web com sucesso."
+            echo "-> Notificando consumidor downstream (mandu)..."
+            curl -s -X POST \
+              -H "Authorization: token $CODEBERG_TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://codeberg.org/api/v1/repos/lumenpink/mandu/actions/workflows/release-banca.yaml/dispatches" \
+              -d '{"ref": "main"}' || true
+            echo "✔ Disparos enviados com sucesso."
           else
             echo "CODEBERG_TOKEN ausente, pulando disparo downstream."
           fi
