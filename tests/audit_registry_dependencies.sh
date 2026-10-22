@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
-CARGO_TOML="/home/lumen/src/joaju/Cargo.toml"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CARGO_TOML="${CARGO_TOML:-$SCRIPT_DIR/../Cargo.toml}"
 
 echo "=== [TEST] Auditoria de Dependências do Registro Lumen (joaju) ==="
 
