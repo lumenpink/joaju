@@ -27,12 +27,12 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-joaju-pedigree = { version = "0.1.0", registry = "lumen" }
+joaju-pedigree = { version = "0.2.0", registry = "lumen" }
 joaju-csv = { version = "0.1.0", registry = "lumen" }
 joaju-table = { version = "0.1.0", registry = "lumen" }
 joaju-unfurl = { version = "0.1.0", registry = "lumen" }
 joaju-lirica = { version = "0.1.0", registry = "lumen" }
-joaju-slides = { version = "0.1.0", registry = "lumen" }
+joaju-slides = { version = "0.2.0", registry = "lumen" }
 regex = "1"
 chematic-smiles = "1.1"
 chematic-depict = { version = "1.1", default-features = false }
@@ -45,9 +45,4 @@ scraper = "0.22"
 base64 = "0.22"
 
 [dev-dependencies]
-
-[patch."sparse+https://git.2lp.in/api/packages/lumen/cargo/"]
-joaju-lirica = { path = "../joaju-lirica" }
-joaju-pedigree = { path = "../joaju-pedigree" }
-joaju-slides = { path = "../joaju-slides" }
 
