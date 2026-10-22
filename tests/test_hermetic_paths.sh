@@ -15,4 +15,25 @@ if grep -q 'read_to_string(path)\.expect("arquivo comparativo deve existir")' "$
     exit 1
 fi
 
+# 3. Teste de mutação: garantir que reintroduzir expect() incondicional falhe na validação
+validate_compiler_spec() {
+    local file="$1"
+    if grep -q 'read_to_string(path)\.expect("arquivo comparativo deve existir")' "$file"; then
+        return 1
+    fi
+    return 0
+}
+
+TMP_MUTANT=$(mktemp)
+trap 'rm -f "$TMP_MUTANT"' EXIT
+
+cat << 'EOF' > "$TMP_MUTANT"
+let md = std::fs::read_to_string(path).expect("arquivo comparativo deve existir");
+EOF
+
+if validate_compiler_spec "$TMP_MUTANT" >/dev/null 2>&1; then
+    echo "FALHA DE MUTAÇÃO: Mutante com expect incondicional não foi detectado!"
+    exit 1
+fi
+
 echo "SUCESSO: Verificação de caminhos herméticos concluída."
