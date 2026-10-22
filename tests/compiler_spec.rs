@@ -116,7 +116,9 @@ fn test_spec_compile_comparativo_pedtools_vs_kinship2_document() {
     let md = match std::fs::read_to_string(path) {
         Ok(c) => c,
         Err(_) => {
-            eprintln!("Arquivo comparativo externo não encontrado no ambiente de teste, ignorando.");
+            eprintln!(
+                "Arquivo comparativo externo não encontrado no ambiente de teste, ignorando."
+            );
             return;
         }
     };
