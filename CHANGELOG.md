@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Features
+  - (ci) unificar esteira multiarch e publicacao soberana na banca (closes #40)
   - (slides) integrate joaju-slides presentation engine for slides, handouts, and notes (closes #46)
   - (compiler) suporte a quebras de pagina manuais e diretivas de dimensao de heredograma (closes #42)
   - (compiler) integrate joaju-lirica engine for poetic scansion and typst rendering (closes #45)
