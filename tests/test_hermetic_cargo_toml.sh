@@ -21,4 +21,22 @@ validate_hermetic() {
 }
 
 validate_hermetic "$CARGO_TOML"
-echo "SUCESSO: Cargo.toml é estritamente hermético."
+
+# Teste de mutação: garantir que arquivo mutado com path relativo seja rejeitado
+TEMP_MUTANT=$(mktemp)
+trap 'rm -f "$TEMP_MUTANT"' EXIT
+
+cat << 'EOF' > "$TEMP_MUTANT"
+[package]
+name = "mutant"
+version = "0.1.0"
+[dependencies]
+joaju-pedigree = { path = "../joaju-pedigree" }
+EOF
+
+if validate_hermetic "$TEMP_MUTANT" >/dev/null 2>&1; then
+    echo "FALHA: Teste de mutação permitiu dependência relativa!"
+    exit 1
+fi
+
+echo "SUCESSO: Cargo.toml e testes de mutação hermética validados."
