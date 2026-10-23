@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+  - (build) otimizar tamanho de binario com profile.release e habilitar linking estatico musl crt-static (closes #51)
+
 ### Features
   - (ci) unificar esteira multiarch e publicacao soberana na banca (closes #40)
   - (slides) integrate joaju-slides presentation engine for slides, handouts, and notes (closes #46)
