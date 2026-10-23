@@ -9,10 +9,7 @@ fn test_landing_page_e_readme_modulos_visuais() {
     let readme_lower = readme.to_lowercase();
 
     // Proibição de chavões
-    let proibidos = [
-        "motor soberano em rust",
-        "motor soberano",
-    ];
+    let proibidos = ["motor soberano em rust", "motor soberano"];
 
     for termo in proibidos {
         assert!(
@@ -27,28 +24,38 @@ fn test_landing_page_e_readme_modulos_visuais() {
 
     // Presença das explicações visuais de cada ferramenta
     assert!(
-        site_lower.contains("joaju-csv") && (site_lower.contains("tabelas") || site_lower.contains("tabela")),
+        site_lower.contains("joaju-csv")
+            && (site_lower.contains("tabelas") || site_lower.contains("tabela")),
         "site/index.html deve apresentar joaju-csv com foco em tabelas"
     );
     assert!(
-        site_lower.contains("joaju-pedigree") && (site_lower.contains("diagramas") || site_lower.contains("heredogramas")),
+        site_lower.contains("joaju-pedigree")
+            && (site_lower.contains("diagramas") || site_lower.contains("heredogramas")),
         "site/index.html deve apresentar joaju-pedigree com foco em diagramas/heredogramas"
     );
     assert!(
-        site_lower.contains("joaju-unfurl") && (site_lower.contains("cartões") || site_lower.contains("cartoes") || site_lower.contains("cartão")),
+        site_lower.contains("joaju-unfurl")
+            && (site_lower.contains("cartões")
+                || site_lower.contains("cartoes")
+                || site_lower.contains("cartão")),
         "site/index.html deve apresentar joaju-unfurl com foco em cartões visuais"
     );
 
     assert!(
-        readme_lower.contains("joaju-csv") && (readme_lower.contains("tabela") || readme_lower.contains("tables")),
+        readme_lower.contains("joaju-csv")
+            && (readme_lower.contains("tabela") || readme_lower.contains("tables")),
         "README.md deve apresentar joaju-csv"
     );
     assert!(
-        readme_lower.contains("joaju-pedigree") && (readme_lower.contains("diagram") || readme_lower.contains("heredograma")),
+        readme_lower.contains("joaju-pedigree")
+            && (readme_lower.contains("diagram") || readme_lower.contains("heredograma")),
         "README.md deve apresentar joaju-pedigree"
     );
     assert!(
-        readme_lower.contains("joaju-unfurl") && (readme_lower.contains("cartão") || readme_lower.contains("cartões") || readme_lower.contains("card")),
+        readme_lower.contains("joaju-unfurl")
+            && (readme_lower.contains("cartão")
+                || readme_lower.contains("cartões")
+                || readme_lower.contains("card")),
         "README.md deve apresentar joaju-unfurl"
     );
 }

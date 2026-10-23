@@ -168,6 +168,16 @@ Joaju includes specialized engines for scientific diagrams, clinical pedigrees, 
 | **`graphviz`** | Graphs and networks in DOT language | `layout.width`, `layout.max_width`, `src`/`file` | - | [graphviz.html](https://joaju.2lp.in/motores/graphviz.html) |
 | **`gist`** | Embedding external analytical scripts | `url`, `file`, `title` | - | [gist.html](https://joaju.2lp.in/motores/gist.html) |
  
+#### 2.1 Specialized Visual Modules & Utilities
+
+Beyond native engines, the Joaju ecosystem modularizes its graphics and data pipeline into dedicated crates:
+
+| Module / Crate | Visual Output | Purpose & Utility |
+|---|---|---|
+| **`joaju-csv`** | **Tabelas Acadêmicas** / Tables | Formatação elegante de tabelas ABNT/APA a partir de arquivos CSV e planilhas relacionais com suporte a SSOT. |
+| **`joaju-pedigree`** | **Diagramas e Heredogramas** / Clinical Pedigrees | Renderização vetorial precisa de diagramas genealógicos e linhagens clínicas familiares (NSGC/ACMG). |
+| **`joaju-unfurl`** | **Cartões Visuais** / Rich Cards | Composição de cartões visuais para Typst e Web com metadados OpenGraph, capa, resumo e estimativa de leitura. |
+ 
 ---
  
 ### 3. Detailed Engines & Practical Examples
