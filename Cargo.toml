@@ -46,3 +46,10 @@ base64 = "0.22"
 
 [dev-dependencies]
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
