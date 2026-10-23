@@ -3,7 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/joaju.svg)](https://crates.io/crates/joaju)
 [![docs.rs](https://docs.rs/joaju/badge.svg)](https://docs.rs/joaju)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![GOST](https://img.shields.io/badge/GOST-1.1.0-emerald.svg)](https://codeberg.org/lumenpink/gost)
+[![GOST](https://img.shields.io/badge/GOST-1.5.0-emerald.svg)](https://codeberg.org/lumenpink/gost)
 
 > **Joaju** (*Guarani*): Link, reciprocal bond, connection, edge.  
 > Declarative local orchestrator and native scientific academic compiler in Rust for Typst typographical output, charts, academic tables, and clinical pedigrees.
@@ -532,6 +532,10 @@ cccp serve
  
 This repository adheres to the **GOST v1.1.0** specification (`lumen` profile). Specification integrity and automation rules are audited and managed via the `cccp` CLI across `.gost/`.
  
+### Compilação Estática e Otimização Soberana (GOST 1.5.0)
+- **Perfil de Release:** `opt-level = 3`, `lto = "fat"`, `codegen-units = 1`, `panic = "abort"` e `strip = true`.
+- **Linking Estático musl:** Suporte a `target-feature=+crt-static` para distribuição `static-pie` universal sem dependências de sistema.
+
 ## 📄 License
  
 This project is open-source software distributed under the **Apache-2.0** license:
