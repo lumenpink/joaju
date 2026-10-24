@@ -20,7 +20,7 @@ jobs:
     name: "Checks, Tests & Quality Gates"
     runs-on: ubuntu-latest
     container:
-      image: docker.io/lumenpink/gost-ci-cross:latest
+      image: gambi.2lp.in/lumen/gost-ci-cross:latest
     steps:
       - name: "Checkout repository"
         uses: https://github.com/actions/checkout@v4
@@ -34,6 +34,9 @@ jobs:
           if [ -n "${{ secrets.LUMEN_REGISTRY_TOKEN }}" ]; then
             printf '[registries.lumen]\ntoken = "${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
           fi
+
+      - name: "Ensure Toolchain Components"
+        run: rustup component add rustfmt clippy 2>/dev/null || true
 
       - name: "Format Check"
         run: cargo fmt -- --check
@@ -59,7 +62,7 @@ jobs:
     needs: [test]
     if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     container:
-      image: docker.io/lumenpink/gost-ci-cross:latest
+      image: gambi.2lp.in/lumen/gost-ci-cross:latest
     steps:
       - name: "Checkout repository"
         uses: https://github.com/actions/checkout@v4
@@ -91,6 +94,9 @@ jobs:
           if [ -n "${{ secrets.LUMEN_REGISTRY_TOKEN }}" ]; then
             printf '[registries.lumen]\ntoken = "${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
           fi
+
+      - name: "Ensure Toolchain Components"
+        run: rustup component add rustfmt clippy 2>/dev/null || true
 
       - name: "Compile Joaju Multiarch Binaries"
         run: |
