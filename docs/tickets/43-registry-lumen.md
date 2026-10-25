@@ -9,7 +9,7 @@
 
 ### 1. Escopo e Objetivos
 
-Esta especificação define a transição arquitetural do compilador orquestrador **`joaju`** para consumir todas as suas dependências satélites através do registro soberano de pacotes Cargo no Forgejo central (`https://git.2lp.in/api/packages/lumen/cargo/`):
+Esta especificação define a transição arquitetural do compilador orquestrador **`joaju`** para consumir todas as suas dependências satélites através do registro soberano de pacotes Cargo no Forgejo central (`https://gambi.2lp.in/api/packages/lumen/cargo/`):
 
 1. **Desacoplamento Completo de Caminhos Locais:**
    - Remoção de todos os `path = "../..."` no `Cargo.toml`.

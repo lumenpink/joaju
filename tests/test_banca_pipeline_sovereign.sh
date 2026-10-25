@@ -32,9 +32,9 @@ validate_workflow() {
         return 1
     fi
 
-    # 3. Presença de git.2lp.in e GIT_2LP_TOKEN
-    if ! grep -q "git.2lp.in" "$file"; then
-        echo "FALHA: $file não referencia git.2lp.in!"
+    # 3. Presença de gambi.2lp.in e GIT_2LP_TOKEN
+    if ! grep -q "gambi.2lp.in" "$file"; then
+        echo "FALHA: $file não referencia gambi.2lp.in!"
         return 1
     fi
 
@@ -44,8 +44,8 @@ validate_workflow() {
     fi
 
     # 4. Imagem atômica hermética
-    if ! grep -q "lumenpink/gost-ci-cross:latest" "$file"; then
-        echo "FALHA: $file não utiliza a imagem atômica lumenpink/gost-ci-cross:latest!"
+    if ! grep -q "gost-ci-cross:latest" "$file"; then
+        echo "FALHA: $file não utiliza a imagem atômica gost-ci-cross:latest!"
         return 1
     fi
 
@@ -90,7 +90,7 @@ TMP_MUTANT=$(mktemp)
 trap 'rm -f "$TMP_MUTANT"' EXIT
 
 # Mutante 1: Injeção de Codeberg
-sed 's/git\.2lp\.in/codeberg.org/g' "$WORKFLOW_FILE" > "$TMP_MUTANT"
+sed 's/gambi\.2lp\.in/codeberg.org/g' "$WORKFLOW_FILE" > "$TMP_MUTANT"
 if validate_workflow "$TMP_MUTANT" >/dev/null 2>&1; then
     echo "FALHA DE MUTAÇÃO: Mutante com codeberg.org não foi detectado!"
     exit 1

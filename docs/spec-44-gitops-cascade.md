@@ -9,7 +9,7 @@
 
 ### 1. Escopo e Objetivos
 
-Esta especificação define o pipeline unificado de integração contínua (CI), publicação no registry soberano de crates Forgejo (`sparse+https://git.2lp.in/api/packages/lumen/cargo/`) e propagação em cascata GitOps para o consumidor final **Joaju Web (`joaju-web`)**:
+Esta especificação define o pipeline unificado de integração contínua (CI), publicação no registry soberano de crates Forgejo (`sparse+https://gambi.2lp.in/api/packages/lumen/cargo/`) e propagação em cascata GitOps para o consumidor final **Joaju Web (`joaju-web`)**:
 
 1. **Recepção de Workflow Dispatch:** O workflow `.forgejo/workflows/ci.yaml` deve aceitar `workflow_dispatch:`, `push` e `pull_request`.
 2. **Auto-atualização GitOps:** Quando acionado via `workflow_dispatch`, executa `cargo update -p joaju-csv -p joaju-table -p joaju-pedigree -p joaju-unfurl`. Se houver alteração em `Cargo.lock`, realiza commit e push para a branch `main`.

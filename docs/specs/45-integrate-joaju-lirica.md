@@ -33,7 +33,7 @@ flowchart TD
 
 ### 3.1 Dependency Declaration (`Cargo.toml`)
 - Add `joaju-lirica = { version = "0.1.0", registry = "lumen" }` to `[dependencies]`.
-- Add local path override under `[patch."sparse+https://git.2lp.in/api/packages/lumen/cargo/"]`:
+- Add local path override under `[patch."sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"]`:
   `joaju-lirica = { path = "../joaju-lirica" }`.
 
 ### 3.2 Engine Adapter (`src/engine/lirica.rs`)
