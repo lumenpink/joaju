@@ -27,12 +27,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: "Configure Sovereign Lumen Cargo Registry"
+      - name: "Configure Sovereign Gambi Cargo Registry"
         run: |
           mkdir -p "$HOME/.cargo"
-          printf '[registries.lumen]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
+          printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
           if [ -n "${{ secrets.LUMEN_REGISTRY_TOKEN }}" ]; then
-            printf '[registries.lumen]\ntoken = "${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
+            printf '[registries.gambi]\ntoken = "${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "Ensure Toolchain Components"
@@ -87,12 +87,12 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "★ Canal: $CHANNEL | Versão: $VERSION"
 
-      - name: "Configure Sovereign Lumen Cargo Registry"
+      - name: "Configure Sovereign Gambi Cargo Registry"
         run: |
           mkdir -p "$HOME/.cargo"
-          printf '[registries.lumen]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
+          printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
           if [ -n "${{ secrets.LUMEN_REGISTRY_TOKEN }}" ]; then
-            printf '[registries.lumen]\ntoken = "${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
+            printf '[registries.gambi]\ntoken = "${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "Ensure Toolchain Components"
@@ -219,7 +219,7 @@ jobs:
             cd "$GITHUB_WORKSPACE"
           fi
 
-      - name: "Publish Crate to Sovereign Lumen Registry"
+      - name: "Publish Crate to Sovereign Gambi Registry"
         env:
           LUMEN_TOKEN: ${{ secrets.LUMEN_REGISTRY_TOKEN }}
         run: |
@@ -227,6 +227,6 @@ jobs:
             CANONICAL_VERSION=$(head -n 1 VERSION | tr -d ' \r\n')
             echo "-> Sincronizando Cargo.toml para a versao canonica: $CANONICAL_VERSION"
             sed -i "0,/^version = .*/s//version = \"${CANONICAL_VERSION}\"/" Cargo.toml
-            echo "-> Publicando joaju no registry lumen..."
-            cargo publish --registry lumen --allow-dirty || echo "::warning::Versao ja publicada ou falha tolerada no registry."
+            echo "-> Publicando joaju no registry gambi..."
+            cargo publish --registry gambi --allow-dirty || echo "::warning::Versao ja publicada ou falha tolerada no registry."
           fi
