@@ -15,22 +15,19 @@ authors = ["Lumen Pink <hi@lumen.pink>"]
 [lib]
 name = "joaju"
 path = "src/lib.rs"
+crate-type = ["rlib", "staticlib"]
 
 [[bin]]
 name = "joaju"
 path = "src/main.rs"
+required-features = ["cli"]
 
 [dependencies]
-clap = { version = "4.5", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
+clap = { version = "4.5", features = ["derive"], optional = true }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 joaju-pedigree = { version = "0.2.0", registry = "gambi" }
 joaju-csv = { version = "0.1.0", registry = "gambi" }
 joaju-table = { version = "0.1.0", registry = "gambi" }
-joaju-unfurl = { version = "0.1.0", registry = "gambi" }
 joaju-lirica = { version = "0.1.0", registry = "gambi" }
 joaju-slides = { version = "0.2.0", registry = "gambi" }
 regex = "1"
@@ -40,11 +37,12 @@ typst-as-lib = { version = "0.17", features = ["typst-kit-fonts", "typst-kit-emb
 typst = "0.15"
 typst-pdf = "0.15"
 typst-layout = "0.15"
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
-scraper = "0.22"
-base64 = "0.22"
 
 [dev-dependencies]
+
+[features]
+default = ["cli"]
+cli = ["dep:clap"]
 
 [profile.release]
 opt-level = 3
@@ -52,4 +50,3 @@ lto = "thin"
 codegen-units = 1
 panic = "abort"
 strip = true
-

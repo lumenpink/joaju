@@ -13,7 +13,6 @@ fn test_cli_help() {
     assert!(stdout.contains("compile"));
     assert!(stdout.contains("render"));
     assert!(stdout.contains("preprocess"));
-    assert!(stdout.contains("unfurl"));
 }
 
 #[test]

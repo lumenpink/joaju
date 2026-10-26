@@ -36,8 +36,8 @@ check_not_present 'path = "../joaju-csv"' "Ausência de path local para joaju-cs
 check_not_present 'path = "../joaju-table"' "Ausência de path local para joaju-table" || FAILED=1
 check_not_present 'path = "../joaju-unfurl"' "Ausência de path local para joaju-unfurl" || FAILED=1
 
-# 2. Presença explícita do registro lumen
-check_present 'registry = "lumen"' "Dependências associadas ao registro soberano lumen" || FAILED=1
+# 2. Presença explícita do registro gambi
+check_present 'registry = "gambi"' "Dependências associadas ao registro soberano gambi" || FAILED=1
 
 # 3. Testes de mutação
 echo "=== [MUTATION] Testes de Mutantes Críticos ==="

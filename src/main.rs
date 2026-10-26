@@ -95,21 +95,9 @@ enum Commands {
         #[arg(short, long, value_name = "OUTPUT")]
         output: Option<PathBuf>,
     },
-
-    /// Extract OpenGraph and rich metadata from a URL with SSRF protection
-    Unfurl {
-        /// Target URL to unfurl
-        #[arg(value_name = "URL")]
-        url: String,
-
-        /// Generate archival PDF snapshot encoded in base64
-        #[arg(long)]
-        archive: bool,
-    },
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
@@ -211,12 +199,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let markdown = read_input(input.as_deref())?;
             let processed = joaju::preprocess_markdown(&markdown);
             write_output_str(output.as_deref(), &processed)?;
-        }
-        Commands::Unfurl { url, archive } => {
-            let response = joaju::unfurl_url(&url, archive)
-                .await
-                .map_err(io::Error::other)?;
-            println!("{}", serde_json::to_string_pretty(&response)?);
         }
     }
 

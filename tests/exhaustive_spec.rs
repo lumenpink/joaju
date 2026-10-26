@@ -2,7 +2,6 @@ use joaju::compiler::compile_markdown_to_pdf;
 use joaju::engine::chem::render_chem;
 use joaju::engine::pedigree::render_pedigree;
 use joaju::preprocessor::table::render_single_table;
-use joaju::unfurl::{extract_metadata_from_html, unfurl_url};
 
 // =========================================================================
 // 1. MOTOR DE HEREDOGRAMAS CLÍNICOS (PEDIGREE) - CASOS LIMÍTROFES
@@ -116,40 +115,6 @@ fn test_edge_wikilinks_with_spaces_and_accents() {
     let processed = joaju::preprocessor::image::preprocess_images(input);
     assert!(processed
         .contains(r#"#image("Relatório Clínico - Genética Médica 2026.png", width: 450pt)"#));
-}
-
-// =========================================================================
-// 4. UNFURL (WEB SCRAPER E SEGURANÇA SSRF) - CASOS LIMÍTROFES
-// =========================================================================
-
-#[tokio::test]
-async fn test_edge_unfurl_rejects_ssrf_and_private_ips() {
-    let private_urls = [
-        "http://localhost:3000/admin",
-        "http://127.0.0.1:8080/secrets",
-        "http://192.168.1.1/router",
-        "http://10.0.0.1/internal",
-        "file:///etc/passwd",
-        "javascript:alert(1)",
-    ];
-
-    for url in private_urls {
-        let result = unfurl_url(url, false).await;
-        assert!(
-            result.is_err(),
-            "URL '{}' deveria ser rejeitada por segurança",
-            url
-        );
-    }
-}
-
-#[test]
-fn test_edge_unfurl_html_without_head_or_title() {
-    let raw_html = "<div><p>Artigo sem metadados nem tags estruturais padrão.</p></div>";
-    let meta = extract_metadata_from_html(raw_html, "https://minimal.org/page", false).unwrap();
-    assert_eq!(meta.domain, "minimal.org");
-    assert_eq!(meta.reading_time_min, 1);
-    assert!(meta.title.is_none());
 }
 
 // =========================================================================

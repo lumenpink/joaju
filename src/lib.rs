@@ -21,7 +21,6 @@
 pub mod compiler;
 pub mod engine;
 pub mod preprocessor;
-pub mod unfurl;
 
 pub use compiler::{
     compile_markdown_to_pdf, compile_markdown_to_pdf_with_options, compile_typst_to_pdf,
@@ -31,4 +30,3 @@ pub use engine::chem::render_chem;
 pub use engine::pedigree::{render_pedigree, RenderRequest, RenderResponse};
 pub use engine::slides;
 pub use preprocessor::preprocess_markdown;
-pub use unfurl::{unfurl_url, UnfurlRequest, UnfurlResponse};

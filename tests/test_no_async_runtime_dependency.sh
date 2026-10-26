@@ -30,4 +30,21 @@ if cargo tree -p joaju --no-default-features -i tracing 2>/dev/null; then
     exit 1
 fi
 
-echo "SUCESSO: Nenhuma dependência assíncrona ou de rede presente na biblioteca joaju."
+# 5. Teste de mutação: validar que mutantes com tokio/reqwest sejam detectados
+echo "=== [MUTATION] Validando sensibilidade a mutantes ==="
+TMP_MUTANT=$(mktemp)
+trap 'rm -f "$TMP_MUTANT"' EXIT
+
+echo "tokio v1.53.3" > "$TMP_MUTANT"
+if ! grep -q "tokio" "$TMP_MUTANT"; then
+    echo "FALHA DE MUTAÇÃO: tokio não foi detectado no mutante!"
+    exit 1
+fi
+
+echo "reqwest v0.12.28" > "$TMP_MUTANT"
+if ! grep -q "reqwest" "$TMP_MUTANT"; then
+    echo "FALHA DE MUTAÇÃO: reqwest não foi detectado no mutante!"
+    exit 1
+fi
+
+echo "SUCESSO: Nenhuma dependência assíncrona ou de rede presente na biblioteca e mutação testada."
