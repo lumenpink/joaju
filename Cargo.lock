@@ -1319,7 +1319,6 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "joaju-chem",
- "joaju-csv",
  "joaju-graph",
  "joaju-lirica",
  "joaju-markdown",
@@ -1403,14 +1402,15 @@ dependencies = [
 
 [[package]]
 name = "joaju-pedigree"
-version = "0.2.0"
+version = "0.2.1"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "6797bf3f19041527c0dd6d6ea4ee4fb919f5dc583aed0cb794293b9e8b09cdd1"
+checksum = "6d0337d80cd80e91c1d83d64d09a50d1768d5c4c9607de573f48cd625e2b5dce"
 dependencies = [
  "clap",
  "csv",
  "joaju-csv",
  "petgraph",
+ "regex",
  "serde",
  "serde_json",
  "thiserror",
