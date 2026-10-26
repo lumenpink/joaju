@@ -1317,9 +1317,8 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 name = "joaju"
 version = "0.1.0"
 dependencies = [
- "chematic-depict",
- "chematic-smiles",
  "clap",
+ "joaju-chem",
  "joaju-csv",
  "joaju-lirica",
  "joaju-pedigree",
@@ -1331,6 +1330,20 @@ dependencies = [
  "typst-as-lib",
  "typst-layout",
  "typst-pdf",
+]
+
+[[package]]
+name = "joaju-chem"
+version = "0.1.0"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "d628f3ee68c36b05a2e2b330cde8bf55a33b501b29ade019c82ccfc044636e7a"
+dependencies = [
+ "chematic-depict",
+ "chematic-smiles",
+ "clap",
+ "regex",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
