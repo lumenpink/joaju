@@ -1,7 +1,7 @@
 # Especificação 63: Extração do Pré-processador e Conversor de Markdown para joaju-markdown
 
 - **ID do Ticket:** #63
-- **Status:** Em Progresso (DD-TDD)
+- **Status:** Concluído (DD-TDD Fase 9)
 - **Autora:** Lumen
 - **Alinhamento:** GOST 1.5.0 (Rust)
 
@@ -15,7 +15,7 @@ O compilador acadêmico Joaju (`joaju`) realiza operações intensivas de pré-p
 
 Projetos clientes como `lauda`, `papeli` e `mandu` necessitam frequentemente dessas transformações de Markdown sem precisar do compilador pesado do Typst (`typst-as-lib`, `typst`, `typst-pdf`).
 
-Esta especificação define a extração completa dessa lógica para a crate desacoplada `joaju-markdown`, reexportando-a no `joaju` para manter compatibilidade absoluta com a API pública.
+Esta especificação concluiu a extração completa dessa lógica para a crate desacoplada `joaju-markdown`, reexportando-a no `joaju` mantendo compatibilidade absoluta com a API pública.
 
 ## 2. Requisitos Técnicos
 1. **Crate Soberana `joaju-markdown`:**
@@ -30,14 +30,14 @@ Esta especificação define a extração completa dessa lógica para a crate des
      - `table` / `joaju_table` reexports
 
 2. **Integração no `joaju`:**
-   - Adicionar `joaju-markdown = { version = "0.1.0", registry = "gambi" }` em `Cargo.toml`.
-   - Simplificar [src/preprocessor/](file:///home/lumen/src/joaju/src/preprocessor) para reexportar a partir de `joaju_markdown`.
-   - Simplificar `convert_markdown_to_typst` e `normalize_typst_math_expressions` em [src/compiler/mod.rs](file:///home/lumen/src/joaju/src/compiler/mod.rs) para delegar diretamente à `joaju_markdown`.
-   - Remover arquivos redundantes [src/preprocessor/image.rs](file:///home/lumen/src/joaju/src/preprocessor/image.rs) e [src/preprocessor/gist.rs](file:///home/lumen/src/joaju/src/preprocessor/gist.rs).
+   - Adicionada `joaju-markdown = { version = "0.1.0", registry = "gambi" }` em `Cargo.toml`.
+   - Simplificado `src/preprocessor/mod.rs` para reexportar a partir de `joaju_markdown`.
+   - Simplificado `convert_markdown_to_typst` e `normalize_typst_math_expressions` em `src/compiler/mod.rs` delegando à `joaju_markdown`.
+   - Removidos arquivos redundantes `src/preprocessor/image.rs` e `src/preprocessor/gist.rs`.
 
 3. **Garantia de Não-Regressão:**
-   - Teste Red para verificar presença de `joaju-markdown` e ausência de código duplicado de regex de imagens/gists.
-   - Suíte de testes existente: `tests/preprocessor_spec.rs`, `tests/compiler_spec.rs`, `tests/cli_spec.rs`.
+   - Teste Red `tests/test_joaju_markdown_dependency.sh` garantindo a presença de `joaju-markdown` e ausência de código duplicado.
+   - Suíte completa de testes aprovada: `preprocessor_spec`, `exhaustive_spec`, `cli_spec`, `compiler_spec`.
 
 ## 3. Critérios de Aceitação
 1. `joaju-markdown` listado nas dependências soberanas de `Cargo.toml`.
@@ -48,9 +48,9 @@ Esta especificação define a extração completa dessa lógica para a crate des
 - [x] Fase 1 (Ticket): #63
 - [x] Fase 2 (Branch): `feat/63-extrair-preprocessador-joaju-markdown`
 - [x] Fase 3 (Spec): Especificação técnica elaborada
-- [ ] Fase 4 (Red Test): Criar teste red para dependência e integridade do joaju-markdown
-- [ ] Fase 5 (Green Implement): Integrar joaju-markdown e limpar preprocessor interno
-- [ ] Fase 6 (Refactor): Reexportar de forma idiomática
-- [ ] Fase 7 (Mutation Test): Testar mutantes no pipeline de pré-processamento
-- [ ] Fase 8 (Quality Gate): fmt, clippy sem warnings e testes verdes
-- [ ] Fase 9 (Finish & Close): Concluído e pronto para merge
+- [x] Fase 4 (Red Test): Criado teste red `tests/test_joaju_markdown_dependency.sh`
+- [x] Fase 5 (Green Implement): Publicado joaju-markdown e integrado com sucesso
+- [x] Fase 6 (Refactor): Removidos image.rs e gist.rs, unificadas reexportações
+- [x] Fase 7 (Mutation Test): Testes de mutantes e suíte de regressão aprovados
+- [x] Fase 8 (Quality Gate): fmt e clippy sem warnings, 100% dos testes verdes
+- [x] Fase 9 (Finish & Close): Concluído e pronto para merge (closes #63)
