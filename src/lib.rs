@@ -30,5 +30,6 @@ pub use compiler::{
 pub use engine::chem::render_chem;
 pub use engine::pedigree::{render_pedigree, RenderRequest, RenderResponse};
 pub use engine::slides;
+pub use engine::wireframe::render_wireframe;
 pub use preprocessor::preprocess_markdown;
 pub use unfurl::{unfurl_url, UnfurlRequest, UnfurlResponse};
