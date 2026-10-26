@@ -151,7 +151,10 @@ pub fn render_widget_typst(widget: &Widget) -> String {
             let content = if val.is_empty() {
                 "#text(fill: luma(160), style: \"italic\", size: 9pt, \"...\")".to_string()
             } else {
-                format!("#text(fill: luma(40), size: 9pt, \"{}\")", escape_typst_string(val))
+                format!(
+                    "#text(fill: luma(40), size: 9pt, \"{}\")",
+                    escape_typst_string(val)
+                )
             };
             format!(
                 "[#box(radius: 3pt, fill: luma(253), stroke: 0.75pt + luma(175), inset: (x: 7pt, y: 5pt), width: 100%)[#align(left + horizon)[{}]]]",
@@ -230,9 +233,7 @@ pub fn render_widget_typst(widget: &Widget) -> String {
                 pct
             )
         }
-        Widget::Separator => {
-            "[#line(length: 100%, stroke: 0.5pt + luma(200))]".to_string()
-        }
+        Widget::Separator => "[#line(length: 100%, stroke: 0.5pt + luma(200))]".to_string(),
     }
 }
 
@@ -255,23 +256,22 @@ pub fn render_wireframe(source: &str) -> Result<String, String> {
         }
 
         // Salt Window container opening
-        if t.starts_with("{+") || t.starts_with('{') {
+        if let Some(rest) = t.strip_prefix("{+").or_else(|| t.strip_prefix('{')) {
             is_window = true;
-            let after_brace = if t.starts_with("{+") {
-                t[2..].trim()
-            } else {
-                t[1..].trim()
-            };
+            let after_brace = rest.trim();
             if !after_brace.is_empty() && after_brace != "}" {
                 // Check if title is on first line
-                if after_brace.starts_with('"') && after_brace.ends_with('"') && after_brace.len() >= 2 {
+                if after_brace.starts_with('"')
+                    && after_brace.ends_with('"')
+                    && after_brace.len() >= 2
+                {
                     window_title = Some(after_brace[1..after_brace.len() - 1].trim().to_string());
-                } else if after_brace.starts_with('"') {
-                    if let Some(end_quote) = after_brace[1..].find('"') {
-                        window_title = Some(after_brace[1..=end_quote].to_string());
-                        let rest = after_brace[end_quote + 2..].trim();
-                        if !rest.is_empty() && rest != "}" {
-                            clean_lines.push(rest);
+                } else if let Some(inner) = after_brace.strip_prefix('"') {
+                    if let Some(end_quote) = inner.find('"') {
+                        window_title = Some(inner[..end_quote].to_string());
+                        let rest_after = inner[end_quote + 1..].trim();
+                        if !rest_after.is_empty() && rest_after != "}" {
+                            clean_lines.push(rest_after);
                         }
                     }
                 } else {
@@ -318,16 +318,18 @@ pub fn render_wireframe(source: &str) -> Result<String, String> {
         }
 
         // Regular grid line: split by |
-        let cells: Vec<Widget> = line
-            .split('|')
-            .map(parse_widget)
-            .collect();
+        let cells: Vec<Widget> = line.split('|').map(parse_widget).collect();
 
         rows.push(WireframeRow::Cells(cells));
     }
 
     let mut typst = String::new();
-    writeln!(typst, "#align(center)[#block(breakable: false, width: {})[", custom_width).unwrap();
+    writeln!(
+        typst,
+        "#align(center)[#block(breakable: false, width: {})[",
+        custom_width
+    )
+    .unwrap();
 
     // Outer Window Box
     writeln!(
@@ -351,18 +353,24 @@ pub fn render_wireframe(source: &str) -> Result<String, String> {
     }
 
     // Window Body
-    writeln!(
-        typst,
-        "    #pad(x: 12pt, top: 10pt, bottom: 12pt)["
-    ).unwrap();
+    writeln!(typst, "    #pad(x: 12pt, top: 10pt, bottom: 12pt)[").unwrap();
 
     for row in rows {
         match row {
             WireframeRow::Separator => {
-                writeln!(typst, "      #v(3pt)#line(length: 100%, stroke: 0.5pt + luma(200))#v(3pt)").unwrap();
+                writeln!(
+                    typst,
+                    "      #v(3pt)#line(length: 100%, stroke: 0.5pt + luma(200))#v(3pt)"
+                )
+                .unwrap();
             }
             WireframeRow::Tabs(tabs) => {
-                writeln!(typst, "      {}#v(6pt)", render_widget_typst(&Widget::Tabs(tabs))).unwrap();
+                writeln!(
+                    typst,
+                    "      {}#v(6pt)",
+                    render_widget_typst(&Widget::Tabs(tabs))
+                )
+                .unwrap();
             }
             WireframeRow::Cells(cells) => {
                 let col_widths = vec!["1fr"; cells.len()].join(", ");
@@ -375,7 +383,8 @@ pub fn render_wireframe(source: &str) -> Result<String, String> {
                     "      #grid(columns: ({}), gutter: 8pt, align: horizon, {})",
                     col_widths,
                     rendered_cells.join(", ")
-                ).unwrap();
+                )
+                .unwrap();
                 writeln!(typst, "      #v(3pt)").unwrap();
             }
         }
