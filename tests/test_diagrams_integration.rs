@@ -19,7 +19,10 @@ fn test_wireframe_salt_preprocessing() {
         typst.contains("table(") || typst.contains("#box"),
         "Markup Typst deve conter elementos nativos de wireframe/salt"
     );
-    assert!(assets.is_empty(), "Wireframe gera Typst inline, sem assets SVG binários");
+    assert!(
+        assets.is_empty(),
+        "Wireframe gera Typst inline, sem assets SVG binários"
+    );
 }
 
 #[test]
