@@ -628,6 +628,36 @@ Quando um repositório necessitar de regras estritas exclusivas que não pertenc
 
 ---
 
+## 15. Governança de Fronteira e Quarentena de Branches (`inbox/*`) — Emenda v1.6.0
+
+Para manter o núcleo da norma GOST estritamente focado em anatomia de repositório, hermeticidade e ciclo DD-TDD, toda a mecânica de distribuição, espelhamento ativo e ingestão de contribuições externas reside no Perfil de Governança de Fronteira (`gost-profile-border`).
+
+### 15.1 Declaração de Topologia de Fronteira
+Repositórios declaram sua topologia através de tópicos na forja primária ou metadados de empacotamento:
+* `gost-mirror-gh`: Habilita o espelhamento passivo de saída e a ingestão ativa de tickets/PRs a partir do GitHub.
+* `gost-mirror-cb`: Habilita o espelhamento passivo de saída e a ingestão ativa de tickets/PRs a partir do Codeberg.
+* `gost-public-inbox`: Habilita a recepção de tickets anônimos e a materialização de Pull Requests externos sob quarentena.
+
+### 15.2 Quarentena Estrita de Branches (`inbox/*`) — Regra GOST-25
+O namespace `refs/heads/inbox/*` é de reserva exclusiva de controladores automatizados de fronteira:
+1. **Zona Não-Confiável de CI:** O Gosplan CI trata branches com prefixo `inbox/*` como zona estritamente não-confiável. A execução é restrita a validação de linting, compilação e testes determinísticos offline, com bloqueio absoluto a segredos de produção, chaves criptográficas de assinatura e deploys.
+2. **Operações Soberanas:** Toda integração de código vindo de fora ocorre via merge formal para a branch `main` no Forgejo primário. O espelhamento passivo propaga a alteração e comanda o fechamento do PR original na forja externa.
+
+---
+
+## 16. Padronização Canônica de Taxonomia e Metadados do Projeto — Regra GOST-26
+
+Para garantir consistência semântica e evitar discrepâncias entre forjas, vitrines e catálogos:
+1. **Campos Obrigatórios de Identificação:**
+   * `slug`: Identificador único minúsculo em kebab-case (ex: `kontur`, `resenha`).
+   * `title`: Nome próprio legível do aplicativo ou biblioteca (ex: `Kontur`, `Resenha`).
+   * `tagline`: Subtítulo resumido em uma frase clara, expressando a utilidade concreta da ferramenta sem jargões técnicos.
+   * `description`: Descrição textual focada no benefício e no propósito de uso, acessível a pessoas leigas.
+2. **Proibição de Jargão Técnico nas Vitrines e Catálogos:**
+   Descrições destinadas ao usuário final não devem conter menções a linguagens de implementação (ex: "em Rust puro"), tecnologias de runtime (ex: "WASM"), arquiteturas internas ("hexagonal", "borda", "SSOT") ou termos repetitivos e vazios ("soberano"), exceto termos que definem a própria proposta funcional do projeto (como `anti-design` na Navalha).
+
+---
+
 <!-- ===================================================================== -->
 <!-- CAMADA 2: https://kollontai.2lp.in/profile.md -->
 <!-- ===================================================================== -->
@@ -1461,13 +1491,13 @@ canonical_url: "https://gostlumen.2lp.in/profile.md"
 * **Perfil Pai:** `https://kollontai.2lp.in/profile.md` (Kollontai)
 * **Precedência:** Qualquer regra explicitada neste documento tem precedência estrita sobre o perfil pai. Todas as regras não mencionadas aqui são herdadas automaticamente do Kollontai e da norma central GOST.
 * **Domínio Canônico:** `https://gostlumen.2lp.in`
-* **Forja Primária Soberana:** Forgejo em `gambi.2lp.in` (`https://gambi.2lp.in/lumen/<repo>`)
-* **Remote Git SSH Padrão:** `git@gambi.2lp.in:lumen/<repo>.git` (Porta 22 padrão via SSH shim do host).
+* **Forja Primária Soberana:** Forgejo em `git.2lp.in` (`https://git.2lp.in/lumen/<repo>`)
+* **Remote Git SSH Padrão:** `git@git.2lp.in:lumen/<repo>.git` (Porta 22 padrão via SSH shim do host).
 * **Política de Push Mirrors Duplos (Vitrine Aberta):**
-  - Todo repositório público hospedado no `gambi.2lp.in` opera com **Push Mirror** automatizado imediato a cada commit (`sync_on_commit: true`) para:
+  - Todo repositório público hospedado no `git.2lp.in` opera com **Push Mirror** automatizado imediato a cada commit (`sync_on_commit: true`) para:
     1. **Espelho FOSS:** Codeberg (`https://codeberg.org/lumenpink/<repo>`)
     2. **Espelho Comunitário:** GitHub (`https://github.com/lumenpink/<repo>`)
-  - O desenvolvedor realiza commits e pushes locais exclusivamente para o `origin` (`git@gambi.2lp.in:lumen/<repo>.git`). A replicação para os espelhos externos é responsabilidade da forja soberana.
+  - O desenvolvedor realiza commits e pushes locais exclusivamente para o `origin` (`git@git.2lp.in:lumen/<repo>.git`). A replicação para os espelhos externos é responsabilidade da forja soberana.
 
 ---
 
