@@ -44,3 +44,14 @@ Como o `joaju` é consumido como biblioteca por projetos como `mandu`, `lauda` e
 3. O executável de terminal compila e executa normalmente com `cargo run --bin joaju -- --help`.
 4. Todos os testes unitários e de integração existentes passam com sucesso.
 5. `cargo fmt --check` e `cargo clippy --all-targets -- -D warnings` sem qualquer violação.
+
+## 4. Registro de Fases do DD-TDD
+- [x] Fase 1 (Ticket): #57
+- [x] Fase 2 (Branch): `feat/57-decoupling-unfurl-and-cli-features`
+- [x] Fase 3 (Spec): Especificação técnica aprovada
+- [x] Fase 4 (Red Test): `tests/test_no_async_runtime_dependency.sh` falhando com tokio/reqwest
+- [x] Fase 5 (Green Implement): Expurgo de tokio, reqwest, scraper, tracing e isolamento do CLI
+- [x] Fase 6 (Refactor): Remoção de código morto e alinhamento de módulos
+- [x] Fase 7 (Mutation Test): Testes de mutantes integrados
+- [x] Fase 8 (Quality Gate): fmt, clippy sem warnings e testes passando
+- [x] Fase 9 (Finish & Close): Concluído e pronto para merge (closes #57)
