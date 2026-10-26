@@ -3,7 +3,7 @@
 - **Ticket:** #58 (integrates #59, #60, #61)
 - **Branch:** `feat/58-integrate-native-diagram-engines`
 - **Standard:** GOST DD-TDD v1.5.0
-- **Status:** Phase 8: Quality Gate (Approved)
+- **Status:** Concluído (DD-TDD Fase 9)
 
 ---
 
@@ -67,3 +67,17 @@ joaju-graph = { version = "0.1.0", registry = "gambi" }
    - Verify a single academic Markdown document combining wireframes, sequence diagrams, and flowcharts compiles into a valid `%PDF-` document.
 3. **Registry Hermeticity Audit:**
    - `tests/audit_registry_dependencies.sh` passes with 0 local path violations.
+
+---
+
+## 6. Fases GOST DD-TDD
+- [x] Fase 1 (Ticket): #58 (e subtickets #59, #60, #61)
+- [x] Fase 2 (Branch): `feat/58-integrate-native-diagram-engines`
+- [x] Fase 3 (Spec): Especificação técnica elaborada
+- [x] Fase 4 (Red Test): Criado teste red `tests/test_diagrams_integration.rs`
+- [x] Fase 5 (Green Implement): Publicadas crates no gambi e integradas ao core
+- [x] Fase 6 (Refactor): Reexportações limpas em `src/engine/` e formatação
+- [x] Fase 7 (Mutation Test): Isolamento de caminhos locais e mutantes no audit script
+- [x] Fase 8 (Quality Gate): fmt, clippy sem warnings, 100% de testes verdes e conformidade Gosplan
+- [x] Fase 9 (Finish & Close): Concluído e pronto para merge (closes #58)
+
