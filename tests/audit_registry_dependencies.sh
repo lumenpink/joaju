@@ -36,6 +36,7 @@ check_not_present 'path = "../joaju-csv"' "Ausência de path local para joaju-cs
 check_not_present 'path = "../joaju-table"' "Ausência de path local para joaju-table" || FAILED=1
 check_not_present 'path = "../joaju-unfurl"' "Ausência de path local para joaju-unfurl" || FAILED=1
 check_not_present 'path = "../joaju-chem"' "Ausência de path local para joaju-chem" || FAILED=1
+check_not_present 'path = "../joaju-markdown"' "Ausência de path local para joaju-markdown" || FAILED=1
 
 # 2. Presença explícita do registro gambi
 check_present 'registry = "gambi"' "Dependências associadas ao registro soberano gambi" || FAILED=1

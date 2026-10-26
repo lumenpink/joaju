@@ -1321,6 +1321,7 @@ dependencies = [
  "joaju-chem",
  "joaju-csv",
  "joaju-lirica",
+ "joaju-markdown",
  "joaju-pedigree",
  "joaju-slides",
  "joaju-table",
@@ -1369,6 +1370,19 @@ dependencies = [
  "clap",
  "serde",
  "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-markdown"
+version = "0.1.0"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "6afa3921f1e1b487f9482829067ba4071df49fb755ed840385a61801053371cf"
+dependencies = [
+ "clap",
+ "joaju-table",
+ "regex",
+ "serde",
  "thiserror",
 ]
 

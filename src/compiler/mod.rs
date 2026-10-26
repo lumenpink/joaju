@@ -1,8 +1,12 @@
 use crate::engine;
-use crate::preprocessor::{preprocess_gists, preprocess_images, preprocess_tables};
 use regex::Regex;
 use serde::Deserialize;
 use typst_as_lib::TypstEngine;
+
+pub use joaju_markdown::{
+    convert_markdown_to_typst, normalize_typst_math_expressions, preprocess_gists,
+    preprocess_images, preprocess_tables,
+};
 
 static TEMPLATE_UFSC: &str = include_str!("../../data/trabalho-ufsc.typ");
 static TEMPLATE_ABNT: &str = include_str!("../../data/template.typ");
@@ -105,76 +109,6 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
     });
 
     (res3.to_string(), assets)
-}
-
-fn normalize_typst_math_expressions(content: &str) -> String {
-    let re = Regex::new(r"\$([^\$]+)\$").unwrap();
-    re.replace_all(content, |caps: &regex::Captures| {
-        let inner = &caps[1];
-        let mut fixed = inner.to_string();
-        fixed = fixed.replace("ii", "i i");
-        fixed = fixed.replace("Bb", "B b");
-        fixed = fixed.replace("bb", "b b");
-        fixed = fixed.replace("BB", "B B");
-        fixed = fixed.replace(r"B\_", "B \"_\"");
-        fixed = fixed.replace(r"B_", "B \"_\"");
-        format!("${}$", fixed)
-    })
-    .to_string()
-}
-
-pub fn convert_markdown_to_typst(md: &str) -> String {
-    let mut result = Vec::new();
-    let mut in_code_block = false;
-
-    for line in md.lines() {
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("```") {
-            in_code_block = !in_code_block;
-            result.push(line.to_string());
-            continue;
-        }
-
-        if in_code_block {
-            result.push(line.to_string());
-            continue;
-        }
-
-        if trimmed == "---" || trimmed == "***" || trimmed == "___" {
-            continue;
-        }
-
-        let trimmed_all = line.trim();
-        if trimmed_all == "<pagebreak>"
-            || trimmed_all == "<pagebreak/>"
-            || trimmed_all == "<pagebreak />"
-            || trimmed_all == "<!-- pagebreak -->"
-            || trimmed_all == "<!-- newpage -->"
-            || trimmed_all == "\\pagebreak"
-            || trimmed_all == "\\newpage"
-        {
-            result.push("#pagebreak()".to_string());
-            continue;
-        }
-
-        if let Some(rest) = line.strip_prefix("###### ") {
-            result.push(format!("====== {}", rest));
-        } else if let Some(rest) = line.strip_prefix("##### ") {
-            result.push(format!("===== {}", rest));
-        } else if let Some(rest) = line.strip_prefix("#### ") {
-            result.push(format!("==== {}", rest));
-        } else if let Some(rest) = line.strip_prefix("### ") {
-            result.push(format!("=== {}", rest));
-        } else if let Some(rest) = line.strip_prefix("## ") {
-            result.push(format!("== {}", rest));
-        } else if let Some(rest) = line.strip_prefix("# ") {
-            result.push(format!("= {}", rest));
-        } else {
-            result.push(line.to_string());
-        }
-    }
-
-    result.join("\n")
 }
 
 pub fn compile_markdown_to_pdf(markdown: &str) -> Result<Vec<u8>, String> {

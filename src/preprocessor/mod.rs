@@ -1,16 +1,11 @@
-pub mod gist;
-pub mod image;
+//! Markdown preprocessing and transformation re-exported from `joaju-markdown`.
 
-pub use gist::preprocess_gists;
-pub use image::preprocess_images;
-pub use joaju_table as table;
-pub use joaju_table::{
-    preprocess_tables, render_html_table, render_table_block as render_single_table,
-};
+pub use joaju_markdown::*;
 
-/// Run all markdown preprocessors sequentially (images, gists, tables).
-pub fn preprocess_markdown(content: &str) -> String {
-    let s = preprocess_images(content);
-    let s = preprocess_gists(&s);
-    preprocess_tables(&s)
+pub mod image {
+    pub use joaju_markdown::preprocess_images;
+}
+
+pub mod gist {
+    pub use joaju_markdown::preprocess_gists;
 }
