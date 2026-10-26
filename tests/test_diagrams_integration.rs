@@ -59,10 +59,10 @@ Servidor --> Cliente: 200 OK
         "Bloco ```sequence deve ser pré-processado"
     );
     assert!(
-        typst.contains("#cetz.canvas") || typst.contains("draw.rect"),
-        "Markup Typst de sequência deve conter canvas de desenho CeTZ"
+        typst.contains("#image") && typst.contains("<svg"),
+        "Markup Typst de sequência deve conter elemento de imagem SVG nativo"
     );
-    assert!(assets.is_empty(), "Sequência gera CeTZ Typst inline");
+    assert!(assets.is_empty(), "Sequência gera Typst inline");
 }
 
 #[test]
@@ -81,10 +81,10 @@ B --> C[Fim]
         "Bloco ```flowchart deve ser pré-processado"
     );
     assert!(
-        typst.contains("#cetz.canvas") || typst.contains("draw.rect"),
-        "Markup Typst de fluxograma deve conter canvas de desenho CeTZ"
+        typst.contains("#image") && typst.contains("<svg"),
+        "Markup Typst de fluxograma deve conter elemento de imagem SVG nativo"
     );
-    assert!(assets.is_empty(), "Flowchart gera CeTZ Typst inline");
+    assert!(assets.is_empty(), "Flowchart gera Typst inline");
 }
 
 #[test]

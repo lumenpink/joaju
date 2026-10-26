@@ -31,6 +31,9 @@ joaju-table = { version = "0.1.0", registry = "gambi" }
 joaju-markdown = { version = "0.1.0", registry = "gambi" }
 joaju-lirica = { version = "0.1.0", registry = "gambi" }
 joaju-slides = { version = "0.2.0", registry = "gambi" }
+joaju-wireframe = { version = "0.1.0", registry = "gambi" }
+joaju-sequence = { version = "0.1.0", registry = "gambi" }
+joaju-graph = { version = "0.1.0", registry = "gambi" }
 regex = "1"
 joaju-chem = { version = "0.1.0", registry = "gambi" }
 typst-as-lib = { version = "0.17", features = ["typst-kit-fonts", "typst-kit-embed-fonts"] }

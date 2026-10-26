@@ -1320,11 +1320,14 @@ dependencies = [
  "clap",
  "joaju-chem",
  "joaju-csv",
+ "joaju-graph",
  "joaju-lirica",
  "joaju-markdown",
  "joaju-pedigree",
+ "joaju-sequence",
  "joaju-slides",
  "joaju-table",
+ "joaju-wireframe",
  "regex",
  "serde",
  "typst",
@@ -1356,6 +1359,18 @@ dependencies = [
  "clap",
  "csv",
  "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-graph"
+version = "0.1.0"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "29283e7d024617af386ba3031dfff934390905cd3b69c0e19cf8bd43242d8ada"
+dependencies = [
+ "clap",
  "serde",
  "serde_json",
  "thiserror",
@@ -1402,6 +1417,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "joaju-sequence"
+version = "0.1.0"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "55ecd02c9ff4de3f6c828da758b027653b487f52bbd37f4dadc98e42df9a977d"
+dependencies = [
+ "clap",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "joaju-slides"
 version = "0.2.0"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
@@ -1422,6 +1449,18 @@ dependencies = [
  "clap",
  "joaju-csv",
  "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-wireframe"
+version = "0.1.0"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "d372aa617029913733bbf19d946cd6722b326ede6e5f5d0eaeb1366e0e329422"
+dependencies = [
+ "clap",
  "serde",
  "serde_json",
  "thiserror",

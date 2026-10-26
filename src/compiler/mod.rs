@@ -108,7 +108,34 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
         }
     });
 
-    (res3.to_string(), assets)
+    let re_wireframe = Regex::new(r"(?s)```(wireframe|salt)\s*\n(.*?)```").unwrap();
+    let res4 = re_wireframe.replace_all(&res3, |caps: &regex::Captures| {
+        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+        match engine::wireframe::render_wireframe(code) {
+            Ok(typst) => format!("\n{}\n", typst),
+            Err(_) => caps.get(0).unwrap().as_str().to_string(),
+        }
+    });
+
+    let re_sequence = Regex::new(r"(?s)```(sequence|sequencediagram)\s*\n(.*?)```").unwrap();
+    let res5 = re_sequence.replace_all(&res4, |caps: &regex::Captures| {
+        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+        match engine::sequence::render_sequence(code) {
+            Ok(typst) => format!("\n{}\n", typst),
+            Err(_) => caps.get(0).unwrap().as_str().to_string(),
+        }
+    });
+
+    let re_graph = Regex::new(r"(?s)```(flowchart|graph)\s*\n(.*?)```").unwrap();
+    let res6 = re_graph.replace_all(&res5, |caps: &regex::Captures| {
+        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+        match engine::graph::render_graph(code) {
+            Ok(typst) => format!("\n{}\n", typst),
+            Err(_) => caps.get(0).unwrap().as_str().to_string(),
+        }
+    });
+
+    (res6.to_string(), assets)
 }
 
 pub fn compile_markdown_to_pdf(markdown: &str) -> Result<Vec<u8>, String> {
