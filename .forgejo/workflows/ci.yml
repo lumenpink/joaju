@@ -150,6 +150,30 @@ jobs:
           cat SHA256SUMS
           cd "$GITHUB_WORKSPACE"
 
+      - name: "Publish Multiarch Staticlibs to Forgejo Generic Packages"
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          TARGETS=(
+            "x86_64-unknown-linux-musl:libjoaju-x86_64-linux.a"
+            "aarch64-unknown-linux-musl:libjoaju-aarch64-linux.a"
+            "x86_64-pc-windows-gnu:libjoaju-x86_64-windows.a"
+          )
+
+          for ENTRY in "${TARGETS[@]}"; do
+            IFS=":" read -r TARGET DEST_NAME <<< "$ENTRY"
+            SRC_PATH="target/${TARGET}/release/libjoaju.a"
+            if [ -n "$FORGEJO_TOKEN" ] && [ -f "$SRC_PATH" ]; then
+              echo "-> Enviando $DEST_NAME para Generic Packages ($VERSION)..."
+              curl -s -X PUT \
+                -H "Authorization: token $FORGEJO_TOKEN" \
+                -T "$SRC_PATH" \
+                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${VERSION}/${DEST_NAME}"
+              echo "✔ $DEST_NAME publicado."
+            fi
+          done
+
       - name: "Upload Artifacts to Cloudflare R2"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
