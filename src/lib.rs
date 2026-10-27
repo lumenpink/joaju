@@ -29,4 +29,5 @@ pub use compiler::{
 pub use engine::chem::render_chem;
 pub use engine::pedigree::{render_pedigree, RenderRequest, RenderResponse};
 pub use engine::slides;
+pub use joaju_templates as templates;
 pub use preprocessor::preprocess_markdown;

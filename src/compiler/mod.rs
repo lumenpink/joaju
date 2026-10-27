@@ -8,10 +8,7 @@ pub use joaju_markdown::{
     preprocess_images, preprocess_tables,
 };
 
-static TEMPLATE_UFSC: &str = include_str!("../../data/trabalho-ufsc.typ");
-static TEMPLATE_ABNT: &str = include_str!("../../data/template.typ");
-static REFERENCIAS_BIB: &str = include_str!("../../data/referencias.bib");
-static TRABALHO_UFSC_CSL: &str = include_str!("../../data/trabalho-ufsc.csl");
+use joaju_templates::{REFERENCIAS_BIB, TEMPLATE_ABNT, TEMPLATE_UFSC, TRABALHO_UFSC_CSL};
 
 #[derive(Debug, Deserialize)]
 pub struct CompileRequest {

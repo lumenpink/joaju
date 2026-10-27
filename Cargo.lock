@@ -1326,6 +1326,7 @@ dependencies = [
  "joaju-sequence",
  "joaju-slides",
  "joaju-table",
+ "joaju-templates",
  "joaju-wireframe",
  "regex",
  "serde",
@@ -1452,6 +1453,15 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "joaju-templates"
+version = "0.1.0"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "1aa3243fe383f59cd4e73feaff0fc0fc6014364614ae7e9c598ce7efd070124a"
+dependencies = [
+ "clap",
 ]
 
 [[package]]

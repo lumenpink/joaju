@@ -28,6 +28,7 @@ serde = { version = "1", features = ["derive"] }
 joaju-pedigree = { version = "0.2.1", registry = "gambi" }
 joaju-table = { version = "0.1.0", registry = "gambi" }
 joaju-markdown = { version = "0.1.0", registry = "gambi" }
+joaju-templates = { version = "0.1.0", registry = "gambi" }
 joaju-lirica = { version = "0.1.0", registry = "gambi" }
 joaju-slides = { version = "0.2.0", registry = "gambi" }
 joaju-wireframe = { version = "0.1.0", registry = "gambi" }
