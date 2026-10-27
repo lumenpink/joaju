@@ -20,6 +20,7 @@
 
 pub mod compiler;
 pub mod engine;
+pub mod ffi;
 pub mod preprocessor;
 
 pub use compiler::{

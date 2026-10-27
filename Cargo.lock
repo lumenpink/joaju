@@ -1338,9 +1338,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-chem"
-version = "0.1.0"
+version = "0.1.1"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "d628f3ee68c36b05a2e2b330cde8bf55a33b501b29ade019c82ccfc044636e7a"
+checksum = "b4b9d6f2c11dcb8868c425f8dff6f0d7abe1972b242e90066a3931a85f00328d"
 dependencies = [
  "chematic-depict",
  "chematic-smiles",
@@ -1403,9 +1403,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-pedigree"
-version = "0.2.1"
+version = "0.2.2"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "6d0337d80cd80e91c1d83d64d09a50d1768d5c4c9607de573f48cd625e2b5dce"
+checksum = "d9743b20d7de764eb31af1005704946a56a1cd279d02f086f2bbf7ca21d84890"
 dependencies = [
  "clap",
  "csv",
