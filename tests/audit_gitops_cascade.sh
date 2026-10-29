@@ -43,8 +43,8 @@ if ! grep -q "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/" "$WORKFLOW"
   exit 1
 fi
 
-if ! grep -q "cargo publish --registry lumen" "$WORKFLOW"; then
-  echo "✘ [FALHA] $WORKFLOW nao publica no registry soberano lumen!"
+if ! grep -q 'token = "Bearer %s"' "$WORKFLOW" && ! grep -q 'token = "Bearer \${{ secrets.LUMEN_REGISTRY_TOKEN }}"' "$WORKFLOW"; then
+  echo "✘ [FALHA] $WORKFLOW nao configura autenticacao Bearer para cargo publish!"
   exit 1
 fi
 
