@@ -1,4 +1,4 @@
-name: "CI/CD & Sovereign Release to Banca"
+name: "CI/CD & Canonical Release to Banca"
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: "Configure Sovereign Gambi Cargo Registry"
+      - name: "Configure Canonical Gambi Cargo Registry"
         run: |
           mkdir -p "$HOME/.cargo"
           printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
@@ -47,8 +47,8 @@ jobs:
       - name: "Run Unit & Integration Tests"
         run: cargo test --all-targets
 
-      - name: "Validate Sovereign Banca Pipeline Test"
-        run: bash tests/test_banca_pipeline_sovereign.sh
+      - name: "Validate Canonical Banca Pipeline Test"
+        run: bash tests/test_banca_pipeline_canonical.sh
 
       - name: "CCCP Quality Audit"
         run: |
@@ -87,7 +87,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "★ Canal: $CHANNEL | Versão: $VERSION"
 
-      - name: "Configure Sovereign Gambi Cargo Registry"
+      - name: "Configure Canonical Gambi Cargo Registry"
         run: |
           mkdir -p "$HOME/.cargo"
           printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
@@ -243,7 +243,7 @@ jobs:
             cd "$GITHUB_WORKSPACE"
           fi
 
-      - name: "Publish Crate to Sovereign Gambi Registry"
+      - name: "Publish Crate to Canonical Gambi Registry"
         env:
           LUMEN_TOKEN: ${{ secrets.LUMEN_REGISTRY_TOKEN }}
         run: |

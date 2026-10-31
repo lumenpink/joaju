@@ -5,7 +5,7 @@ WORKFLOW_FILE=".forgejo/workflows/ci.yml"
 LEGACY_FILE=".forgejo/workflows/ci.yaml"
 ROTATE_SCRIPT="/home/lumen/src/banca/scripts/rotate-downloads.py"
 
-echo "=== [TEST] Validando conformidade da esteira soberana e publicação na Banca ==="
+echo "=== [TEST] Validando conformidade da esteira canônica e publicação na Banca ==="
 
 validate_workflow() {
     local file="$1"

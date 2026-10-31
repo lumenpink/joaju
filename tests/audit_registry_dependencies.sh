@@ -43,7 +43,7 @@ check_not_present 'path = "../joaju-graph"' "Ausência de path local para joaju-
 check_not_present 'path = "../joaju-templates"' "Ausência de path local para joaju-templates" || FAILED=1
 
 # 2. Presença explícita do registro gambi
-check_present 'registry = "gambi"' "Dependências associadas ao registro soberano gambi" || FAILED=1
+check_present 'registry = "gambi"' "Dependências associadas ao registro centralizado gambi" || FAILED=1
 
 # 3. Testes de mutação
 echo "=== [MUTATION] Testes de Mutantes Críticos ==="
@@ -60,4 +60,4 @@ if [ $FAILED -ne 0 ]; then
     exit 1
 fi
 
-echo "✔ [GREEN TEST] Auditoria aprovada: dependências desacopladas e apontadas para o registro soberano."
+echo "✔ [GREEN TEST] Auditoria aprovada: dependências desacopladas e apontadas para o registro centralizado."

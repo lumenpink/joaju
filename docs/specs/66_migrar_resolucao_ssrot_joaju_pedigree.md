@@ -28,7 +28,7 @@ Esta especificação concluiu a remoção completa da dependência `joaju-csv` d
 
 3. **Garantia de Não-Regressão:**
    - Teste Red `tests/test_no_joaju_csv_dependency.sh` aprovado.
-   - Suíte de testes de heredograma e SSROT passando: `engine_pedigree_spec`, `exhaustive_spec`, `test_banca_pipeline_sovereign.sh`.
+   - Suíte de testes de heredograma e SSROT passando: `engine_pedigree_spec`, `exhaustive_spec`, `test_banca_pipeline_canonical.sh`.
 
 ## 3. Critérios de Aceitação
 1. `Cargo.toml` não contém `joaju-csv`.
