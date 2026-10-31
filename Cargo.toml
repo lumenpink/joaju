@@ -36,10 +36,6 @@ joaju-sequence = { version = "0.1.0", registry = "gambi" }
 joaju-graph = { version = "0.1.0", registry = "gambi" }
 regex = "1"
 joaju-chem = { version = "0.1.1", registry = "gambi" }
-typst-as-lib = { version = "0.17", features = ["typst-kit-fonts", "typst-kit-embed-fonts"] }
-typst = "0.15"
-typst-pdf = "0.15"
-typst-layout = "0.15"
 
 [dev-dependencies]
 

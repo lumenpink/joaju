@@ -1,7 +1,6 @@
 use crate::engine;
 use regex::Regex;
 use serde::Deserialize;
-use typst_as_lib::TypstEngine;
 
 pub use joaju_markdown::{
     convert_markdown_to_typst, normalize_typst_math_expressions, preprocess_gists,
@@ -287,31 +286,85 @@ pub fn compile_markdown_to_pdf_with_options(
     compile_typst_to_pdf_with_assets(&typst_code, file_resolver_assets)
 }
 
+#[repr(C)]
+struct JoajuPdfAsset {
+    name: *const std::os::raw::c_char,
+    data: *const u8,
+    len: usize,
+}
+
+extern "C" {
+    fn joaju_pdf_compile_with_assets(
+        typst_code: *const std::os::raw::c_char,
+        assets_ptr: *const JoajuPdfAsset,
+        assets_len: usize,
+        out_pdf_data: *mut *mut u8,
+        out_pdf_len: *mut usize,
+        out_error: *mut *mut std::os::raw::c_char,
+    ) -> i32;
+    fn joaju_pdf_free_bytes(ptr: *mut u8, len: usize);
+    fn joaju_pdf_free_string(ptr: *mut std::os::raw::c_char);
+}
+
 pub fn compile_typst_to_pdf(typst_code: &str) -> Result<Vec<u8>, String> {
     compile_typst_to_pdf_with_assets(typst_code, vec![])
 }
 
 pub fn compile_typst_to_pdf_with_assets(
     typst_code: &str,
-    assets: Vec<(&str, &[u8])>,
+    mut assets: Vec<(&str, &[u8])>,
 ) -> Result<Vec<u8>, String> {
-    let engine = TypstEngine::builder()
-        .search_fonts_with(typst_as_lib::typst_kit_options::TypstKitFontOptions::default())
-        .with_static_source_file_resolver([
-            ("main.typ", typst_code),
-            ("trabalho-ufsc.typ", TEMPLATE_UFSC),
-            ("template.typ", TEMPLATE_ABNT),
-        ])
-        .with_static_file_resolver(assets)
-        .build();
+    use std::ffi::{CStr, CString};
+    use std::ptr;
 
-    let doc: typst_layout::PagedDocument = engine
-        .compile("main.typ")
-        .output
-        .map_err(|e| format!("Erro de compilação Typst: {:?}", e))?;
+    assets.push(("trabalho-ufsc.typ", TEMPLATE_UFSC.as_bytes()));
+    assets.push(("template.typ", TEMPLATE_ABNT.as_bytes()));
 
-    let pdf = typst_pdf::pdf(&doc, &Default::default())
-        .map_err(|e| format!("Erro ao gerar PDF: {:?}", e))?;
+    let c_code = CString::new(typst_code).map_err(|e| e.to_string())?;
 
-    Ok(pdf)
+    let c_names: Vec<CString> = assets
+        .iter()
+        .map(|(name, _)| CString::new(*name).unwrap_or_default())
+        .collect();
+
+    let raw_assets: Vec<JoajuPdfAsset> = assets
+        .iter()
+        .zip(c_names.iter())
+        .map(|((_, bytes), c_name)| JoajuPdfAsset {
+            name: c_name.as_ptr(),
+            data: bytes.as_ptr(),
+            len: bytes.len(),
+        })
+        .collect();
+
+    let mut out_data: *mut u8 = ptr::null_mut();
+    let mut out_len: usize = 0;
+    let mut out_err: *mut std::os::raw::c_char = ptr::null_mut();
+
+    let rc = unsafe {
+        joaju_pdf_compile_with_assets(
+            c_code.as_ptr(),
+            raw_assets.as_ptr(),
+            raw_assets.len(),
+            &mut out_data,
+            &mut out_len,
+            &mut out_err,
+        )
+    };
+
+    if rc == 0 && !out_data.is_null() {
+        let slice = unsafe { std::slice::from_raw_parts(out_data, out_len) };
+        let vec = slice.to_vec();
+        unsafe { joaju_pdf_free_bytes(out_data, out_len) };
+        Ok(vec)
+    } else {
+        let err_msg = if !out_err.is_null() {
+            let msg = unsafe { CStr::from_ptr(out_err).to_string_lossy().into_owned() };
+            unsafe { joaju_pdf_free_string(out_err) };
+            msg
+        } else {
+            "Erro desconhecido ao compilar PDF".to_string()
+        };
+        Err(err_msg)
+    }
 }
