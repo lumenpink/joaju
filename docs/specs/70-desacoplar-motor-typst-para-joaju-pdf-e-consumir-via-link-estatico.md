@@ -42,9 +42,14 @@ Para viabilizar compilações rápidas e modulares — permitindo alterar filtro
 - [x] Fase 1 (Ticket): #70
 - [x] Fase 2 (Branch): `feat/70-desacoplar-motor-typst-para-joaju-pdf-e-consumir-via-link-estatico`
 - [x] Fase 3 (Spec): Especificação técnica elaborada
-- [ ] Fase 4 (Red Test): Testes de ausência de typst e reexportação de tabelas
-- [ ] Fase 5 (Green Implement): Implementação de build.rs, FFI e remoção de deps
-- [ ] Fase 6 (Refactor): Limpeza de dead code e higienização terminológica
-- [ ] Fase 7 (Mutation Test): Testes de mutação e resiliência de FFI
-- [ ] Fase 8 (Quality Gate): fmt, clippy sem avisos e testes aprovados
-- [ ] Fase 9 (Finish & Close): Conclusão com autorização explícita
+- [x] Fase 4 (Red Test): Testes de ausência de typst e reexportação de tabelas
+- [x] Fase 5 (Green Implement): Implementação de build.rs, FFI e remoção de deps
+- [x] Fase 6 (Refactor): Limpeza de dead code e higienização terminológica
+- [x] Fase 7 (Mutation Test): Testes de mutação e resiliência de FFI
+- [x] Fase 8 (Quality Gate): fmt, clippy sem avisos e testes aprovados
+- [x] Fase 9 (Finish & Close): Conclusão com autorização explícita
+
+## 5. Laudo de Fechamento (Fase 9)
+- **[Resumo]:** Desacoplamento do motor Typst para a biblioteca estática independente `joaju-pdf`.
+- **[Solução]:** O motor Typst foi isolado em `joaju-pdf`, gerando biblioteca estática pura musl linkada via FFI C-ABI em `build.rs` com download automático de fallback; `joaju-table` preservado e exposto como cidadão de primeira classe.
+- **[Validação]:** Suíte completa de testes unitários e de integração aprovada em 11s, zero alertas do clippy e conformidade Gosplan de 100% via `cccp check --strict`.
