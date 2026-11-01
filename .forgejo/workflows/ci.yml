@@ -28,11 +28,15 @@ jobs:
           fetch-depth: 0
 
       - name: "Configure Canonical Gambi Cargo Registry"
+        env:
+          TOKEN: ${{ secrets.GAMBI_2LP_IN_TOKEN || secrets.GIT_2LP_TOKEN || secrets.REGISTRY_TOKEN || secrets.LUMEN_REGISTRY_TOKEN || secrets.FORGEJO_TOKEN }}
         run: |
           mkdir -p "$HOME/.cargo"
           printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
-          if [ -n "${{ secrets.LUMEN_REGISTRY_TOKEN }}" ]; then
-            printf '[registries.gambi]\ntoken = "Bearer ${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
+          printf '[registries.lumen]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' >> "$HOME/.cargo/config.toml"
+          if [ -n "$TOKEN" ]; then
+            RAW_TOKEN="${TOKEN#Bearer }"
+            printf '[registries.gambi]\ntoken = "Bearer %s"\n[registries.lumen]\ntoken = "Bearer %s"\n' "$RAW_TOKEN" "$RAW_TOKEN" > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "Ensure Toolchain Components"
@@ -88,11 +92,15 @@ jobs:
           echo "★ Canal: $CHANNEL | Versão: $VERSION"
 
       - name: "Configure Canonical Gambi Cargo Registry"
+        env:
+          TOKEN: ${{ secrets.GAMBI_2LP_IN_TOKEN || secrets.GIT_2LP_TOKEN || secrets.REGISTRY_TOKEN || secrets.LUMEN_REGISTRY_TOKEN || secrets.FORGEJO_TOKEN }}
         run: |
           mkdir -p "$HOME/.cargo"
           printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
-          if [ -n "${{ secrets.LUMEN_REGISTRY_TOKEN }}" ]; then
-            printf '[registries.gambi]\ntoken = "Bearer ${{ secrets.LUMEN_REGISTRY_TOKEN }}"\n' > "$HOME/.cargo/credentials.toml"
+          printf '[registries.lumen]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' >> "$HOME/.cargo/config.toml"
+          if [ -n "$TOKEN" ]; then
+            RAW_TOKEN="${TOKEN#Bearer }"
+            printf '[registries.gambi]\ntoken = "Bearer %s"\n[registries.lumen]\ntoken = "Bearer %s"\n' "$RAW_TOKEN" "$RAW_TOKEN" > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "Ensure Toolchain Components"
@@ -152,9 +160,17 @@ jobs:
 
       - name: "Publish Multiarch Staticlibs to Forgejo Generic Packages"
         env:
-          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          TOKEN: ${{ secrets.GAMBI_2LP_IN_TOKEN || secrets.GIT_2LP_TOKEN || secrets.REGISTRY_TOKEN || secrets.LUMEN_REGISTRY_TOKEN || secrets.FORGEJO_TOKEN }}
         run: |
+          RAW_TOKEN="${TOKEN#Bearer }"
+          if [ -z "$RAW_TOKEN" ]; then
+            echo "::error::Token canônico ausente para Generic Packages!"
+            exit 1
+          fi
+
           VERSION="${{ steps.meta.outputs.version }}"
+          BASE_VERSION=$(head -n 1 VERSION | cut -d'+' -f1 | tr -d ' \r\n')
+
           TARGETS=(
             "x86_64-unknown-linux-musl:libjoaju-x86_64-linux.a"
             "aarch64-unknown-linux-musl:libjoaju-aarch64-linux.a"
@@ -164,13 +180,24 @@ jobs:
           for ENTRY in "${TARGETS[@]}"; do
             IFS=":" read -r TARGET DEST_NAME <<< "$ENTRY"
             SRC_PATH="target/${TARGET}/release/libjoaju.a"
-            if [ -n "$FORGEJO_TOKEN" ] && [ -f "$SRC_PATH" ]; then
-              echo "-> Enviando $DEST_NAME para Generic Packages ($VERSION)..."
-              curl -s -X PUT \
-                -H "Authorization: token $FORGEJO_TOKEN" \
+            if [ -f "$SRC_PATH" ]; then
+              echo "-> Enviando $DEST_NAME para Generic Packages na versão exata ($VERSION)..."
+              curl -s -f --http1.1 --retry 3 -X PUT \
+                -H "Authorization: token $RAW_TOKEN" \
                 -T "$SRC_PATH" \
                 "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${VERSION}/${DEST_NAME}"
+
+              if [ "$VERSION" != "$BASE_VERSION" ]; then
+                echo "-> Disponibilizando $DEST_NAME sob o alias base ($BASE_VERSION)..."
+                curl -s -f --http1.1 --retry 3 -X PUT \
+                  -H "Authorization: token $RAW_TOKEN" \
+                  -T "$SRC_PATH" \
+                  "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${BASE_VERSION}/${DEST_NAME}"
+              fi
               echo "✔ $DEST_NAME publicado."
+            else
+              echo "::error::Arquivo $SRC_PATH nao encontrado para publicacao!"
+              exit 1
             fi
           done
 
@@ -197,15 +224,16 @@ jobs:
 
       - name: "Rotate Manifest & Commit to Banca"
         env:
-          GIT_2LP_TOKEN: ${{ secrets.GIT_2LP_TOKEN }}
+          TOKEN: ${{ secrets.GAMBI_2LP_IN_TOKEN || secrets.GIT_2LP_TOKEN || secrets.FORGEJO_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          RAW_TOKEN="${TOKEN#Bearer }"
           CHANNEL="${{ steps.meta.outputs.channel }}"
           VERSION="${{ steps.meta.outputs.version }}"
 
           echo "★ Clonando repositório canônico da Banca para rotação e retenção..."
-          git clone --depth 1 "https://lumen:${GIT_2LP_TOKEN}@gambi.2lp.in/lumen/banca.git" /tmp/banca
+          git clone --depth 1 "https://lumen:${RAW_TOKEN}@gambi.2lp.in/lumen/banca.git" /tmp/banca
 
           if [ -d "/tmp/banca/site/downloads/joaju" ] && [ -f "/tmp/banca/scripts/rotate-downloads.py" ]; then
             cd /tmp/banca
@@ -245,9 +273,10 @@ jobs:
 
       - name: "Publish Crate to Canonical Gambi Registry"
         env:
-          LUMEN_TOKEN: ${{ secrets.LUMEN_REGISTRY_TOKEN }}
+          TOKEN: ${{ secrets.GAMBI_2LP_IN_TOKEN || secrets.LUMEN_REGISTRY_TOKEN || secrets.REGISTRY_TOKEN || secrets.FORGEJO_TOKEN }}
         run: |
-          if [ -n "$LUMEN_TOKEN" ]; then
+          RAW_TOKEN="${TOKEN#Bearer }"
+          if [ -n "$RAW_TOKEN" ]; then
             CANONICAL_VERSION=$(head -n 1 VERSION | tr -d ' \r\n')
             echo "-> Sincronizando Cargo.toml para a versao canonica: $CANONICAL_VERSION"
             sed -i "0,/^version = .*/s//version = \"${CANONICAL_VERSION}\"/" Cargo.toml

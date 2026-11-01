@@ -40,8 +40,10 @@ fn main() {
                 target_artifact
             );
 
-            let token = env::var("FORGEJO_TOKEN")
+            let token = env::var("GAMBI_2LP_IN_TOKEN")
                 .or_else(|_| env::var("GIT_2LP_TOKEN"))
+                .or_else(|_| env::var("REGISTRY_TOKEN"))
+                .or_else(|_| env::var("FORGEJO_TOKEN"))
                 .unwrap_or_else(|_| "2c1912103419968a307522910a2ebe375fa69ecc".to_string());
 
             let status = Command::new("curl")
