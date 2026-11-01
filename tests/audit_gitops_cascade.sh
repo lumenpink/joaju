@@ -54,7 +54,7 @@ if grep -q "Publish Sovereign Crate & Cascade Downstream" "$WORKFLOW"; then
     exit 1
   fi
 
-  if ! grep -q "repos/lumenpink/joaju-web/actions/workflows/ci.yaml/dispatches" "$WORKFLOW"; then
+  if ! grep -q "repos/lumenpink/joaju-web/actions/workflows/ci.yml/dispatches" "$WORKFLOW" && ! grep -q "repos/lumenpink/joaju-web/actions/workflows/ci.yaml/dispatches" "$WORKFLOW"; then
     echo "✘ [FALHA] $WORKFLOW nao dispara a esteira de joaju-web!"
     exit 1
   fi

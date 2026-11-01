@@ -204,7 +204,7 @@ jobs:
           CHANNEL="${{ steps.meta.outputs.channel }}"
           VERSION="${{ steps.meta.outputs.version }}"
 
-          echo "★ Clonando repositório soberano da Banca para rotação e retenção..."
+          echo "★ Clonando repositório canônico da Banca para rotação e retenção..."
           git clone --depth 1 "https://lumen:${GIT_2LP_TOKEN}@gambi.2lp.in/lumen/banca.git" /tmp/banca
 
           if [ -d "/tmp/banca/site/downloads/joaju" ] && [ -f "/tmp/banca/scripts/rotate-downloads.py" ]; then
