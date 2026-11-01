@@ -17,9 +17,12 @@ A esteira de publicação do `joaju` falhou no upload das bibliotecas estáticas
 - [x] Fase 1 (Ticket): #72 criado
 - [x] Fase 2 (Branch): `fix/72-token-gambi-prioritario-e-semver-integral-de-staticlibs` ativada
 - [x] Fase 3 (Spec): Especificação técnica elaborada
-- [ ] Fase 4 (Red Test): Validação de teste que audite a presença de GAMBI_2LP_IN_TOKEN no workflow
-- [ ] Fase 5 (Green Implement): Ajustes no ci.yml e build.rs
-- [ ] Fase 6 (Refactor): Limpeza de código e clippy zero warnings
-- [ ] Fase 7 (Mutation/Adversarial): Testes mutantes
-- [ ] Fase 8 (Quality Gate): Testes e conformidade estrita cccp
-- [ ] Fase 9 (Finish): Encerramento com `cccp close` e integração
+- [x] Fase 4 (Red Test): Validação de teste que audite a presença de GAMBI_2LP_IN_TOKEN no workflow
+- [x] Fase 5 (Green Implement): Ajustes no ci.yml e build.rs
+- [x] Fase 6 (Refactor): Limpeza de código e clippy zero warnings
+- [x] Fase 7 (Mutation/Adversarial): Testes mutantes
+- [x] Fase 8 (Quality Gate): Testes e conformidade estrita cccp
+- [x] Fase 9 (Finish): Encerramento com `cccp close` e integração
+
+## 4. Conclusão
+Configuração ajustada com sucesso: GAMBI_2LP_IN_TOKEN estabelecido como prioritário, upload de bibliotecas estáticas no Forgejo preserva o SemVer integral e publica também o alias de release base (0.2.0), com 100% de conformidade nos testes e auditorias.
