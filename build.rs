@@ -35,9 +35,10 @@ fn main() {
 
         let dest_lib = out_dir.join("libjoaju_pdf.a");
         if !dest_lib.exists() {
+            let version =
+                env::var("JOAJU_PDF_STATIC_VERSION").unwrap_or_else(|_| "latest".to_string());
             let url = format!(
-                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-pdf-static/0.1.0/{}",
-                target_artifact
+                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-pdf-static/{version}/{target_artifact}"
             );
 
             let token = env::var("GAMBI_2LP_IN_TOKEN")
@@ -50,19 +51,21 @@ fn main() {
                 .arg("-s")
                 .arg("-f")
                 .arg("-H")
-                .arg(format!("Authorization: token {}", token))
+                .arg(format!("Authorization: token {token}"))
                 .arg("-o")
                 .arg(&dest_lib)
                 .arg(&url)
                 .status();
 
             if status.is_err() || !status.unwrap().success() || !dest_lib.exists() {
-                let fallback_url = "https://gambi.2lp.in/api/packages/lumen/generic/joaju-pdf-static/0.1.0/libjoaju_pdf-x86_64-linux.a";
+                let fallback_url = format!(
+                    "https://gambi.2lp.in/api/packages/lumen/generic/joaju-pdf-static/0.1.0/{target_artifact}"
+                );
                 let _ = Command::new("curl")
                     .arg("-s")
                     .arg("-f")
                     .arg("-H")
-                    .arg(format!("Authorization: token {}", token))
+                    .arg(format!("Authorization: token {token}"))
                     .arg("-o")
                     .arg(&dest_lib)
                     .arg(fallback_url)
