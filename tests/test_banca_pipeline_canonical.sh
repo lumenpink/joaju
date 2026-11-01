@@ -43,6 +43,11 @@ validate_workflow() {
         return 1
     fi
 
+    if ! grep -q "GAMBI_2LP_IN_TOKEN" "$file"; then
+        echo "FALHA: $file não referencia o token preferencial GAMBI_2LP_IN_TOKEN!"
+        return 1
+    fi
+
     # 4. Imagem atômica hermética
     if ! grep -q "gost-ci-cross:latest" "$file"; then
         echo "FALHA: $file não utiliza a imagem atômica gost-ci-cross:latest!"
