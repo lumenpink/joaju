@@ -1,0 +1,27 @@
+use std::ffi::CStr;
+
+#[test]
+fn test_rust_version_constant() {
+    assert!(!joaju::VERSION.is_empty(), "VERSION const cannot be empty");
+    assert!(
+        joaju::VERSION.starts_with("0.") || joaju::VERSION.starts_with("1."),
+        "VERSION should start with SemVer major digit"
+    );
+}
+
+#[test]
+fn test_c_abi_joaju_version() {
+    let version_ptr = joaju::ffi::joaju_version();
+    assert!(!version_ptr.is_null(), "C-ABI pointer must not be null");
+
+    let c_str = unsafe { CStr::from_ptr(version_ptr) };
+    let version_str = c_str
+        .to_str()
+        .expect("Version C-string must be valid UTF-8");
+
+    assert_eq!(
+        version_str,
+        joaju::VERSION,
+        "C-ABI version must match Rust VERSION constant"
+    );
+}
