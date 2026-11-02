@@ -18,6 +18,9 @@
 //! assert!(result.is_ok());
 //! ```
 
+/// Canonical SemVer version of the crate.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub mod compiler;
 pub mod engine;
 pub mod ffi;

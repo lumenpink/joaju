@@ -25,3 +25,15 @@ fn test_c_abi_joaju_version() {
         "C-ABI version must match Rust VERSION constant"
     );
 }
+
+#[test]
+fn test_c_abi_submodule_pdf_version() {
+    let version_ptr = joaju::ffi::joaju_submodule_pdf_version();
+    if !version_ptr.is_null() {
+        let c_str = unsafe { CStr::from_ptr(version_ptr) };
+        let version_str = c_str
+            .to_str()
+            .expect("Submodule pdf version must be valid UTF-8");
+        assert!(!version_str.is_empty());
+    }
+}

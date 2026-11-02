@@ -11,6 +11,8 @@ fn main() {
         PathBuf::from("/home/lumen/src/joaju-pdf/target/x86_64-unknown-linux-musl/release"),
         PathBuf::from(format!("/home/lumen/src/joaju-pdf/target/{target}/release")),
         PathBuf::from("/home/lumen/src/joaju-pdf/target/release"),
+        PathBuf::from(format!("/home/lumen/src/joaju-pdf/target/{target}/debug")),
+        PathBuf::from("/home/lumen/src/joaju-pdf/target/debug"),
     ];
 
     let mut found_dir = None;

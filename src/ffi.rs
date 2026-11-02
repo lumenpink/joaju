@@ -315,3 +315,21 @@ pub unsafe extern "C" fn joaju_free_string(ptr: *mut c_char) {
         drop(CString::from_raw(ptr));
     }
 }
+
+const C_VERSION_BYTES: &[u8] = concat!(env!("CARGO_PKG_VERSION"), "\0").as_bytes();
+
+/// Returns the canonical SemVer version of the Joaju master engine as a null-terminated C string.
+#[no_mangle]
+pub extern "C" fn joaju_version() -> *const c_char {
+    C_VERSION_BYTES.as_ptr() as *const c_char
+}
+
+extern "C" {
+    fn joaju_pdf_version() -> *const c_char;
+}
+
+/// Returns the C-ABI SemVer version of the linked `joaju-pdf` static library.
+#[no_mangle]
+pub extern "C" fn joaju_submodule_pdf_version() -> *const c_char {
+    unsafe { joaju_pdf_version() }
+}
