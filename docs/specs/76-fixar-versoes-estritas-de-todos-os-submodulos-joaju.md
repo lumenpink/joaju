@@ -15,3 +15,10 @@ No `build.rs`, a constante `JOAJU_PDF_REQUIRED_VERSION` deve substituir o fallba
 - Fase 4: Criar `tests/deps_semver_spec.rs` comprovando falha devido à presença de `"latest"` no `build.rs`.
 - Fase 5: Implementação funcional removendo `"latest"` e cravando constantes estritas.
 - Fase 8: Testes verdes, clippy limpo, `cccp check --strict`.
+
+## 4. Status de Conclusão
+- [x] Tag mutável `"latest"` removida de `build.rs`.
+- [x] Constante `JOAJU_PDF_REQUIRED_VERSION` cravada em `build.rs`.
+- [x] Dependências auditadas em `Cargo.toml`.
+- [x] Suíte `tests/deps_semver_spec.rs` 100% verde.
+- [x] 100% de conformidade Gosplan (`cccp check --strict`).
