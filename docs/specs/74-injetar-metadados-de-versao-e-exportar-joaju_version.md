@@ -20,3 +20,10 @@ No lado Rust, deve expor a constante `pub const VERSION: &str = env!("CARGO_PKG_
 - Fase 4: Criar `tests/abi_version_spec.rs` com testes comprovadamente falhos cobrindo `VERSION` e `joaju_version()`.
 - Fase 5: Implementação funcional.
 - Fase 8: Testes verdes, clippy limpo, `cccp check --strict`.
+
+## 4. Status de Conclusão
+- [x] `pub const VERSION: &str` exportado em `src/lib.rs`.
+- [x] `joaju_version()` exportado como C-ABI FFI estático em `src/ffi.rs`.
+- [x] Funções C-ABI FFI para inspeção de submódulos (`joaju_submodule_pdf_version()`) exportadas em `src/ffi.rs`.
+- [x] Suíte de testes `tests/abi_version_spec.rs` 100% verde.
+- [x] 100% de conformidade Gosplan (`cccp check --strict`).
