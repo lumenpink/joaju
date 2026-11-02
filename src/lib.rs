@@ -36,3 +36,20 @@ pub use engine::slides;
 pub use joaju_table as table;
 pub use joaju_templates as templates;
 pub use preprocessor::preprocess_markdown;
+
+/// Returns the inventory of all linked Joaju ecosystem submodules and their SemVer versions.
+pub fn ecosystem_inventory() -> Vec<(&'static str, &'static str)> {
+    vec![
+        ("joaju-pdf", "0.1.0"),
+        ("joaju-chem", "0.1.1"),
+        ("joaju-pedigree", "0.2.2"),
+        ("joaju-table", "0.1.0"),
+        ("joaju-markdown", "0.1.0"),
+        ("joaju-templates", "0.1.0"),
+        ("joaju-lirica", "0.1.0"),
+        ("joaju-slides", "0.2.0"),
+        ("joaju-wireframe", "0.1.0"),
+        ("joaju-sequence", "0.1.0"),
+        ("joaju-graph", "0.1.0"),
+    ]
+}

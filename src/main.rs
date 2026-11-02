@@ -7,11 +7,22 @@ use std::path::PathBuf;
 #[command(
     name = "joaju",
     about = "Scientific academic compiler and typographical orchestrator in Rust",
-    version
+    version = joaju::VERSION,
 )]
 struct Cli {
+    /// Show version of joaju and all linked ecosystem modules
+    #[arg(
+        long = "all",
+        help = "Show version of joaju and all linked ecosystem modules"
+    )]
+    all: bool,
+
+    /// Format version inspection output as JSON
+    #[arg(long = "json", help = "Format output as JSON")]
+    json: bool,
+
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -100,7 +111,46 @@ enum Commands {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
-    match cli.command {
+    if cli.all {
+        let inventory = joaju::ecosystem_inventory();
+        if cli.json {
+            println!("{{");
+            println!("  \"joaju\": \"{}\",", joaju::VERSION);
+            println!("  \"modules\": {{");
+            let count = inventory.len();
+            for (idx, (name, ver)) in inventory.iter().enumerate() {
+                let comma = if idx == count - 1 { "" } else { "," };
+                println!("    \"{}\": \"{}\"{}", name, ver, comma);
+            }
+            println!("  }}");
+            println!("}}");
+        } else {
+            println!("joaju {}", joaju::VERSION);
+            let count = inventory.len();
+            for (idx, (name, ver)) in inventory.iter().enumerate() {
+                let branch = if idx == count - 1 {
+                    "└──"
+                } else {
+                    "├──"
+                };
+                println!("{} {}: {}", branch, name, ver);
+            }
+        }
+        return Ok(());
+    }
+
+    let command = match cli.command {
+        Some(cmd) => cmd,
+        None => {
+            println!("joaju {}", joaju::VERSION);
+            println!(
+                "Run 'joaju --help' for usage or 'joaju --all' for ecosystem submodule versions."
+            );
+            return Ok(());
+        }
+    };
+
+    match command {
         Commands::Compile {
             input,
             output,

@@ -25,6 +25,10 @@ fn test_ecosystem_inventory_contains_all_modules() {
             module
         );
         let (_, version) = found.unwrap();
-        assert!(!version.is_empty(), "Version for {} cannot be empty", module);
+        assert!(
+            !version.is_empty(),
+            "Version for {} cannot be empty",
+            module
+        );
     }
 }
