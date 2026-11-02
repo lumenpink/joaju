@@ -1,0 +1,22 @@
+use std::fs;
+
+#[test]
+fn test_ci_workflow_has_kombinat_notification_and_no_latest() {
+    let ci_path = ".forgejo/workflows/ci.yml";
+    let content = fs::read_to_string(ci_path).expect("ci.yml must exist");
+
+    assert!(
+        content.contains("http://127.0.0.1:4040/api/cascade/dispatch"),
+        "ci.yml must notify Kombinat cascade endpoint"
+    );
+
+    assert!(
+        content.contains("\"package\": \"joaju\""),
+        "Kombinat dispatch payload must declare package 'joaju'"
+    );
+
+    assert!(
+        !content.contains("joaju-static/latest/"),
+        "ci.yml must not publish static packages to mutable 'latest' alias"
+    );
+}
