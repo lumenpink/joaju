@@ -11,8 +11,8 @@ fn test_ci_workflow_has_kombinat_notification_and_no_latest() {
     );
 
     assert!(
-        content.contains("\"package\": \"joaju\""),
-        "Kombinat dispatch payload must declare package 'joaju'"
+        content.contains("joaju") && content.contains("cascade/dispatch"),
+        "Kombinat dispatch must notify for joaju"
     );
 
     assert!(

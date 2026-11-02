@@ -194,24 +194,20 @@ jobs:
                   -T "$SRC_PATH" \
                   "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${BASE_VERSION}/${DEST_NAME}"
               fi
-
-              echo "-> Disponibilizando $DEST_NAME sob o alias latest..."
-              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --http1.1 --retry 3 -X PUT \
-                -H "Authorization: token $RAW_TOKEN" \
-                -T "$SRC_PATH" \
-                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/latest/${DEST_NAME}")
-              if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "409" ] || [ "$HTTP_CODE" = "200" ]; then
-                echo "✔ $DEST_NAME publicado com sucesso sob alias latest (HTTP $HTTP_CODE)."
-              else
-                echo "::error::Falha ao publicar $DEST_NAME sob latest (HTTP $HTTP_CODE)"
-                exit 1
-              fi
               echo "✔ $DEST_NAME publicado."
             else
               echo "::error::Arquivo $SRC_PATH nao encontrado para publicacao!"
               exit 1
             fi
           done
+
+      - name: "Notify Kombinat Cascade"
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          echo "Notifying Kombinat cascade daemon..."
+          curl -s -X POST http://127.0.0.1:4040/api/cascade/dispatch \
+            -H "Content-Type: application/json" \
+            -d "{\"package\": \"joaju\", \"version\": \"${VERSION}\"}" || echo "Kombinat notification skipped or unreachable."
 
       - name: "Upload Artifacts to Cloudflare R2"
         env:
