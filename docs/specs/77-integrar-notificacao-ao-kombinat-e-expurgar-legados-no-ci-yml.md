@@ -13,3 +13,9 @@ Com o Kombinat ativo gerenciando a orquestração em cascata do ecossistema Joaj
 - Fase 4: Criar `tests/ci_workflow_spec.rs` verificando ausência de `/latest/` no fluxo de pacotes e presença da chamada ao Kombinat.
 - Fase 5: Ajustar `.forgejo/workflows/ci.yml` fazendo o teste passar.
 - Fase 8: Formatação, clippy e auditoria estrita CCCP (100% de conformidade Gosplan).
+
+## 4. Status de Conclusão
+- [x] Step de notificação ao Kombinat adicionado ao `.forgejo/workflows/ci.yml`.
+- [x] Alias mutável `latest` expurgado da publicação de binários estáticos.
+- [x] Teste de esteira automatizado aprovado.
+- [x] 100% de conformidade Gosplan.
