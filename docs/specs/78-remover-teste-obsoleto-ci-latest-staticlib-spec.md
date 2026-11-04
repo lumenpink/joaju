@@ -15,3 +15,9 @@ Entretanto, o arquivo de teste `tests/ci_latest_staticlib_spec.rs`, originado do
 - Fase 4: Validar falha de `tests/ci_latest_staticlib_spec.rs` frente ao código canônico atual.
 - Fase 5: Expurgar `tests/ci_latest_staticlib_spec.rs`.
 - Fase 8: Suíte de testes 100% verde e auditoria `cccp check --strict`.
+
+
+## 4. Status de Fechamento
+- Teste legado `tests/ci_latest_staticlib_spec.rs` removido com sucesso.
+- Suíte integral aprovada (68 testes verdes, 0 falhas).
+- Gosplan e Clippy 100% conformes.
