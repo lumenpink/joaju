@@ -282,7 +282,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "joaju"
-version = "0.1.0"
+version = "0.2.0-dev.137"
 dependencies = [
  "clap",
  "joaju-chem",
@@ -292,7 +292,7 @@ dependencies = [
  "joaju-pedigree",
  "joaju-sequence",
  "joaju-slides",
- "joaju-table",
+ "joaju-table 0.2.0-dev.49+20261104.4b95a1c",
  "joaju-templates",
  "joaju-wireframe",
  "regex",
@@ -301,9 +301,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-chem"
-version = "0.1.1"
+version = "0.1.0-dev.65+20261104.846a274"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "b4b9d6f2c11dcb8868c425f8dff6f0d7abe1972b242e90066a3931a85f00328d"
+checksum = "14ea890d7bb012c5cb20e8149a3df2d4f9baf5fa252a248819138e215c43a0ef"
 dependencies = [
  "chematic-depict",
  "chematic-smiles",
@@ -329,9 +329,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-graph"
-version = "0.1.0"
+version = "0.1.0-dev.31+20261104.6e9e4a6"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "29283e7d024617af386ba3031dfff934390905cd3b69c0e19cf8bd43242d8ada"
+checksum = "04f4d794aac35992e6d0822dc68b49513024e17a986f3072cc7304f78cbf7370"
 dependencies = [
  "clap",
  "serde",
@@ -341,9 +341,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-lirica"
-version = "0.1.3"
+version = "0.5.0"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "c9fc858b5c01c837eca4eb1788590afdc3b772ec3d821c43479612fe3ad94946"
+checksum = "b05c68565ff633b3d7b50d4dad67ba36da6d75af989a377e5975253f7ed0e494"
 dependencies = [
  "clap",
  "serde",
@@ -353,12 +353,12 @@ dependencies = [
 
 [[package]]
 name = "joaju-markdown"
-version = "0.1.0"
+version = "0.0.2-dev.30+20261104.8c41814"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "6afa3921f1e1b487f9482829067ba4071df49fb755ed840385a61801053371cf"
+checksum = "0027222a6aef2332ebbe9caffe3c947c92d13751062a0f1f81513fb9d85dbed1"
 dependencies = [
  "clap",
- "joaju-table",
+ "joaju-table 0.1.0",
  "regex",
  "serde",
  "thiserror",
@@ -366,9 +366,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-pedigree"
-version = "0.2.2"
+version = "0.2.0-dev.96+20261102.23f015c"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "d9743b20d7de764eb31af1005704946a56a1cd279d02f086f2bbf7ca21d84890"
+checksum = "68cb55d9201b1082bff3495f21f1d9fd8ee77a478871edb282df1ce8d06ee2f9"
 dependencies = [
  "clap",
  "csv",
@@ -382,9 +382,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-sequence"
-version = "0.1.0"
+version = "0.1.0-dev.32+20261104.1a511b6"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "55ecd02c9ff4de3f6c828da758b027653b487f52bbd37f4dadc98e42df9a977d"
+checksum = "72c4ec1458afa2e29ca6e4ab5db533bc03732720ea3e09f15e17599bbbfb647a"
 dependencies = [
  "clap",
  "serde",
@@ -394,9 +394,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-slides"
-version = "0.2.0"
+version = "0.1.0-dev.42+20261104.7499c55"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "8fe222a0749ba1efc292aaff083445ffe54f93ca4ef0c9069045306327edc91b"
+checksum = "cd0bdf8e47e57185b38b839c85b9452fb5130e453da6801ab21e7aac732667b7"
 dependencies = [
  "clap",
  "serde",
@@ -419,19 +419,33 @@ dependencies = [
 ]
 
 [[package]]
-name = "joaju-templates"
-version = "0.1.0"
+name = "joaju-table"
+version = "0.2.0-dev.49+20261104.4b95a1c"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "1aa3243fe383f59cd4e73feaff0fc0fc6014364614ae7e9c598ce7efd070124a"
+checksum = "033db0d13315bc9db6b2212d5087019a3df08d0d7816456f2f926862c0c10380"
+dependencies = [
+ "clap",
+ "joaju-csv",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "joaju-templates"
+version = "0.0.2-dev.31+20261104.3654230"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "e356c3bd781163dca29303accd6e93202fff4dca0fc0d6ddfaa0870dc6ca679f"
 dependencies = [
  "clap",
 ]
 
 [[package]]
 name = "joaju-wireframe"
-version = "0.1.0"
+version = "0.1.0-dev.27+20261104.068b9ff"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "d372aa617029913733bbf19d946cd6722b326ede6e5f5d0eaeb1366e0e329422"
+checksum = "4638a8b389812ee5e5667ff929a3d3c3e5b4e2d3518a0832c96094d26879735e"
 dependencies = [
  "clap",
  "serde",

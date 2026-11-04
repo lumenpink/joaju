@@ -2,7 +2,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-const JOAJU_PDF_REQUIRED_VERSION: &str = "0.1.0";
+const JOAJU_PDF_REQUIRED_VERSION: &str = "0.1.0-dev.33";
 
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
@@ -62,18 +62,24 @@ fn main() {
                 .status();
 
             if status.is_err() || !status.unwrap().success() || !dest_lib.exists() {
-                let fallback_url = format!(
-                    "https://gambi.2lp.in/api/packages/lumen/generic/joaju-pdf-static/0.1.0/{target_artifact}"
-                );
-                let _ = Command::new("curl")
-                    .arg("-s")
-                    .arg("-f")
-                    .arg("-H")
-                    .arg(format!("Authorization: token {token}"))
-                    .arg("-o")
-                    .arg(&dest_lib)
-                    .arg(fallback_url)
-                    .status();
+                let fallbacks = ["latest-dev", "0.1.0-dev", "0.1.0"];
+                for fb in fallbacks {
+                    let fallback_url = format!(
+                        "https://gambi.2lp.in/api/packages/lumen/generic/joaju-pdf-static/{fb}/{target_artifact}"
+                    );
+                    let _ = Command::new("curl")
+                        .arg("-s")
+                        .arg("-f")
+                        .arg("-H")
+                        .arg(format!("Authorization: token {token}"))
+                        .arg("-o")
+                        .arg(&dest_lib)
+                        .arg(fallback_url)
+                        .status();
+                    if dest_lib.exists() {
+                        break;
+                    }
+                }
             }
         }
         out_dir
