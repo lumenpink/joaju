@@ -39,3 +39,6 @@ Para garantir reprodutibilidade determinística e evitar quebras automáticas po
 
 ## 4. Registro de Execução e Fechamento
 - Fase 3 (Spec): Especificação elaborada e versionada.
+- Fase 4 (Red Test): Criado teste `tests/deps_exact_spec.rs` com falha comprovada.
+- Fase 5 (Green Implement): Atualizado `Cargo.toml` para `version = "0.2.0-dev.137"` e dependências cravadas com `=`. Ajustado `build.rs` para resolução robusta de staticlibs.
+- Fase 6 (Refactor): Código formatado e validado com `cargo fmt --check` e `cargo clippy --all-targets -- -D warnings` com zero avisos.

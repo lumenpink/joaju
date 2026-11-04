@@ -68,6 +68,9 @@ fn test_all_internal_dependencies_have_exact_semver() {
                 break;
             }
         }
-        assert!(found, "Internal crate '{crate_name}' must be listed in Cargo.toml");
+        assert!(
+            found,
+            "Internal crate '{crate_name}' must be listed in Cargo.toml"
+        );
     }
 }
