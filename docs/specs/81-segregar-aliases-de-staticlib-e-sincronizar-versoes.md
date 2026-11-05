@@ -42,5 +42,5 @@ Adicionalmente, os módulos satélites `joaju-table` (`0.2.0-dev.56`), `joaju-li
   - Mutante 3: Regressão de versão de `joaju-table` ou `joaju-lirica` -> Detectado por `test_specific_bumped_dependencies`.
   - Mutante 4: Regressão da versão requerida da staticlib `joaju-pdf` -> Detectado por `test_build_rs_requires_latest_pdf_canonical_version`.
 - Fase 8 (Quality Gate): Conformidade estrita validada com `cargo fmt --check`, clippy zero warnings e `cccp check --strict` com 100% de índice GOST.
-- Fase 9 (Finish & Close): Ticket concluído com sucesso.
+- Fase 9 (Finish & Close): Ciclo concluído com sucesso, segregando aliases em latest-dev / <base>-dev e cravando dependências canônicas.
 
