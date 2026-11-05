@@ -74,3 +74,19 @@ fn test_all_internal_dependencies_have_exact_semver() {
         );
     }
 }
+
+
+#[test]
+fn test_specific_bumped_dependencies() {
+    let cargo_path = Path::new("Cargo.toml");
+    let content = fs::read_to_string(cargo_path).expect("Failed to read Cargo.toml");
+
+    assert!(
+        content.contains("joaju-table = { version = \"=0.2.0-dev.56\", registry = \"gambi\" }"),
+        "joaju-table must be pinned to =0.2.0-dev.56"
+    );
+    assert!(
+        content.contains("joaju-lirica = { version = \"=0.5.1-dev.31\", registry = \"gambi\" }"),
+        "joaju-lirica must be pinned to =0.5.1-dev.31"
+    );
+}
