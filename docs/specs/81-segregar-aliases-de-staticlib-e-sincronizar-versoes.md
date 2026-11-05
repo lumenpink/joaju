@@ -37,6 +37,10 @@ Adicionalmente, os módulos satélites `joaju-table` (`0.2.0-dev.56`), `joaju-li
 - Fase 5 (Green Implement): Implementada segregação de aliases em `.forgejo/workflows/ci.yml`, dependências atualizadas no `Cargo.toml` e staticlib atualizada no `build.rs`.
 - Fase 6 (Refactor): Código e testes formatados via `cargo fmt` e validados com `cargo clippy --all-targets -- -D warnings`.
 - Fase 7 (Mutation Test): Sensibilidade do teste confirmada contra ausência de DELETE prévio ou alteração nos nomes canônicos de aliases.
+  - Mutante 1: Omissão de `latest-dev` em canal nightly -> Detectado por `test_ci_workflow_segregates_dev_and_stable_aliases`.
+  - Mutante 2: Remoção do DELETE prévio de aliases -> Detectado por `test_ci_workflow_segregates_dev_and_stable_aliases`.
+  - Mutante 3: Regressão de versão de `joaju-table` ou `joaju-lirica` -> Detectado por `test_specific_bumped_dependencies`.
+  - Mutante 4: Regressão da versão requerida da staticlib `joaju-pdf` -> Detectado por `test_build_rs_requires_latest_pdf_canonical_version`.
 - Fase 8 (Quality Gate): Conformidade estrita validada com `cargo fmt --check`, clippy e `cccp check --strict`.
 - Fase 9 (Finish & Close): Ticket concluído com sucesso.
 
