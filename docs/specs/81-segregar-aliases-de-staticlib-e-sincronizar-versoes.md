@@ -22,3 +22,21 @@ Adicionalmente, os módulos satélites `joaju-table` (`0.2.0-dev.56`), `joaju-li
 4. **Testes Automatizados**:
    - Atualizar `tests/deps_exact_spec.rs` para auditar as novas versões exatas.
    - Criar `tests/ci_aliases_spec.rs` para auditar a segregação de aliases e o DELETE prévio no CI do motor central.
+
+## 3. Plano de Testes (DD-TDD)
+- Fase 4 (Red Test): Criar `tests/ci_aliases_spec.rs` e expandir `tests/deps_exact_spec.rs` evidenciando as falhas da configuração anterior.
+- Fase 5 (Green Implement): Atualizar `Cargo.toml`, `build.rs` e `.forgejo/workflows/ci.yml`, garantindo a passagem dos testes.
+- Fase 6 (Refactor): Formatação de código e testes com `cargo fmt` e validação com `cargo clippy`.
+- Fase 7 (Mutation Test): Validação de sensibilidade a mutações nos aliases do CI e versões de dependências.
+- Fase 8 (Quality Gate): Auditoria GOST com `cccp check --strict` e verificação de testes unitários.
+- Fase 9 (Finish & Close): Integração à branch `main` e disparo da esteira automatizada.
+
+## 4. Registro de Execução e Fechamento
+- Fase 3 (Spec): Especificação elaborada e versionada.
+- Fase 4 (Red Test): Testes `tests/ci_aliases_spec.rs` e `tests/deps_exact_spec.rs` criados e falhas comprovadas.
+- Fase 5 (Green Implement): Implementada segregação de aliases em `.forgejo/workflows/ci.yml`, dependências atualizadas no `Cargo.toml` e staticlib atualizada no `build.rs`.
+- Fase 6 (Refactor): Código e testes formatados via `cargo fmt` e validados com `cargo clippy --all-targets -- -D warnings`.
+- Fase 7 (Mutation Test): Sensibilidade do teste confirmada contra ausência de DELETE prévio ou alteração nos nomes canônicos de aliases.
+- Fase 8 (Quality Gate): Conformidade estrita validada com `cargo fmt --check`, clippy e `cccp check --strict`.
+- Fase 9 (Finish & Close): Ticket concluído com sucesso.
+

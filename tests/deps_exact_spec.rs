@@ -75,7 +75,6 @@ fn test_all_internal_dependencies_have_exact_semver() {
     }
 }
 
-
 #[test]
 fn test_specific_bumped_dependencies() {
     let cargo_path = Path::new("Cargo.toml");
