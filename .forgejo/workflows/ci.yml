@@ -169,7 +169,16 @@ jobs:
           fi
 
           VERSION="${{ steps.meta.outputs.version }}"
-          BASE_VERSION=$(head -n 1 VERSION | cut -d'+' -f1 | tr -d ' \r\n')
+          BASE_VERSION=$(head -n 1 VERSION | cut -d'-' -f1 | tr -d ' \r\n')
+
+          if [[ "${{ steps.meta.outputs.channel }}" == "stable" ]]; then
+            PRIMARY_ALIAS="latest"
+            NAMED_ALIAS="${BASE_VERSION}"
+          else
+            PRIMARY_ALIAS="latest-dev"
+            NAMED_ALIAS="${BASE_VERSION}-dev"
+          fi
+          echo "★ Publicando staticlibs: channel=${{ steps.meta.outputs.channel }}, primary_alias=${PRIMARY_ALIAS}, named_alias=${NAMED_ALIAS}"
 
           TARGETS=(
             "x86_64-unknown-linux-musl:libjoaju-x86_64-linux.a"
@@ -187,14 +196,27 @@ jobs:
                 -T "$SRC_PATH" \
                 "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${VERSION}/${DEST_NAME}"
 
-              if [ "$VERSION" != "$BASE_VERSION" ]; then
-                echo "-> Disponibilizando $DEST_NAME sob o alias base ($BASE_VERSION)..."
-                curl -s -f --http1.1 --retry 3 -X PUT \
-                  -H "Authorization: token $RAW_TOKEN" \
-                  -T "$SRC_PATH" \
-                  "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${BASE_VERSION}/${DEST_NAME}"
-              fi
-              echo "✔ $DEST_NAME publicado."
+              echo "-> Limpando versao previa do alias $PRIMARY_ALIAS..."
+              curl -s -X DELETE -H "Authorization: token $RAW_TOKEN" \
+                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${PRIMARY_ALIAS}/${DEST_NAME}" 2>/dev/null || true
+
+              echo "-> Disponibilizando $DEST_NAME sob o alias primario ($PRIMARY_ALIAS)..."
+              curl -s -f --http1.1 --retry 3 -X PUT \
+                -H "Authorization: token $RAW_TOKEN" \
+                -T "$SRC_PATH" \
+                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${PRIMARY_ALIAS}/${DEST_NAME}"
+
+              echo "-> Limpando versao previa do alias $NAMED_ALIAS..."
+              curl -s -X DELETE -H "Authorization: token $RAW_TOKEN" \
+                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${NAMED_ALIAS}/${DEST_NAME}" 2>/dev/null || true
+
+              echo "-> Disponibilizando $DEST_NAME sob o alias nominal ($NAMED_ALIAS)..."
+              curl -s -f --http1.1 --retry 3 -X PUT \
+                -H "Authorization: token $RAW_TOKEN" \
+                -T "$SRC_PATH" \
+                "https://gambi.2lp.in/api/packages/lumen/generic/joaju-static/${NAMED_ALIAS}/${DEST_NAME}"
+
+              echo "✔ $DEST_NAME publicado sob versao exata e aliases."
             else
               echo "::error::Arquivo $SRC_PATH nao encontrado para publicacao!"
               exit 1

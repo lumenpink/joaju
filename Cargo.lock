@@ -292,7 +292,7 @@ dependencies = [
  "joaju-pedigree",
  "joaju-sequence",
  "joaju-slides",
- "joaju-table 0.2.0-dev.49+20261104.4b95a1c",
+ "joaju-table 0.2.0-dev.56+20261104.ac06d37",
  "joaju-templates",
  "joaju-wireframe",
  "regex",
@@ -328,6 +328,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "joaju-csv"
+version = "0.2.0-dev.44+20261103.5a93724"
+source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
+checksum = "e480b8167742c123e3e8c95f7b0ed6f1db4d1f9450acf920b6ca8b84de00d244"
+dependencies = [
+ "clap",
+ "csv",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "joaju-graph"
 version = "0.1.0-dev.31+20261104.6e9e4a6"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
@@ -341,9 +355,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-lirica"
-version = "0.5.0"
+version = "0.5.1-dev.31+20261104.6f7e9b7"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "b05c68565ff633b3d7b50d4dad67ba36da6d75af989a377e5975253f7ed0e494"
+checksum = "10ac6c153668b14d78823b53604529daa49de1a9fe94ac3a142b63279477daae"
 dependencies = [
  "clap",
  "serde",
@@ -372,7 +386,7 @@ checksum = "68cb55d9201b1082bff3495f21f1d9fd8ee77a478871edb282df1ce8d06ee2f9"
 dependencies = [
  "clap",
  "csv",
- "joaju-csv",
+ "joaju-csv 0.1.0",
  "petgraph",
  "regex",
  "serde",
@@ -411,7 +425,7 @@ source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
 checksum = "5100b2b9a5d0bfcf07f5ced7e5e8bc5e5dbd13b66ce87871862e81e36d83cf40"
 dependencies = [
  "clap",
- "joaju-csv",
+ "joaju-csv 0.1.0",
  "regex",
  "serde",
  "serde_json",
@@ -420,12 +434,12 @@ dependencies = [
 
 [[package]]
 name = "joaju-table"
-version = "0.2.0-dev.49+20261104.4b95a1c"
+version = "0.2.0-dev.56+20261104.ac06d37"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "033db0d13315bc9db6b2212d5087019a3df08d0d7816456f2f926862c0c10380"
+checksum = "eb0d08196a0d0819c7953ec2040421d061d4573bd0593c8f2852bc536a9cf37e"
 dependencies = [
  "clap",
- "joaju-csv",
+ "joaju-csv 0.2.0-dev.44+20261103.5a93724",
  "regex",
  "serde",
  "serde_json",

@@ -2,7 +2,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-const JOAJU_PDF_REQUIRED_VERSION: &str = "0.1.0-dev.33";
+const JOAJU_PDF_REQUIRED_VERSION: &str = "0.1.0-dev.47";
 
 fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
