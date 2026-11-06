@@ -20,3 +20,25 @@ fn test_ci_workflow_has_kombinat_notification_and_no_latest() {
         "ci.yml must not publish static packages to mutable 'latest' alias"
     );
 }
+
+#[test]
+fn test_ci_workflow_stages_catalog_json_to_banca() {
+    let ci_path = ".forgejo/workflows/ci.yml";
+    let content = fs::read_to_string(ci_path).expect("ci.yml must exist");
+
+    assert!(
+        content.contains("site/downloads/catalog.json"),
+        "ci.yml must stage site/downloads/catalog.json when committing to Banca"
+    );
+}
+
+#[test]
+fn test_ci_workflow_injects_full_version_in_build() {
+    let ci_path = ".forgejo/workflows/ci.yml";
+    let content = fs::read_to_string(ci_path).expect("ci.yml must exist");
+
+    assert!(
+        content.contains("JOAJU_FULL_VERSION"),
+        "ci.yml must provide JOAJU_FULL_VERSION to compiler"
+    );
+}

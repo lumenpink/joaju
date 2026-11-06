@@ -10,6 +10,18 @@ fn test_rust_version_constant() {
 }
 
 #[test]
+fn test_rust_version_matches_version_file_ssot() {
+    let version_file_content = std::fs::read_to_string("VERSION")
+        .expect("VERSION file must exist at repo root");
+    let expected = version_file_content.trim();
+    assert_eq!(
+        joaju::VERSION,
+        expected,
+        "joaju::VERSION must match the canonical VERSION file SSOT"
+    );
+}
+
+#[test]
 fn test_c_abi_joaju_version() {
     let version_ptr = joaju::ffi::joaju_version();
     assert!(!version_ptr.is_null(), "C-ABI pointer must not be null");
