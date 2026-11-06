@@ -19,7 +19,7 @@
 //! ```
 
 /// Canonical SemVer version of the crate.
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION: &str = env!("JOAJU_FULL_VERSION");
 
 pub mod compiler;
 pub mod engine;

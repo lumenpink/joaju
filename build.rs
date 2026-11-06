@@ -89,4 +89,19 @@ fn main() {
     println!("cargo:rustc-link-lib=static=joaju_pdf");
     println!("cargo:rustc-link-arg=-Wl,--allow-multiple-definition");
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=VERSION");
+    println!("cargo:rerun-if-env-changed=JOAJU_FULL_VERSION");
+
+    let full_version = env::var("JOAJU_FULL_VERSION")
+        .ok()
+        .filter(|v| !v.trim().is_empty())
+        .or_else(|| {
+            std::fs::read_to_string("VERSION")
+                .ok()
+                .map(|s| s.trim().to_string())
+                .filter(|v| !v.is_empty())
+        })
+        .unwrap_or_else(|| env::var("CARGO_PKG_VERSION").unwrap());
+
+    println!("cargo:rustc-env=JOAJU_FULL_VERSION={full_version}");
 }

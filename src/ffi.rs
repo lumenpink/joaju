@@ -316,7 +316,7 @@ pub unsafe extern "C" fn joaju_free_string(ptr: *mut c_char) {
     }
 }
 
-const C_VERSION_BYTES: &[u8] = concat!(env!("CARGO_PKG_VERSION"), "\0").as_bytes();
+const C_VERSION_BYTES: &[u8] = concat!(env!("JOAJU_FULL_VERSION"), "\0").as_bytes();
 
 /// Returns the canonical SemVer version of the Joaju master engine as a null-terminated C string.
 #[no_mangle]

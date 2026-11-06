@@ -107,7 +107,13 @@ jobs:
         run: rustup component add rustfmt clippy 2>/dev/null || true
 
       - name: "Compile Joaju Multiarch Binaries"
+        env:
+          JOAJU_FULL_VERSION: ${{ steps.meta.outputs.version }}
         run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          echo "$VERSION" > VERSION
+          sed -i "0,/^version = .*/s//version = \"${VERSION}\"/" Cargo.toml
+          echo "★ Versao injetada para build: $VERSION"
           echo "★ [1/3] Compilando x86_64-unknown-linux-musl (Linux AMD64)..."
           cargo zigbuild --release --target x86_64-unknown-linux-musl -p joaju || \
             cargo build --release --target x86_64-unknown-linux-musl -p joaju
@@ -291,7 +297,7 @@ jobs:
             # Commitar manifesto atualizado na Banca
             git config user.name "Joaju Release Bot"
             git config user.email "bot@2lp.in"
-            git add site/downloads/joaju/index.json
+            git add site/downloads/joaju/index.json site/downloads/catalog.json
             if ! git diff --staged --quiet; then
               git commit -m "chore(downloads): rotate joaju release to ${VERSION} (#40)"
               git push origin main || echo "Aviso: Push do manifesto na Banca falhou."
