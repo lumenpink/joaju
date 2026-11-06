@@ -16,6 +16,26 @@ fn test_cli_help() {
 }
 
 #[test]
+fn test_cli_version_flag_matches_version_ssot() {
+    let output = Command::new(env!("CARGO_BIN_EXE_joaju"))
+        .arg("--version")
+        .output()
+        .expect("Failed to execute joaju --version");
+
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let expected_version = std::fs::read_to_string("VERSION")
+        .expect("VERSION file must exist")
+        .trim()
+        .to_string();
+
+    assert!(
+        stdout.contains(&format!("joaju {expected_version}")),
+        "stdout '{stdout}' must contain 'joaju {expected_version}'"
+    );
+}
+
+#[test]
 fn test_cli_preprocess_inline() {
     let input = "# Test\n\n%% table\n%% caption=Exemplo\nA, B\n1, 2\n";
     let mut child = Command::new(env!("CARGO_BIN_EXE_joaju"))
