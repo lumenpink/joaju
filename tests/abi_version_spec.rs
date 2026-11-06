@@ -58,7 +58,11 @@ fn test_version_contains_valid_build_metadata_when_nightly() {
             "Nightly development version must include '+' build metadata"
         );
         let parts: Vec<&str> = joaju::VERSION.split('+').collect();
-        assert_eq!(parts.len(), 2, "Must contain exactly one '+' build separator");
+        assert_eq!(
+            parts.len(),
+            2,
+            "Must contain exactly one '+' build separator"
+        );
         assert!(!parts[1].is_empty(), "Build metadata must not be empty");
     }
 }
