@@ -11,8 +11,8 @@ fn test_rust_version_constant() {
 
 #[test]
 fn test_rust_version_matches_version_file_ssot() {
-    let version_file_content = std::fs::read_to_string("VERSION")
-        .expect("VERSION file must exist at repo root");
+    let version_file_content =
+        std::fs::read_to_string("VERSION").expect("VERSION file must exist at repo root");
     let expected = version_file_content.trim();
     assert_eq!(
         joaju::VERSION,
