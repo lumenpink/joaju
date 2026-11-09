@@ -112,4 +112,32 @@ fn test_cli_render_html_stdin_stdout() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("<h1>Título CLI</h1>"));
     assert!(stdout.contains("<table"));
+
+    // Teste de mutação: alias "html"
+    let mut child_alias = Command::new(env!("CARGO_BIN_EXE_joaju"))
+        .arg("html")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("Failed to spawn joaju html");
+    {
+        let stdin = child_alias.stdin.as_mut().expect("Failed to open stdin");
+        stdin.write_all(b"# Alias Test\n").unwrap();
+    }
+    let out_alias = child_alias.wait_with_output().unwrap();
+    assert!(out_alias.status.success());
+    assert!(String::from_utf8_lossy(&out_alias.stdout).contains("<h1>Alias Test</h1>"));
+}
+
+#[test]
+fn test_compile_markdown_to_html_chem_and_empty() {
+    // Teste de mutação: entrada vazia
+    let empty_html = joaju::compile_markdown_to_html("").unwrap();
+    assert!(empty_html.trim().is_empty());
+
+    // Teste de mutação: bloco de química
+    let md_chem = "# Estrutura Química\n\n```chem\nCCO\n```\n";
+    let chem_html = joaju::compile_markdown_to_html(md_chem).unwrap();
+    assert!(chem_html.contains("<svg"));
+    assert!(chem_html.contains("</svg>"));
 }
