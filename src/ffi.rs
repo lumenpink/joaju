@@ -293,6 +293,67 @@ pub unsafe extern "C" fn joaju_render_chem(
     }
 }
 
+/// Compiles Markdown text to semantic HTML with Joaju rich block enrichment.
+///
+/// Returns `0` on success, populating `out_html`.
+/// Returns `-1` on error, populating `out_error` if non-null.
+///
+/// # Safety
+/// Caller must free allocated strings using [`joaju_free_string`].
+#[no_mangle]
+pub unsafe extern "C" fn joaju_compile_markdown_to_html(
+    markdown: *const c_char,
+    out_html: *mut *mut c_char,
+    out_error: *mut *mut c_char,
+) -> i32 {
+    if !out_html.is_null() {
+        *out_html = ptr::null_mut();
+    }
+    if !out_error.is_null() {
+        *out_error = ptr::null_mut();
+    }
+
+    if markdown.is_null() {
+        if !out_error.is_null() {
+            if let Ok(c_err) = CString::new("markdown pointer is null") {
+                *out_error = c_err.into_raw();
+            }
+        }
+        return -1;
+    }
+
+    let md_str = match CStr::from_ptr(markdown).to_str() {
+        Ok(s) => s,
+        Err(e) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(format!("UTF-8 error in markdown: {}", e)) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            return -1;
+        }
+    };
+
+    match crate::compiler::compile_markdown_to_html(md_str) {
+        Ok(html_str) => {
+            if !out_html.is_null() {
+                if let Ok(c_html) = CString::new(html_str) {
+                    *out_html = c_html.into_raw();
+                }
+            }
+            0
+        }
+        Err(err) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(err) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            -1
+        }
+    }
+}
+
 /// Frees a byte slice allocated by the C-ABI FFI.
 ///
 /// # Safety

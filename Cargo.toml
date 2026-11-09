@@ -36,6 +36,7 @@ joaju-sequence = { version = "=0.1.0-dev.32", registry = "gambi" }
 joaju-graph = { version = "=0.1.0-dev.31", registry = "gambi" }
 regex = "1"
 joaju-chem = { version = "=0.1.0-dev.65", registry = "gambi" }
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
 
 [dev-dependencies]
 

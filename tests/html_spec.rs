@@ -88,3 +88,28 @@ fn test_ffi_compile_markdown_to_html() {
         joaju::ffi::joaju_free_string(null_err);
     }
 }
+
+#[test]
+fn test_cli_render_html_stdin_stdout() {
+    use std::io::Write;
+    use std::process::Command;
+
+    let input = "# Título CLI\n\n```table\na,b\n1,2\n```\n";
+    let mut child = Command::new(env!("CARGO_BIN_EXE_joaju"))
+        .arg("render-html")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("Failed to spawn joaju render-html");
+
+    {
+        let stdin = child.stdin.as_mut().expect("Failed to open stdin");
+        stdin.write_all(input.as_bytes()).unwrap();
+    }
+
+    let output = child.wait_with_output().expect("Failed to wait on child");
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("<h1>Título CLI</h1>"));
+    assert!(stdout.contains("<table"));
+}

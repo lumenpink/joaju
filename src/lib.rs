@@ -27,8 +27,8 @@ pub mod ffi;
 pub mod preprocessor;
 
 pub use compiler::{
-    compile_markdown_to_pdf, compile_markdown_to_pdf_with_options, compile_typst_to_pdf,
-    CompileRequest,
+    compile_markdown_to_html, compile_markdown_to_pdf, compile_markdown_to_pdf_with_options,
+    compile_typst_to_pdf, CompileRequest,
 };
 pub use engine::chem::render_chem;
 pub use engine::pedigree::{render_pedigree, RenderRequest, RenderResponse};

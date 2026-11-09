@@ -2,6 +2,9 @@ use crate::engine;
 use regex::Regex;
 use serde::Deserialize;
 
+pub mod html;
+pub use html::compile_markdown_to_html;
+
 pub use joaju_markdown::{
     convert_markdown_to_typst, normalize_typst_math_expressions, preprocess_gists,
     preprocess_images, preprocess_tables,

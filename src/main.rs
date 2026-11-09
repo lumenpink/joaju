@@ -106,6 +106,18 @@ enum Commands {
         #[arg(short, long, value_name = "OUTPUT")]
         output: Option<PathBuf>,
     },
+
+    /// Compile full Markdown document to semantic HTML with Joaju rich block enrichment
+    #[command(name = "render-html", alias = "html")]
+    RenderHtml {
+        /// Input Markdown file path (reads from stdin if omitted or '-')
+        #[arg(value_name = "INPUT")]
+        input: Option<PathBuf>,
+
+        /// Output HTML file path (writes to stdout if omitted or '-')
+        #[arg(short, long, value_name = "OUTPUT")]
+        output: Option<PathBuf>,
+    },
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -249,6 +261,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let markdown = read_input(input.as_deref())?;
             let processed = joaju::preprocess_markdown(&markdown);
             write_output_str(output.as_deref(), &processed)?;
+        }
+        Commands::RenderHtml { input, output } => {
+            let markdown = read_input(input.as_deref())?;
+            let html = joaju::compile_markdown_to_html(&markdown).map_err(io::Error::other)?;
+            write_output_str(output.as_deref(), &html)?;
         }
     }
 
