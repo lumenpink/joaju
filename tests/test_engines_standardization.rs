@@ -5,18 +5,30 @@ use std::ptr;
 fn test_standardized_rust_api_reexports() {
     // 1. Testar reexportações de topo
     let lirica_res = joaju::render_lirica("%% titulo = Poema\nAmor é fogo que arde sem se ver");
-    assert!(lirica_res.is_ok(), "joaju::render_lirica deve estar disponível");
+    assert!(
+        lirica_res.is_ok(),
+        "joaju::render_lirica deve estar disponível"
+    );
     let lirica_out = lirica_res.unwrap();
     assert!(lirica_out.contains("== Poema"));
 
     let wireframe_res = joaju::render_wireframe("[Button]");
-    assert!(wireframe_res.is_ok(), "joaju::render_wireframe deve estar disponível");
+    assert!(
+        wireframe_res.is_ok(),
+        "joaju::render_wireframe deve estar disponível"
+    );
 
     let sequence_res = joaju::render_sequence("Alice -> Bob: Oi");
-    assert!(sequence_res.is_ok(), "joaju::render_sequence deve estar disponível");
+    assert!(
+        sequence_res.is_ok(),
+        "joaju::render_sequence deve estar disponível"
+    );
 
     let graph_res = joaju::render_graph("graph TD\n  A --> B");
-    assert!(graph_res.is_ok(), "joaju::render_graph deve estar disponível");
+    assert!(
+        graph_res.is_ok(),
+        "joaju::render_graph deve estar disponível"
+    );
 
     // 2. Testar acesso via submódulos dedicados
     assert!(joaju::lirica::render_lirica("teste").is_ok());
@@ -32,9 +44,8 @@ fn test_standardized_ffi_exports() {
     let mut out_typst = ptr::null_mut();
     let mut out_error = ptr::null_mut();
 
-    let rc = unsafe {
-        joaju::ffi::joaju_render_lirica(c_code.as_ptr(), &mut out_typst, &mut out_error)
-    };
+    let rc =
+        unsafe { joaju::ffi::joaju_render_lirica(c_code.as_ptr(), &mut out_typst, &mut out_error) };
     assert_eq!(rc, 0, "joaju_render_lirica deve retornar 0");
     assert!(!out_typst.is_null());
     let typst_str = unsafe { CStr::from_ptr(out_typst).to_str().unwrap() };
@@ -81,7 +92,8 @@ fn test_mutation_ffi_null_pointers_and_error_handling() {
     let mut out_error = ptr::null_mut();
 
     // 1. Lirica com ponteiro nulo deve retornar -1 e setar out_error
-    let rc = unsafe { joaju::ffi::joaju_render_lirica(ptr::null(), &mut out_typst, &mut out_error) };
+    let rc =
+        unsafe { joaju::ffi::joaju_render_lirica(ptr::null(), &mut out_typst, &mut out_error) };
     assert_eq!(rc, -1);
     assert!(out_typst.is_null());
     assert!(!out_error.is_null());
@@ -98,18 +110,16 @@ fn test_mutation_ffi_null_pointers_and_error_handling() {
 
     // 3. Sequence com ponteiro nulo
     let mut out_err_seq = ptr::null_mut();
-    let rc_seq = unsafe {
-        joaju::ffi::joaju_render_sequence(ptr::null(), &mut out_typst, &mut out_err_seq)
-    };
+    let rc_seq =
+        unsafe { joaju::ffi::joaju_render_sequence(ptr::null(), &mut out_typst, &mut out_err_seq) };
     assert_eq!(rc_seq, -1);
     assert!(!out_err_seq.is_null());
     unsafe { joaju::ffi::joaju_free_string(out_err_seq) };
 
     // 4. Graph com ponteiro nulo
     let mut out_err_graph = ptr::null_mut();
-    let rc_graph = unsafe {
-        joaju::ffi::joaju_render_graph(ptr::null(), &mut out_typst, &mut out_err_graph)
-    };
+    let rc_graph =
+        unsafe { joaju::ffi::joaju_render_graph(ptr::null(), &mut out_typst, &mut out_err_graph) };
     assert_eq!(rc_graph, -1);
     assert!(!out_err_graph.is_null());
     unsafe { joaju::ffi::joaju_free_string(out_err_graph) };
