@@ -22,7 +22,8 @@ cccp,1.0.0
 joaju,0.2.0
 ```
 "#;
-    let html = joaju::compile_markdown_to_html(md).expect("Falha ao compilar tabela joaju para html");
+    let html =
+        joaju::compile_markdown_to_html(md).expect("Falha ao compilar tabela joaju para html");
 
     assert!(html.contains("<table"));
     assert!(html.contains("cccp"));
@@ -54,11 +55,7 @@ fn test_ffi_compile_markdown_to_html() {
     let mut out_err = ptr::null_mut();
 
     let rc = unsafe {
-        joaju::ffi::joaju_compile_markdown_to_html(
-            md.as_ptr(),
-            &mut out_html,
-            &mut out_err,
-        )
+        joaju::ffi::joaju_compile_markdown_to_html(md.as_ptr(), &mut out_html, &mut out_err)
     };
 
     assert_eq!(rc, 0);
@@ -76,11 +73,7 @@ fn test_ffi_compile_markdown_to_html() {
     let mut null_out = ptr::null_mut();
     let mut null_err = ptr::null_mut();
     let rc_null = unsafe {
-        joaju::ffi::joaju_compile_markdown_to_html(
-            ptr::null(),
-            &mut null_out,
-            &mut null_err,
-        )
+        joaju::ffi::joaju_compile_markdown_to_html(ptr::null(), &mut null_out, &mut null_err)
     };
     assert_eq!(rc_null, -1);
     assert!(!null_err.is_null());
