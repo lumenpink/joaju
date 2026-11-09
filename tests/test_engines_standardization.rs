@@ -74,3 +74,43 @@ fn test_standardized_ffi_exports() {
     assert!(!out_graph.is_null());
     unsafe { joaju::ffi::joaju_free_string(out_graph) };
 }
+
+#[test]
+fn test_mutation_ffi_null_pointers_and_error_handling() {
+    let mut out_typst = ptr::null_mut();
+    let mut out_error = ptr::null_mut();
+
+    // 1. Lirica com ponteiro nulo deve retornar -1 e setar out_error
+    let rc = unsafe { joaju::ffi::joaju_render_lirica(ptr::null(), &mut out_typst, &mut out_error) };
+    assert_eq!(rc, -1);
+    assert!(out_typst.is_null());
+    assert!(!out_error.is_null());
+    unsafe { joaju::ffi::joaju_free_string(out_error) };
+
+    // 2. Wireframe com ponteiro nulo
+    let mut out_err_wire = ptr::null_mut();
+    let rc_wire = unsafe {
+        joaju::ffi::joaju_render_wireframe(ptr::null(), &mut out_typst, &mut out_err_wire)
+    };
+    assert_eq!(rc_wire, -1);
+    assert!(!out_err_wire.is_null());
+    unsafe { joaju::ffi::joaju_free_string(out_err_wire) };
+
+    // 3. Sequence com ponteiro nulo
+    let mut out_err_seq = ptr::null_mut();
+    let rc_seq = unsafe {
+        joaju::ffi::joaju_render_sequence(ptr::null(), &mut out_typst, &mut out_err_seq)
+    };
+    assert_eq!(rc_seq, -1);
+    assert!(!out_err_seq.is_null());
+    unsafe { joaju::ffi::joaju_free_string(out_err_seq) };
+
+    // 4. Graph com ponteiro nulo
+    let mut out_err_graph = ptr::null_mut();
+    let rc_graph = unsafe {
+        joaju::ffi::joaju_render_graph(ptr::null(), &mut out_typst, &mut out_err_graph)
+    };
+    assert_eq!(rc_graph, -1);
+    assert!(!out_err_graph.is_null());
+    unsafe { joaju::ffi::joaju_free_string(out_err_graph) };
+}
