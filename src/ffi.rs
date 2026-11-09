@@ -354,6 +354,250 @@ pub unsafe extern "C" fn joaju_compile_markdown_to_html(
     }
 }
 
+/// Renders a poetic scansion or lirica DSL block to Typst markup.
+///
+/// Returns `0` on success, populating `out_typst`.
+/// Returns `-1` on error, populating `out_error` if non-null.
+///
+/// # Safety
+/// Caller must free allocated strings using [`joaju_free_string`].
+#[no_mangle]
+pub unsafe extern "C" fn joaju_render_lirica(
+    code: *const c_char,
+    out_typst: *mut *mut c_char,
+    out_error: *mut *mut c_char,
+) -> i32 {
+    if !out_typst.is_null() {
+        *out_typst = ptr::null_mut();
+    }
+    if !out_error.is_null() {
+        *out_error = ptr::null_mut();
+    }
+
+    if code.is_null() {
+        if !out_error.is_null() {
+            if let Ok(c_err) = CString::new("code pointer is null") {
+                *out_error = c_err.into_raw();
+            }
+        }
+        return -1;
+    }
+
+    let code_str = match CStr::from_ptr(code).to_str() {
+        Ok(s) => s,
+        Err(e) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(format!("UTF-8 error in code: {}", e)) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            return -1;
+        }
+    };
+
+    match crate::engine::lirica::render_lirica(code_str) {
+        Ok(typst_str) => {
+            if !out_typst.is_null() {
+                if let Ok(c_typst) = CString::new(typst_str) {
+                    *out_typst = c_typst.into_raw();
+                }
+            }
+            0
+        }
+        Err(err) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(err) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            -1
+        }
+    }
+}
+
+/// Renders a wireframe/salt DSL block to Typst markup.
+///
+/// Returns `0` on success, populating `out_typst`.
+/// Returns `-1` on error, populating `out_error` if non-null.
+///
+/// # Safety
+/// Caller must free allocated strings using [`joaju_free_string`].
+#[no_mangle]
+pub unsafe extern "C" fn joaju_render_wireframe(
+    code: *const c_char,
+    out_typst: *mut *mut c_char,
+    out_error: *mut *mut c_char,
+) -> i32 {
+    if !out_typst.is_null() {
+        *out_typst = ptr::null_mut();
+    }
+    if !out_error.is_null() {
+        *out_error = ptr::null_mut();
+    }
+
+    if code.is_null() {
+        if !out_error.is_null() {
+            if let Ok(c_err) = CString::new("code pointer is null") {
+                *out_error = c_err.into_raw();
+            }
+        }
+        return -1;
+    }
+
+    let code_str = match CStr::from_ptr(code).to_str() {
+        Ok(s) => s,
+        Err(e) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(format!("UTF-8 error in code: {}", e)) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            return -1;
+        }
+    };
+
+    match crate::engine::wireframe::render_wireframe(code_str) {
+        Ok(typst_str) => {
+            if !out_typst.is_null() {
+                if let Ok(c_typst) = CString::new(typst_str) {
+                    *out_typst = c_typst.into_raw();
+                }
+            }
+            0
+        }
+        Err(err) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(err) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            -1
+        }
+    }
+}
+
+/// Renders a sequence diagram DSL block to Typst markup.
+///
+/// Returns `0` on success, populating `out_typst`.
+/// Returns `-1` on error, populating `out_error` if non-null.
+///
+/// # Safety
+/// Caller must free allocated strings using [`joaju_free_string`].
+#[no_mangle]
+pub unsafe extern "C" fn joaju_render_sequence(
+    code: *const c_char,
+    out_typst: *mut *mut c_char,
+    out_error: *mut *mut c_char,
+) -> i32 {
+    if !out_typst.is_null() {
+        *out_typst = ptr::null_mut();
+    }
+    if !out_error.is_null() {
+        *out_error = ptr::null_mut();
+    }
+
+    if code.is_null() {
+        if !out_error.is_null() {
+            if let Ok(c_err) = CString::new("code pointer is null") {
+                *out_error = c_err.into_raw();
+            }
+        }
+        return -1;
+    }
+
+    let code_str = match CStr::from_ptr(code).to_str() {
+        Ok(s) => s,
+        Err(e) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(format!("UTF-8 error in code: {}", e)) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            return -1;
+        }
+    };
+
+    match crate::engine::sequence::render_sequence(code_str) {
+        Ok(typst_str) => {
+            if !out_typst.is_null() {
+                if let Ok(c_typst) = CString::new(typst_str) {
+                    *out_typst = c_typst.into_raw();
+                }
+            }
+            0
+        }
+        Err(err) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(err) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            -1
+        }
+    }
+}
+
+/// Renders a graph or flowchart DSL block to Typst markup.
+///
+/// Returns `0` on success, populating `out_typst`.
+/// Returns `-1` on error, populating `out_error` if non-null.
+///
+/// # Safety
+/// Caller must free allocated strings using [`joaju_free_string`].
+#[no_mangle]
+pub unsafe extern "C" fn joaju_render_graph(
+    code: *const c_char,
+    out_typst: *mut *mut c_char,
+    out_error: *mut *mut c_char,
+) -> i32 {
+    if !out_typst.is_null() {
+        *out_typst = ptr::null_mut();
+    }
+    if !out_error.is_null() {
+        *out_error = ptr::null_mut();
+    }
+
+    if code.is_null() {
+        if !out_error.is_null() {
+            if let Ok(c_err) = CString::new("code pointer is null") {
+                *out_error = c_err.into_raw();
+            }
+        }
+        return -1;
+    }
+
+    let code_str = match CStr::from_ptr(code).to_str() {
+        Ok(s) => s,
+        Err(e) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(format!("UTF-8 error in code: {}", e)) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            return -1;
+        }
+    };
+
+    match crate::engine::graph::render_graph(code_str) {
+        Ok(typst_str) => {
+            if !out_typst.is_null() {
+                if let Ok(c_typst) = CString::new(typst_str) {
+                    *out_typst = c_typst.into_raw();
+                }
+            }
+            0
+        }
+        Err(err) => {
+            if !out_error.is_null() {
+                if let Ok(c_err) = CString::new(err) {
+                    *out_error = c_err.into_raw();
+                }
+            }
+            -1
+        }
+    }
+}
+
 /// Frees a byte slice allocated by the C-ABI FFI.
 ///
 /// # Safety

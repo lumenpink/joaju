@@ -30,9 +30,20 @@ pub use compiler::{
     compile_markdown_to_html, compile_markdown_to_pdf, compile_markdown_to_pdf_with_options,
     compile_typst_to_pdf, CompileRequest,
 };
+pub use engine::chem;
 pub use engine::chem::render_chem;
+pub use engine::graph;
+pub use engine::graph::render_graph;
+pub use engine::lirica;
+pub use engine::lirica::render_lirica;
+pub use engine::pedigree;
 pub use engine::pedigree::{render_pedigree, RenderRequest, RenderResponse};
+pub use engine::sequence;
+pub use engine::sequence::render_sequence;
 pub use engine::slides;
+pub use engine::wireframe;
+pub use engine::wireframe::render_wireframe;
+pub use joaju_markdown as markdown;
 pub use joaju_table as table;
 pub use joaju_templates as templates;
 pub use preprocessor::preprocess_markdown;
