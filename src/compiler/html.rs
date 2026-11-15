@@ -74,8 +74,8 @@ pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
         .to_string();
 
     // 4. Lírica: ```lirica ... ``` ou ```poema ... ``` ou ```poesia ... ```
-    let re_lirica = Regex::new(r"(?s)```(lirica|poema|poesia)\s*\n(.*?)```")
-        .map_err(|e| e.to_string())?;
+    let re_lirica =
+        Regex::new(r"(?s)```(lirica|poema|poesia)\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_lirica
         .replace_all(&intermediate, |caps: &regex::Captures| {
             let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
@@ -91,8 +91,8 @@ pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
         .to_string();
 
     // 5. Wireframe: ```wireframe ... ``` ou ```salt ... ``` ou ```ui ... ```
-    let re_wireframe = Regex::new(r"(?s)```(wireframe|salt|ui)\s*\n(.*?)```")
-        .map_err(|e| e.to_string())?;
+    let re_wireframe =
+        Regex::new(r"(?s)```(wireframe|salt|ui)\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_wireframe
         .replace_all(&intermediate, |caps: &regex::Captures| {
             let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
@@ -110,8 +110,8 @@ pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
         .to_string();
 
     // 6. Sequence: ```sequence ... ``` ou ```sequencediagram ... ```
-    let re_sequence = Regex::new(r"(?s)```(sequence|sequencediagram)\s*\n(.*?)```")
-        .map_err(|e| e.to_string())?;
+    let re_sequence =
+        Regex::new(r"(?s)```(sequence|sequencediagram)\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_sequence
         .replace_all(&intermediate, |caps: &regex::Captures| {
             let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
@@ -129,8 +129,8 @@ pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
         .to_string();
 
     // 7. Graph / Flowchart: ```graph ... ``` ou ```flowchart ... ```
-    let re_graph = Regex::new(r"(?s)```(graph|flowchart)\s*\n(.*?)```")
-        .map_err(|e| e.to_string())?;
+    let re_graph =
+        Regex::new(r"(?s)```(graph|flowchart)\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_graph
         .replace_all(&intermediate, |caps: &regex::Captures| {
             let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
@@ -148,8 +148,7 @@ pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
         .to_string();
 
     // 8. Typst / Joaju: ```typst ... ``` ou ```joaju ... ```
-    let re_typst = Regex::new(r"(?s)```(typst|joaju)\s*\n(.*?)```")
-        .map_err(|e| e.to_string())?;
+    let re_typst = Regex::new(r"(?s)```(typst|joaju)\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_typst
         .replace_all(&intermediate, |caps: &regex::Captures| {
             let lang = caps.get(1).map(|m| m.as_str()).unwrap_or("typst").trim();
@@ -166,8 +165,8 @@ pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
         .to_string();
 
     // 9. Blocos de código genéricos demarcados com linguagem: ```lang ... ```
-    let re_code = Regex::new(r"(?s)```([a-zA-Z0-9_\-\+]+)\s*\n(.*?)```")
-        .map_err(|e| e.to_string())?;
+    let re_code =
+        Regex::new(r"(?s)```([a-zA-Z0-9_\-\+]+)\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_code
         .replace_all(&intermediate, |caps: &regex::Captures| {
             let lang = caps.get(1).map(|m| m.as_str()).unwrap_or("code").trim();
