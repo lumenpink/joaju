@@ -112,3 +112,17 @@ fn test_compile_markdown_to_html_with_semantic_figure() {
     assert!(html.contains("<img src=\"https://exemplo.com/diagrama.png\" alt=\"Esquema da Arquitetura\""), "Deve conter img");
     assert!(html.contains("<figcaption class=\"joaju-figcaption\">Esquema da Arquitetura</figcaption>"), "Deve conter figcaption");
 }
+
+#[test]
+fn test_compile_markdown_to_html_edge_cases_and_fallbacks() {
+    // 1. Imagem sem legenda: não deve criar figcaption vazio
+    let md_no_alt = "![](https://exemplo.com/sem_legenda.png)";
+    let html_no_alt = compile_markdown_to_html(md_no_alt).expect("Falha ao compilar imagem sem alt");
+    assert!(!html_no_alt.contains("<figcaption>"), "Imagem sem alt não deve ter figcaption");
+    assert!(html_no_alt.contains("<img src=\"https://exemplo.com/sem_legenda.png\""));
+
+    // 2. Lírica vazia / inválida: não deve panicar
+    let md_empty_lirica = "```lirica\n```";
+    let html_empty_lirica = compile_markdown_to_html(md_empty_lirica).expect("Falha ao compilar lirica vazia");
+    assert!(!html_empty_lirica.is_empty());
+}
