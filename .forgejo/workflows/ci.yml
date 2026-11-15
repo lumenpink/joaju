@@ -33,10 +33,9 @@ jobs:
         run: |
           mkdir -p "$HOME/.cargo"
           printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
-          printf '[registries.lumen]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' >> "$HOME/.cargo/config.toml"
           if [ -n "$TOKEN" ]; then
             RAW_TOKEN="${TOKEN#Bearer }"
-            printf '[registries.gambi]\ntoken = "Bearer %s"\n[registries.lumen]\ntoken = "Bearer %s"\n' "$RAW_TOKEN" "$RAW_TOKEN" > "$HOME/.cargo/credentials.toml"
+            printf '[registries.gambi]\ntoken = "Bearer %s"\n' "$RAW_TOKEN" > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "Ensure Toolchain Components"
@@ -97,10 +96,9 @@ jobs:
         run: |
           mkdir -p "$HOME/.cargo"
           printf '[registries.gambi]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' > "$HOME/.cargo/config.toml"
-          printf '[registries.lumen]\nindex = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"\n' >> "$HOME/.cargo/config.toml"
           if [ -n "$TOKEN" ]; then
             RAW_TOKEN="${TOKEN#Bearer }"
-            printf '[registries.gambi]\ntoken = "Bearer %s"\n[registries.lumen]\ntoken = "Bearer %s"\n' "$RAW_TOKEN" "$RAW_TOKEN" > "$HOME/.cargo/credentials.toml"
+            printf '[registries.gambi]\ntoken = "Bearer %s"\n' "$RAW_TOKEN" > "$HOME/.cargo/credentials.toml"
           fi
 
       - name: "Ensure Toolchain Components"
