@@ -182,19 +182,37 @@ pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
         })
         .to_string();
 
-    // 10. Figuras com legenda: ![legenda](url)
-    let re_fig = Regex::new(r"!\[([^\]]+)\]\(([^)]+)\)").map_err(|e| e.to_string())?;
+    // 10. Figuras semânticas: ![alt](url) ou ![alt](url "legenda")
+    let re_fig = Regex::new(r#"!\[([^\]]*)\]\(\s*([^\s\)\"]+)(?:\s+["']([^"']*)["'])?\s*\)"#)
+        .map_err(|e| e.to_string())?;
     intermediate = re_fig
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let alt = caps.get(1).unwrap().as_str().trim();
-            let url = caps.get(2).unwrap().as_str().trim();
+            let alt = caps.get(1).map(|m| m.as_str().trim()).unwrap_or("");
+            let url = caps.get(2).map(|m| m.as_str().trim()).unwrap_or("");
+            let title = caps.get(3).map(|m| m.as_str().trim()).unwrap_or("");
+
+            let caption = if !title.is_empty() {
+                title
+            } else if !alt.is_empty() {
+                alt
+            } else {
+                ""
+            };
+
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
             let escaped_alt = escape_html(alt);
             let escaped_url = escape_html(url);
-            let rendered = format!(
-                "<figure class=\"joaju-figure\"><img src=\"{escaped_url}\" alt=\"{escaped_alt}\" /><figcaption class=\"joaju-figcaption\">{escaped_alt}</figcaption></figure>"
-            );
+            let escaped_caption = escape_html(caption);
+
+            let rendered = if !caption.is_empty() {
+                format!(
+                    "<figure class=\"joaju-figure\"><img src=\"{escaped_url}\" alt=\"{escaped_alt}\" /><figcaption class=\"joaju-figcaption\">{escaped_caption}</figcaption></figure>"
+                )
+            } else {
+                format!("<img src=\"{escaped_url}\" alt=\"{escaped_alt}\" />")
+            };
+
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
