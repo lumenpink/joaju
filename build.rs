@@ -8,6 +8,27 @@ fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let target = env::var("TARGET").unwrap_or_else(|_| "x86_64-unknown-linux-musl".to_string());
 
+    let full_version = env::var("JOAJU_FULL_VERSION")
+        .ok()
+        .filter(|v| !v.trim().is_empty())
+        .or_else(|| {
+            std::fs::read_to_string("VERSION")
+                .ok()
+                .map(|s| s.trim().to_string())
+                .filter(|v| !v.is_empty())
+        })
+        .unwrap_or_else(|| env::var("CARGO_PKG_VERSION").unwrap());
+
+    println!("cargo:rustc-env=JOAJU_FULL_VERSION={full_version}");
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=VERSION");
+    println!("cargo:rerun-if-env-changed=JOAJU_FULL_VERSION");
+
+    // Android targets do not link joaju-pdf staticlib
+    if target.contains("android") {
+        return;
+    }
+
     // 1. Verificar se existe biblioteca estática local construída no repositório joaju-pdf
     let local_paths = [
         PathBuf::from("/home/lumen/src/joaju-pdf/target/x86_64-unknown-linux-musl/release"),

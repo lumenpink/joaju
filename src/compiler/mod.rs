@@ -10,6 +10,7 @@ pub use joaju_markdown::{
     preprocess_images, preprocess_tables,
 };
 
+#[allow(unused_imports)]
 use joaju_templates::{REFERENCIAS_BIB, TEMPLATE_ABNT, TEMPLATE_UFSC, TRABALHO_UFSC_CSL};
 
 #[derive(Debug, Deserialize)]
@@ -289,6 +290,7 @@ pub fn compile_markdown_to_pdf_with_options(
     compile_typst_to_pdf_with_assets(&typst_code, file_resolver_assets)
 }
 
+#[cfg(not(target_os = "android"))]
 #[repr(C)]
 struct JoajuPdfAsset {
     name: *const std::os::raw::c_char,
@@ -296,6 +298,7 @@ struct JoajuPdfAsset {
     len: usize,
 }
 
+#[cfg(not(target_os = "android"))]
 extern "C" {
     fn joaju_pdf_compile_with_assets(
         typst_code: *const std::os::raw::c_char,
@@ -313,6 +316,7 @@ pub fn compile_typst_to_pdf(typst_code: &str) -> Result<Vec<u8>, String> {
     compile_typst_to_pdf_with_assets(typst_code, vec![])
 }
 
+#[cfg(not(target_os = "android"))]
 pub fn compile_typst_to_pdf_with_assets(
     typst_code: &str,
     mut assets: Vec<(&str, &[u8])>,
@@ -370,4 +374,12 @@ pub fn compile_typst_to_pdf_with_assets(
         };
         Err(err_msg)
     }
+}
+
+#[cfg(target_os = "android")]
+pub fn compile_typst_to_pdf_with_assets(
+    _typst_code: &str,
+    _assets: Vec<(&str, &[u8])>,
+) -> Result<Vec<u8>, String> {
+    Err("PDF compilation via Typst is not supported on Android".to_string())
 }
