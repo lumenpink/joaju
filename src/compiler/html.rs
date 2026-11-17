@@ -18,7 +18,16 @@ fn escape_html(s: &str) -> String {
 
 /// Compila texto Markdown para HTML semântico com enriquecimento de blocos Joaju.
 pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
-    let s = joaju_markdown::preprocess_comments(markdown);
+    compile_markdown_to_html_with_base_dir(markdown, None)
+}
+
+/// Compila texto Markdown para HTML semântico, resolvendo referências em relação a um diretório base.
+pub fn compile_markdown_to_html_with_base_dir(
+    markdown: &str,
+    base_dir: Option<&std::path::Path>,
+) -> Result<String, String> {
+    let with_refs = super::references::resolve_and_process_references(markdown, base_dir);
+    let s = joaju_markdown::preprocess_comments(&with_refs);
     let s = joaju_markdown::preprocess_callouts(&s);
     let s = joaju_markdown::preprocess_wikilinks(&s);
     let preprocessed = joaju_markdown::preprocess_highlights(&s);

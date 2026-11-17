@@ -3,7 +3,9 @@ use regex::Regex;
 use serde::Deserialize;
 
 pub mod html;
-pub use html::compile_markdown_to_html;
+pub mod references;
+pub use html::{compile_markdown_to_html, compile_markdown_to_html_with_base_dir};
+pub use references::resolve_and_process_references;
 
 pub use joaju_markdown::{
     convert_markdown_to_typst, normalize_typst_math_expressions, preprocess_gists,

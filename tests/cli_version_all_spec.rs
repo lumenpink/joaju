@@ -15,6 +15,7 @@ fn test_ecosystem_inventory_contains_all_modules() {
         "joaju-wireframe",
         "joaju-sequence",
         "joaju-graph",
+        "joaju-refs",
     ];
 
     for module in &expected_modules {

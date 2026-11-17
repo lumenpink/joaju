@@ -264,7 +264,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Commands::RenderHtml { input, output } => {
             let markdown = read_input(input.as_deref())?;
-            let html = joaju::compile_markdown_to_html(&markdown).map_err(io::Error::other)?;
+            let base_dir = input.as_deref().and_then(|p| p.parent());
+            let html = joaju::compile_markdown_to_html_with_base_dir(&markdown, base_dir)
+                .map_err(io::Error::other)?;
             write_output_str(output.as_deref(), &html)?;
         }
     }

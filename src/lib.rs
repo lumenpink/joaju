@@ -27,8 +27,8 @@ pub mod ffi;
 pub mod preprocessor;
 
 pub use compiler::{
-    compile_markdown_to_html, compile_markdown_to_pdf, compile_markdown_to_pdf_with_options,
-    compile_typst_to_pdf, CompileRequest,
+    compile_markdown_to_html, compile_markdown_to_html_with_base_dir, compile_markdown_to_pdf,
+    compile_markdown_to_pdf_with_options, compile_typst_to_pdf, CompileRequest,
 };
 pub use engine::chem;
 pub use engine::chem::render_chem;
@@ -62,5 +62,6 @@ pub fn ecosystem_inventory() -> Vec<(&'static str, &'static str)> {
         ("joaju-wireframe", "0.1.0"),
         ("joaju-sequence", "0.1.0"),
         ("joaju-graph", "0.1.0"),
+        ("joaju-refs", "0.1.0"),
     ]
 }
