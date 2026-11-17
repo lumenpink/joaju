@@ -1,5 +1,249 @@
 # Changelog
 
+## [0.2.0] - 2026-11-17
+
+### Features
+- integrar joaju-refs e resolver citacoes em refs (ref #88 - ph5)
+- adicionar testes de integracao de referencias (ref #88 - ph4)
+- especificar integracao do joaju-refs e refs (ref #88 - ph3)
+- integrar paridade obsidian no compilador html (closes #87 - ph9)
+- **html:** integrar callouts e wikilinks no compilador (ref #87 - ph5)
+- desacoplar joaju-pdf em feature opcional (closes #86 - ph9)
+- **pdf:** tornar joaju-pdf feature opcional (ref #86 - ph5)
+- integrar motores lirica diagramas e figuras (closes #85 - ph9)
+- **html:** integrar motores lirica diagramas e figuras (ref #85 - ph5)
+- padronizar exportacoes de motores e c-abi ffi (closes #84 - ph9)
+- **api:** exportar motores satelites e c-abi ffi (ref #84 - ph5)
+- compilacao markdown para html e c-abi (closes #83 - ph9)
+- formatar suite de testes html (ref #83 - ph7)
+- testes de mutacao para html e alias cli (ref #83 - ph6)
+- implementar compilacao markdown para html (ref #83 - ph5)
+- adicionar testes para compilacao html e ffi (ref #83 - ph4)
+- especificar compilacao markdown para html (ref #83 - ph3)
+- concluir inspecao de versoes (closes #75 - ph9)
+- implementar inspecao detalhada com flag all e json (ref #75 - ph5)
+- adicionar teste falho para ecosystem_inventory (ref #75 - ph4)
+- especificar inspecao de versao com flag all (ref #75 - ph3)
+- concluir exportacao de versao c-abi joaju (closes #74 - ph9)
+- exportar joaju_version e c-abi submodulos (ref #74 - ph5)
+- adicionar teste falho para joaju_version (ref #74 - ph4)
+- especificar exportacao de versao c-abi joaju (ref #74 - ph3)
+- concluir fase 9 do desacoplamento (closes #70 - ph9)
+- **pdf:** desacoplar motor typst para joaju-pdf (ref #70 - ph5)
+- test(red): assercoes de typst e table (ref #70 - ph4)
+- docs(spec): spec do ticket #70 (ref #70 - ph3)
+- **ffi:** implementar c-abi unificada em joaju (#68)
+- **templates:** integrar joaju-templates no compilador (#67)
+- **pedigree:** migrar ssrot e remover joaju-csv (#66)
+- **diagram:** 58 integrar motores nativos de diagramas (#58)
+- **markdown:** integrar joaju-markdown e limpar preprocessor (#63)
+- **chem:** desacoplar renderizador quimico para joaju-chem (#62)
+- **core:** desacoplar unfurl, isolar cli e habilitar staticlib (#57)
+- **build:** configurar profile.release e crt-static musl (#51)
+- **ci:** unificar esteira multiarch e publicacao na banca (#40)
+- **ci:** padronizar pipeline gitops e registry lumen (closes #44)
+- **slides:** integrate joaju-slides presentation engine (#46)
+- **pedigree:** wire auto_legend_mode and fix ssot image pattern (#42)
+- **engine:** wire is_auto_legend directive to render_opts (#42)
+- **compiler:** pagebreak tags and diagram directives (closes #42)
+- **compiler:** wire joaju-lirica for code block rendering (#45)
+- **gitops:** unificar ci rust e disparo em cascata do joaju-web (#44)
+- **deps:** migrate satellite dependencies to lumen registry (#43)
+
+### Bug Fixes
+- **android:** desacoplar staticlib de pdf e resolver colisao std
+- **ci:** remover configuracao duplicada de index no cargo
+- **html:** suportar figuras semanticas com alt e title opcionais
+- embutir build metadata e sincronizar ci (closes #82 - ph9)
+- **cli:** injetar versao completa e catalog.json no ci (ref #82 - ph5)
+- concluir token prioritario e semver integral (closes #72 - ph9)
+- fix: token prioritario e semver integral (ref #72 - ph5)
+- test: exigir token GAMBI_2LP_IN_TOKEN (ref #72 - ph4)
+- docs: spec do ticket 72 (ref #72 - ph3)
+- **ci:** configurar token Bearer para cargo publish (ref #69)
+- **ci:** usar lto thin e migrar registry para gambi (closes #56)
+- **tests:** atualizar assercoes da esteira para gambi (closes #55)
+- **ci:** usar imagem soberana gambi para cross (closes #54)
+- **ci:** remover campo permissions do workflow (ref #53)
+- **build:** remove global musl default target from cargo config (#40)
+- **build:** configurar reqwest com rustls-tls sem default-features (#50)
+- **tests:** tratar caminhos externos com graceful skip (#48)
+- **ci:** remover patches de caminhos relativos em Cargo.toml (#47)
+- **compiler:** multiline frontmatter and strip hr breaks (closes #41)
+- **compiler:** embed bib, wrap figures, normalize math (closes #39)
+
+### Refactoring
+- **format:** formatar testes de versao (ref #82 - ph6)
+- **ci:** sanitizar nomenclatura e esteira canonica (ref #70 - ph6)
+- **ci:** garantir conformidade de autenticacao de esteira (ref #69)
+- **diagram:** formatar suite de testes de integracao (#58)
+- **build:** harmonizar dependencias tls (#50)
+- **tests:** harmonizar resolucao de caminhos em testes (#48)
+- **ci:** consolidar assercoes de hermeticidade (#47)
+- **test:** align ssot assertion with contain fit figure (#43)
+- **core:** decouple http server into joaju-web (closes #38)
+
+### Documentation
+- **html:** especificar integracao joaju-markdown (ref #87 - ph3)
+- **spec:** adicionar especificacao do ticket #85
+- **spec:** especificar padronizacao de motores e ffi (ref #84 - ph3)
+- **readme:** modularizar readme e docs de arquitetura (ref #70 - ph8)
+- **spec:** concluir fase 9 de autenticacao Bearer (closes #69)
+- **spec:** registrar conformidade de token Bearer (ref #69)
+- **spec:** concluir fase 9 da c-abi unificada em joaju (closes #68)
+- **spec:** especificar interface c-abi e esteira de artefatos (#68)
+- **spec:** concluir fase 9 do DD-TDD (closes #67)
+- **spec:** especificar integracao do joaju-templates (#67)
+- **spec:** concluir fase 9 do DD-TDD (closes #66)
+- **spec:** especificar remocao de joaju-csv e ssrot (#66)
+- **gost:** sincronizar GOST.md compilado (#58)
+- **spec:** concluir fase 9 do DD-TDD (closes #58)
+- **spec:** 58 documentar conclusao de testes e auditoria (#58)
+- **spec:** 58 integracao de motores de diagramas nativos (#58)
+- **spec:** concluir fase 9 do DD-TDD (closes #63)
+- **spec:** especificar extracao para joaju-markdown (#63)
+- **spec:** concluir fase 9 do DD-TDD (closes #62)
+- **spec:** especificar desacoplamento de quimica para joaju-chem (#62)
+- **spec:** concluir fase 9 do DD-TDD (closes #57)
+- **spec:** especificar desacoplamento de rede, cli e staticlib (#57)
+- **spec:** documentar remocao de permissions no ci (#53)
+- **changelog:** registrar otimizacao e static musl (closes #51)
+- **build:** documentar perfil release e linking estatico (#51)
+- **spec:** especificacao de otimizacao e static musl (#51)
+- **copy:** apresentar modulos visuais joaju com clareza (closes #49)
+- **spec:** adicionar especificacao 50 para reqwest rustls (#50)
+- **spec:** adicionar especificacao 48 para testes hermeticos (#48)
+- **spec:** adicionar especificacao 47 para CI hermetico (#47)
+- **changelog:** registrar publicacao multiarch na banca (#40)
+- **spec:** adicionar especificacao 40 da esteira multiarch (#40)
+- **changelog:** record joaju-slides presentation engine (closes #46)
+- **specs:** add specification for joaju-slides integration (#46)
+- **changelog:** record pagebreak and pedigree directives (#42)
+- **changelog:** record joaju-lirica compiler integration (closes #45)
+- **specs:** add specification for joaju-lirica integration (#45)
+- **changelog:** registrar esteira gitops e cascata (closes #44)
+- **spec:** definir pipeline gitops e cascata para joaju-web (#44)
+- **changelog:** record lumen registry migration (closes #43)
+- **spec:** formalize lumen registry dependency migration (#43)
+
+### Testing
+- **html:** adicionar red test paridade obsidian (ref #87 - ph4)
+- **pdf:** adicionar red test para feature pdf opcional e desligada
+- **html:** validar casos de borda e fallbacks (ref #85 - ph7)
+- **html:** adicionar testes vermelhos de motores (ref #85 - ph4)
+- **api:** mutacao ffi para ponteiros nulos (ref #84 - ph7)
+- **api:** testes falhos para ffi e motores (ref #84 - ph4)
+- **mutation:** validar formato semver e build metadata (ref #82 - ph7)
+- **cli:** adicionar teste red para flag version (ref #82 - ph4)
+- **spec:** especificar build metadata e catalogo (ref #82 - ph3)
+- **mutation:** adicionar mutantes de typst e table (ref #70 - ph7)
+- **ci:** exigir autenticacao Bearer para cargo publish (ref #69)
+- **ffi:** adicionar teste ffi para c-abi unificada em joaju (#68)
+- **templates:** adicionar teste red para joaju-templates (#67)
+- **pedigree:** adicionar teste red contra joaju-csv direto (#66)
+- **diagram:** 58 red tests para integracao de diagramas (#58)
+- **markdown:** adicionar teste red para joaju-markdown (#63)
+- **chem:** adicionar teste red contra chematic direto no core (#62)
+- **build:** adicionar teste red contra tokio e reqwest na lib (#57)
+- **ci:** adicionar teste red para remocao de permissions (ref #53)
+- **build:** adicionar suite de teste para static musl (#51)
+- **copy:** validar apresentacao dos modulos visuais no joaju (ref #49)
+- **build:** adicionar teste de mutacao para openssl-sys (#50)
+- **build:** adicionar teste de rejeicao de openssl-sys (#50)
+- **ci:** adicionar caso de mutacao de expect incondicional (#48)
+- **ci:** adicionar verificacao de caminhos hermeticos (#48)
+- **ci:** adicionar casos de teste de mutacao hermetica (#47)
+- **ci:** adicionar teste de hermeticidade de Cargo.toml (#47)
+- **mutation:** adicionar testes de mutacao da esteira Banca (#40)
+- **ci:** adicionar teste de conformidade da esteira Banca (#40)
+- **slides:** add mutation and edge case tests for slides (#46)
+- **slides:** add failing unit and integration tests (#46)
+- **compiler:** add single verse scansion test for lirica (#45)
+- **compiler:** add failing test for lirica code block processing (#45)
+- **audit:** adicionar auditoria de esteira gitops e cascata (#44)
+- **deps:** add red audit test for lumen registry dependencies (#43)
+
+### Maintenance
+- **html:** formatar codigo e especificacoes (ref #85 - ph8)
+- **api:** formatacao e conformidade de qualidade (ref #84 - ph8)
+- **gate:** validar quality gate de formatacao e clippy (ref #82 - ph8)
+- segregar aliases e sincronizar versoes (closes #81 - ph9)
+- validar qualidade e auditoria gost (ref #81 - ph8)
+- documentar analise de mutacao (ref #81 - ph7)
+- refatorar e formatar testes de conformidade (ref #81 - ph6)
+- segregar aliases e cravar dependencias (ref #81 - ph5)
+- adicionar testes red de aliases e bumps (ref #81 - ph4)
+- especificar segregacao de aliases e bumps (ref #81 - ph3)
+- cravar versoes exatas e semver canonico (closes #79 - ph9)
+- auditoria estrita do quality gate (ref #79 - ph8)
+- validar mutacao em versoes de dependencias (ref #79 - ph7)
+- refatorar e formatar testes de conformidade (ref #79 - ph6)
+- cravar versoes exatas e semver canonico (ref #79 - ph5)
+- adicionar teste falho de semver e deps exatas (ref #79 - ph4)
+- especificar fixacao exata e semver (ref #79 - ph3)
+- concluir remocao de teste legado obsoleto (closes #78 - ph9)
+- validar quality gate com 68 testes e clippy limpo (ref #78 - ph8)
+- validar testes de mutacao e assercoes canônicas (ref #78 - ph7)
+- validar refatoracao e lint limpo (ref #78 - ph6)
+- remover arquivo de teste ci_latest_staticlib_spec (ref #78 - ph5)
+- validar falha do teste legado obsoleto (ref #78 - ph4)
+- especificar remocao de teste obsoleto (ref #78 - ph3)
+- concluir integracao do ci (closes #77 - ph9)
+- integrar notificacao ao kombinat no ci (ref #77 - ph5)
+- adicionar teste falho para integracao do ci (ref #77 - ph4)
+- especificar integracao com kombinat e limpeza ci (ref #77 - ph3)
+- concluir fixacao estrita de dependencias (closes #76 - ph9)
+- fixar versoes estritas e remover latest (ref #76 - ph5)
+- adicionar teste falho contra tag latest (ref #76 - ph4)
+- especificar fixacao estrita de dependencias (ref #76 - ph3)
+- concluir alias latest em staticlibs (closes #73 - ph9)
+- ci: publicar e consumir staticlibs sob latest (ref #73 - ph5)
+- test(ci): adicionar testes para alias latest (ref #73 - ph4)
+- docs(spec): definir spec para alias latest (ref #73 - ph3)
+- concluir alinhamento lilya e multiarch (closes #71 - ph9)
+- feat: alinhar ci e testes de cascata (ref #71 - ph4)
+- docs: spec do ticket 71 (ref #71 - ph3)
+- **version:** sincronizar VERSION para 0.2.0-dev.137+20261029.ded53b4
+- **version:** sincronizar VERSION para 0.2.0-dev.131+20261027.bff5998
+- **staticlib:** publicar staticlib multiarch em generic packages (#68)
+- **version:** sincronizar VERSION para 0.2.0-dev.125+20261027.48cc82a
+- **version:** sincronizar VERSION para 0.2.0-dev.120+20261026.0b7e4bd
+- **version:** sincronizar VERSION para 0.2.0-dev.114 (#58)
+- **version:** sincronizar VERSION para 0.2.0-dev.107+20261026.b07f375
+- **version:** sincronizar VERSION para 0.2.0-dev.102+20261026.a009c84
+- **version:** sincronizar VERSION para 0.2.0-dev.97+20261026.edcd068
+- **version:** sincronizar VERSION para 0.2.0-dev.91+20261025.2770044
+- re-trigger pipeline apos ajuste no runner
+- **version:** sincronizar VERSION para 0.2.0-dev.88+20261025.48a6d7c
+- **version:** sincronizar VERSION para 0.2.0-dev.86+20261024.7c939bd
+- **changelog:** registrar remocao de permissions (closes #53)
+- **version:** sincronizar VERSION para 0.2.0-dev.81+20261023.1745e4c
+- **workflow:** sanitizar base_ver para versao canonica SemVer
+- **version:** sincronizar VERSION para 0.2.0-dev.78+20261023.95a677c
+- **version:** sincronizar VERSION para 0.2.0-dev.72+20261023.9672441
+- **version:** sincronizar VERSION para 0.2.0-dev.69+20261022.61bacde
+- **build:** finalizar suporte estatico musl com rustls (closes #50)
+- **version:** sincronizar VERSION para 0.2.0-dev.62+20261022.665d429
+- **tests:** finalizar independência de host em testes (closes #48)
+- **tests:** formatar quebra de linha de println (#48)
+- **version:** sincronizar VERSION para 0.2.0-dev.54+20261022.e97814e
+- **ci:** finalizar hermeticidade da esteira joaju (closes #47)
+- **version:** sincronizar VERSION para 0.2.0-dev.47+20261022.c97d6e1
+- **release:** finalizar esteira multiarch na banca (closes #40)
+- **version:** sincronizar VERSION para 0.2.0-dev.40+20261021.7d45c70
+- **version:** sincronizar VERSION para 0.2.0-dev.38+20261020.38a0238
+- **version:** sincronizar VERSION para 0.2.0-dev.32+20261020.41a7384
+- **deps:** patch joaju-pedigree to local satellite path (#42)
+- **version:** sincronizar VERSION para 0.2.0-dev.26+20261020.9b95344
+- **version:** sincronizar VERSION para 0.2.0-dev.20+20261020.ad56c47
+- **quality:** validar conformance gosplan para gitops (#44)
+- **version:** sincronizar VERSION para 0.2.0-dev.14+20261020.1d2d724
+- **version:** sincronizar VERSION para 0.1.1-dev.8+20261020.bf85296
+- **version:** sincronizar VERSION para 0.1.1-dev.6+20261020.7987405
+- **version:** sincronizar VERSION pós-merge (#38)
+- **version:** sincronizar VERSION (#37)
+- **gost:** align with GOST v1.4.0 and lumen profile (#37)
+
 ## [Unreleased]
 
 ### Changed
