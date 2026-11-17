@@ -7,6 +7,7 @@
   - (build) otimizar tamanho de binario com profile.release e habilitar linking estatico musl crt-static (closes #51)
 
 ### Features
+  - (html) integrar paridade obsidian do joaju-markdown no compilador html (closes #87)
   - (pdf) desacoplar motor joaju-pdf em feature opcional desligada (closes #86)
   - (api) padronizar exportacoes de motores e c-abi ffi (closes #84)
   - (compiler) exportar compilacao markdown para html na cli e c-abi (closes #83)
