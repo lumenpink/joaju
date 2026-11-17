@@ -7,6 +7,7 @@
   - (build) otimizar tamanho de binario com profile.release e habilitar linking estatico musl crt-static (closes #51)
 
 ### Features
+  - (pdf) desacoplar motor joaju-pdf em feature opcional desligada (closes #86)
   - (api) padronizar exportacoes de motores e c-abi ffi (closes #84)
   - (compiler) exportar compilacao markdown para html na cli e c-abi (closes #83)
   - (ci) unificar esteira multiarch e publicacao na banca (closes #40)
