@@ -134,3 +134,23 @@ fn test_compile_markdown_to_html_chem_and_empty() {
     assert!(chem_html.contains("<svg"));
     assert!(chem_html.contains("</svg>"));
 }
+
+#[test]
+fn test_compile_markdown_to_html_with_obsidian_syntax() {
+    let md = r#"%%nota secreta%%
+# Teste Obsidian
+
+> [!abstract] Resumo Clínico
+> Este é o resumo extraído do Zotero.
+
+Veja ==termo grifado== e acesse [[Nota Referencia|Ver Referência]].
+"#;
+
+    let html = joaju::compile_markdown_to_html(md).unwrap();
+    assert!(!html.contains("nota secreta"), "Obsidian comments must be stripped");
+    assert!(html.contains(r#"class="callout callout-abstract""#));
+    assert!(html.contains(r#"<span class="callout-icon">"#));
+    assert!(html.contains(r#"<span class="callout-title-text">Resumo Clínico</span>"#));
+    assert!(html.contains("<mark>termo grifado</mark>"));
+    assert!(html.contains(r#"<a class="internal-link" data-href="Nota Referencia" href="Nota Referencia">Ver Referência</a>"#));
+}
