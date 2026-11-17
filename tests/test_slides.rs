@@ -1,4 +1,6 @@
-use joaju::engine::slides::{compile_slides_to_pdf, render_slides_markup, PresentationMode};
+#[cfg(feature = "pdf")]
+use joaju::engine::slides::compile_slides_to_pdf;
+use joaju::engine::slides::{render_slides_markup, PresentationMode};
 
 const SAMPLE_SLIDES: &str = r#"---
 title: Fisiologia Cardiovascular - Joaju Integration
@@ -39,6 +41,7 @@ fn test_render_slides_markup_all_modes() {
     assert!(notes_typst.contains("Notas do Orador"));
 }
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_compile_slides_to_pdf() {
     let pdf_bytes = compile_slides_to_pdf(SAMPLE_SLIDES, PresentationMode::Slides)

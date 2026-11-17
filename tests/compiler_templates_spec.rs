@@ -1,3 +1,5 @@
+#![cfg(feature = "pdf")]
+
 use joaju::compiler::{compile_markdown_to_pdf, compile_markdown_to_pdf_with_options};
 
 #[test]

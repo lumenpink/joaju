@@ -1,3 +1,4 @@
+#[cfg(feature = "pdf")]
 use joaju::compiler::compile_markdown_to_pdf;
 use std::fs;
 
@@ -14,6 +15,7 @@ fn test_ssot_single_csv_feeding_pedtools_and_table() {
     let csv_path = tmp_dir.join("joaju_ssot_familia.csv");
     fs::write(&csv_path, csv_content).expect("falha ao criar CSV de teste");
 
+    #[allow(unused_variables)]
     let md = format!(
         r#"# Relatório de Genética Médica
 
@@ -50,17 +52,20 @@ Este relatório utiliza uma Fonte Única de Dados (SSOT).
     );
     assert!(processed_md.contains("asset_ped_0.svg"));
 
-    let pdf_bytes =
-        compile_markdown_to_pdf(&md).expect("falha ao compilar markdown com SSOT para PDF");
-    assert!(!pdf_bytes.is_empty(), "PDF gerado não deve ser vazio");
-    assert!(
-        pdf_bytes.starts_with(b"%PDF-"),
-        "Saída deve ser um documento PDF válido"
-    );
-    assert!(
-        pdf_bytes.len() > 3000,
-        "PDF deve conter conteúdo estruturado"
-    );
+    #[cfg(feature = "pdf")]
+    {
+        let pdf_bytes =
+            compile_markdown_to_pdf(&md).expect("falha ao compilar markdown com SSOT para PDF");
+        assert!(!pdf_bytes.is_empty(), "PDF gerado não deve ser vazio");
+        assert!(
+            pdf_bytes.starts_with(b"%PDF-"),
+            "Saída deve ser um documento PDF válido"
+        );
+        assert!(
+            pdf_bytes.len() > 3000,
+            "PDF deve conter conteúdo estruturado"
+        );
+    }
 
     let _ = fs::remove_file(csv_path);
 }
@@ -76,6 +81,7 @@ fn test_ssot_with_official_pedigree_headers() {
     let csv_path = tmp_dir.join("joaju_ssot_official.csv");
     fs::write(&csv_path, csv_content).expect("falha ao criar CSV oficial de teste");
 
+    #[allow(unused_variables)]
     let md = format!(
         r#"# Análise de Pedigree Oficial
 
@@ -88,9 +94,12 @@ fn test_ssot_with_official_pedigree_headers() {
         csv_path.display()
     );
 
-    let pdf_bytes =
-        compile_markdown_to_pdf(&md).expect("falha ao compilar com cabeçalhos oficiais");
-    assert!(pdf_bytes.starts_with(b"%PDF-"));
+    #[cfg(feature = "pdf")]
+    {
+        let pdf_bytes =
+            compile_markdown_to_pdf(&md).expect("falha ao compilar com cabeçalhos oficiais");
+        assert!(pdf_bytes.starts_with(b"%PDF-"));
+    }
 
     let _ = fs::remove_file(csv_path);
 }
@@ -107,6 +116,7 @@ fn test_ssot_combined_text_and_numeric_filters() {
     let csv_path = tmp_dir.join("joaju_ssot_combined.csv");
     fs::write(&csv_path, csv_content).expect("falha ao criar CSV combinado");
 
+    #[allow(unused_variables)]
     let md = format!(
         r#"# Estudo com Filtros Compostos
 

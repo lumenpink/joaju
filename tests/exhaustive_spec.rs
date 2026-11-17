@@ -1,3 +1,4 @@
+#[cfg(feature = "pdf")]
 use joaju::compiler::compile_markdown_to_pdf;
 use joaju::engine::chem::render_chem;
 use joaju::engine::pedigree::render_pedigree;
@@ -121,6 +122,7 @@ fn test_edge_wikilinks_with_spaces_and_accents() {
 // 5. COMPILAÇÃO INTEGRAL MULTI-MOTOR (TESTE DE INTEGRAÇÃO EXAUSTIVO)
 // =========================================================================
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_edge_exhaustive_full_academic_document_compilation() {
     // Documento completo combinando todos os subsistemas em um único documento

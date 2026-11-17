@@ -11,10 +11,10 @@
 //! ## Quick Example
 //!
 //! ```rust
-//! use joaju::compiler::compile_markdown_to_pdf;
+//! use joaju::compiler::compile_markdown_to_html;
 //!
 //! let markdown = "# Hello\nThis is compiled by Joaju.";
-//! let result = compile_markdown_to_pdf(markdown);
+//! let result = compile_markdown_to_html(markdown);
 //! assert!(result.is_ok());
 //! ```
 

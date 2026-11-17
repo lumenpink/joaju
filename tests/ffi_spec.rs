@@ -67,6 +67,7 @@ fn test_ffi_pedigree_render() {
     }
 }
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_ffi_compile_markdown_to_pdf() {
     let input = CString::new("# Test Title\nHello from C-ABI").unwrap();
@@ -93,5 +94,34 @@ fn test_ffi_compile_markdown_to_pdf() {
 
     unsafe {
         joaju::ffi::joaju_free_bytes(out_data, out_len);
+    }
+}
+
+#[cfg(not(feature = "pdf"))]
+#[test]
+fn test_ffi_compile_markdown_to_pdf_disabled_returns_error() {
+    let input = CString::new("# Test Title\nHello from C-ABI").unwrap();
+    let mut out_data = ptr::null_mut();
+    let mut out_len = 0;
+    let mut out_err = ptr::null_mut();
+
+    let rc = unsafe {
+        joaju::ffi::joaju_compile_markdown_to_pdf(
+            input.as_ptr(),
+            &mut out_data,
+            &mut out_len,
+            &mut out_err,
+        )
+    };
+
+    assert_ne!(rc, 0);
+    assert!(out_data.is_null());
+    assert!(!out_err.is_null());
+
+    let err_str = unsafe { CStr::from_ptr(out_err).to_string_lossy() };
+    assert!(err_str.contains("PDF compilation is disabled"));
+
+    unsafe {
+        joaju::ffi::joaju_free_string(out_err);
     }
 }

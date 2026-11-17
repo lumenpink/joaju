@@ -629,7 +629,7 @@ pub extern "C" fn joaju_version() -> *const c_char {
     C_VERSION_BYTES.as_ptr() as *const c_char
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(all(feature = "pdf", not(target_os = "android")))]
 extern "C" {
     fn joaju_pdf_version() -> *const c_char;
 }
@@ -637,12 +637,16 @@ extern "C" {
 /// Returns the C-ABI SemVer version of the linked `joaju-pdf` static library.
 #[no_mangle]
 pub extern "C" fn joaju_submodule_pdf_version() -> *const c_char {
-    #[cfg(not(target_os = "android"))]
+    #[cfg(all(feature = "pdf", not(target_os = "android")))]
     {
         unsafe { joaju_pdf_version() }
     }
-    #[cfg(target_os = "android")]
+    #[cfg(all(feature = "pdf", target_os = "android"))]
     {
-        b"unavailable on android\0".as_ptr() as *const c_char
+        c"unavailable on android".as_ptr()
+    }
+    #[cfg(not(feature = "pdf"))]
+    {
+        c"disabled".as_ptr()
     }
 }

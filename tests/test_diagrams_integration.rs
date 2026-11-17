@@ -1,4 +1,6 @@
-use joaju::compiler::{compile_markdown_to_pdf, preprocess_code_blocks};
+#[cfg(feature = "pdf")]
+use joaju::compiler::compile_markdown_to_pdf;
+use joaju::compiler::preprocess_code_blocks;
 
 #[test]
 fn test_wireframe_salt_preprocessing() {
@@ -90,6 +92,7 @@ B --> C[Fim]
     assert!(assets.is_empty(), "Flowchart gera Typst inline");
 }
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_end_to_end_pdf_compilation_with_diagrams() {
     let md = r#"---

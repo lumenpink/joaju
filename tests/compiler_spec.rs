@@ -1,5 +1,8 @@
-use joaju::compiler::{compile_markdown_to_pdf, convert_markdown_to_typst, preprocess_code_blocks};
+#[cfg(feature = "pdf")]
+use joaju::compiler::compile_markdown_to_pdf;
+use joaju::compiler::{convert_markdown_to_typst, preprocess_code_blocks};
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_spec_compile_markdown_to_pdf() {
     let input_markdown = r#"---
@@ -29,12 +32,14 @@ Fim do relatório."#;
     assert_eq!(&pdf_bytes[0..5], b"%PDF-");
 }
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_spec_compile_empty_markdown_returns_bad_request() {
     let result = compile_markdown_to_pdf("   ");
     assert!(result.is_err(), "Empty markdown should return an error");
 }
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_spec_compile_markdown_with_pedigree_and_chem_to_pdf() {
     let input_markdown = r#"---
@@ -65,6 +70,7 @@ CCO
     assert_eq!(&pdf_bytes[0..5], b"%PDF-");
 }
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_spec_compile_trabalho_ufsc_multiline_instituicao_and_no_dashes() {
     let md = r#"---
@@ -109,6 +115,7 @@ Texto do capítulo 2.
     assert!(pdf_bytes.len() > 100);
 }
 
+#[cfg(feature = "pdf")]
 #[test]
 fn test_spec_compile_comparativo_pedtools_vs_kinship2_document() {
     let path =

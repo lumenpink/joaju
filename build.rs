@@ -24,6 +24,11 @@ fn main() {
     println!("cargo:rerun-if-changed=VERSION");
     println!("cargo:rerun-if-env-changed=JOAJU_FULL_VERSION");
 
+    // PDF feature flag check: if 'pdf' feature is not enabled, do not link or download joaju-pdf
+    if env::var("CARGO_FEATURE_PDF").is_err() {
+        return;
+    }
+
     // Android targets do not link joaju-pdf staticlib
     if target.contains("android") {
         return;

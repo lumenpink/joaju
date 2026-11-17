@@ -43,6 +43,7 @@ pulldown-cmark = { version = "0.13", default-features = false, features = ["html
 [features]
 default = ["cli"]
 cli = ["dep:clap"]
+pdf = []
 
 [profile.release]
 opt-level = 3
