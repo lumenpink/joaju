@@ -374,9 +374,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-markdown"
-version = "0.0.2-dev.30+20261104.8c41814"
+version = "0.1.0-dev.34+20261116.87951ac"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "0027222a6aef2332ebbe9caffe3c947c92d13751062a0f1f81513fb9d85dbed1"
+checksum = "d6216fa6ec1fb131e6779d804b6b6c5b7f3bd2ce7f95cd6886f886bcb599fb41"
 dependencies = [
  "clap",
  "joaju-table 0.1.0",

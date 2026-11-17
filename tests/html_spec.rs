@@ -147,7 +147,10 @@ Veja ==termo grifado== e acesse [[Nota Referencia|Ver Referência]].
 "#;
 
     let html = joaju::compile_markdown_to_html(md).unwrap();
-    assert!(!html.contains("nota secreta"), "Obsidian comments must be stripped");
+    assert!(
+        !html.contains("nota secreta"),
+        "Obsidian comments must be stripped"
+    );
     assert!(html.contains(r#"class="callout callout-abstract""#));
     assert!(html.contains(r#"<span class="callout-icon">"#));
     assert!(html.contains(r#"<span class="callout-title-text">Resumo Clínico</span>"#));

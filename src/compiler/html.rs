@@ -18,13 +18,17 @@ fn escape_html(s: &str) -> String {
 
 /// Compila texto Markdown para HTML semântico com enriquecimento de blocos Joaju.
 pub fn compile_markdown_to_html(markdown: &str) -> Result<String, String> {
+    let s = joaju_markdown::preprocess_comments(markdown);
+    let s = joaju_markdown::preprocess_callouts(&s);
+    let s = joaju_markdown::preprocess_wikilinks(&s);
+    let preprocessed = joaju_markdown::preprocess_highlights(&s);
     let mut replacements: Vec<(String, String)> = Vec::new();
     let mut counter = 0;
 
     // 1. Tabelas Joaju: ```table ... ```
     let re_table = Regex::new(r"(?s)```table\s*\n(.*?)```").map_err(|e| e.to_string())?;
     let mut intermediate = re_table
-        .replace_all(markdown, |caps: &regex::Captures| {
+        .replace_all(&preprocessed, |caps: &regex::Captures| {
             let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
