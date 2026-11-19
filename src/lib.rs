@@ -27,8 +27,10 @@ pub mod ffi;
 pub mod preprocessor;
 
 pub use compiler::{
-    compile_markdown_to_html, compile_markdown_to_html_with_base_dir, compile_markdown_to_pdf,
-    compile_markdown_to_pdf_with_options, compile_typst_to_pdf, CompileRequest,
+    compile_markdown_to_html, compile_markdown_to_html_with_base_dir,
+    compile_markdown_to_html_with_source, compile_markdown_to_pdf,
+    compile_markdown_to_pdf_with_options, compile_preprocessed_markdown_to_html,
+    compile_typst_to_pdf, CompileRequest, ReferenceSource,
 };
 pub use engine::chem;
 pub use engine::chem::render_chem;
@@ -47,6 +49,21 @@ pub use joaju_markdown as markdown;
 pub use joaju_table as table;
 pub use joaju_templates as templates;
 pub use preprocessor::preprocess_markdown;
+
+/// Prepara o texto Markdown aplicando a esteira canônica unificada Joaju:
+/// 1. Resolução de citações e anexação bibliográfica (via joaju-refs) usando [`ReferenceSource`].
+/// 2. Remoção de comentários `%%...%%` (via joaju-markdown).
+/// 3. Conversão de callouts `> [!type]` (via joaju-markdown).
+/// 4. Conversão de realces `==...==` (via joaju-markdown).
+/// 5. Normalização de wikilinks `[[...]]` (via joaju-markdown).
+#[must_use]
+pub fn prepare_markdown(markdown: &str, references: Option<ReferenceSource>) -> String {
+    let with_refs = compiler::references::resolve_references_with_source(markdown, references);
+    let s = joaju_markdown::preprocess_comments(&with_refs);
+    let s = joaju_markdown::preprocess_callouts(&s);
+    let s = joaju_markdown::preprocess_highlights(&s);
+    joaju_markdown::preprocess_wikilinks(&s)
+}
 
 /// Returns the inventory of all linked Joaju ecosystem submodules and their SemVer versions.
 pub fn ecosystem_inventory() -> Vec<(&'static str, &'static str)> {

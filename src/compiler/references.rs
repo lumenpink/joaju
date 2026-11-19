@@ -4,6 +4,32 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+/// Fonte de referências bibliográficas para resolução no documento.
+#[derive(Debug, Clone)]
+pub enum ReferenceSource<'a> {
+    /// Resolução tradicional lendo notas .md em diretório (padrão CLI).
+    FileSystem(Option<&'a Path>),
+    /// Referências injetadas em memória (ex.: SQLite do Mandu, WASM, testes).
+    Memory(&'a HashMap<String, ReferenceNote>),
+    /// Prioriza notas em memória; usa disco como fallback para chaves ausentes.
+    Hybrid {
+        memory: &'a HashMap<String, ReferenceNote>,
+        base_dir: Option<&'a Path>,
+    },
+}
+
+impl<'a> From<&'a HashMap<String, ReferenceNote>> for ReferenceSource<'a> {
+    fn from(map: &'a HashMap<String, ReferenceNote>) -> Self {
+        ReferenceSource::Memory(map)
+    }
+}
+
+impl<'a> From<&'a Path> for ReferenceSource<'a> {
+    fn from(path: &'a Path) -> Self {
+        ReferenceSource::FileSystem(Some(path))
+    }
+}
+
 /// Indexa recursivamente uma pasta de referências mapeando o stem do arquivo (sem `.md`)
 /// para o caminho completo em disco. Não abre arquivos nem consome CPU com parsing de YAML.
 fn index_markdown_filenames(dir: &Path) -> (HashMap<String, PathBuf>, Vec<PathBuf>) {
@@ -124,6 +150,51 @@ fn inject_style_if_needed(markdown: &str, top_level_estilo: Option<&str>) -> Str
     }
 }
 
+fn resolve_from_disk_dir(
+    candidates: &[String],
+    effective_refs_dir: &Path,
+    resolved: &mut HashMap<String, ReferenceNote>,
+) {
+    if !effective_refs_dir.exists() {
+        return;
+    }
+    let (filename_index, all_files) = index_markdown_filenames(effective_refs_dir);
+    let mut parsed_fallback_files = false;
+    let mut all_parsed_notes: Vec<ReferenceNote> = Vec::new();
+
+    for key in candidates {
+        if resolved.contains_key(key) {
+            continue;
+        }
+
+        // Caminho expresso: correspondência direta no mapa de nomes (O(1))
+        if let Some(path) = filename_index.get(key) {
+            if let Ok(content) = fs::read_to_string(path) {
+                if let Some(note) = parse_reference_note(&content) {
+                    resolved.insert(key.clone(), note);
+                    continue;
+                }
+            }
+        }
+
+        // Caminho lento: arquivo renomeado (varredura nos arquivos restantes de refs/)
+        if !parsed_fallback_files {
+            for file_path in &all_files {
+                if let Ok(content) = fs::read_to_string(file_path) {
+                    if let Some(note) = parse_reference_note(&content) {
+                        all_parsed_notes.push(note);
+                    }
+                }
+            }
+            parsed_fallback_files = true;
+        }
+
+        if let Some(matched) = all_parsed_notes.iter().find(|n| n.citekey == *key) {
+            resolved.insert(key.clone(), matched.clone());
+        }
+    }
+}
+
 /// Resolve referências bibliográficas do documento a partir de notas Markdown em `refs_dir`.
 /// Utiliza estratégia de alta performance com índice de nomes e fallback de varredura lenta.
 pub fn resolve_and_process_references(markdown: &str, base_dir: Option<&Path>) -> String {
@@ -142,42 +213,8 @@ pub fn resolve_and_process_references(markdown: &str, base_dir: Option<&Path>) -
         return markdown.to_string();
     }
 
-    let (filename_index, all_files) = index_markdown_filenames(&effective_refs_dir);
     let mut resolved_refs: HashMap<String, ReferenceNote> = HashMap::new();
-    let mut parsed_fallback_files = false;
-    let mut all_parsed_notes: Vec<ReferenceNote> = Vec::new();
-
-    for key in candidates {
-        if resolved_refs.contains_key(&key) {
-            continue;
-        }
-
-        // Caminho expresso: correspondência direta no mapa de nomes (O(1))
-        if let Some(path) = filename_index.get(&key) {
-            if let Ok(content) = fs::read_to_string(path) {
-                if let Some(note) = parse_reference_note(&content) {
-                    resolved_refs.insert(key.clone(), note);
-                    continue;
-                }
-            }
-        }
-
-        // Caminho lento: arquivo renomeado (varredura nos arquivos restantes de refs/)
-        if !parsed_fallback_files {
-            for file_path in &all_files {
-                if let Ok(content) = fs::read_to_string(file_path) {
-                    if let Some(note) = parse_reference_note(&content) {
-                        all_parsed_notes.push(note);
-                    }
-                }
-            }
-            parsed_fallback_files = true;
-        }
-
-        if let Some(matched) = all_parsed_notes.iter().find(|n| n.citekey == key) {
-            resolved_refs.insert(key, matched.clone());
-        }
-    }
+    resolve_from_disk_dir(&candidates, &effective_refs_dir, &mut resolved_refs);
 
     if resolved_refs.is_empty() {
         return markdown.to_string();
@@ -185,4 +222,57 @@ pub fn resolve_and_process_references(markdown: &str, base_dir: Option<&Path>) -
 
     let prepared_markdown = inject_style_if_needed(markdown, top_level_estilo.as_deref());
     process_references(&prepared_markdown, &resolved_refs)
+}
+
+/// Resolve referências bibliográficas a partir de uma [`ReferenceSource`].
+pub fn resolve_references_with_source(markdown: &str, source: Option<ReferenceSource>) -> String {
+    let Some(source) = source else {
+        return markdown.to_string();
+    };
+
+    let (_custom_refs_dir, top_level_estilo) = parse_frontmatter_options(markdown);
+    let prepared_markdown = inject_style_if_needed(markdown, top_level_estilo.as_deref());
+
+    match source {
+        ReferenceSource::Memory(map) => {
+            if map.is_empty() {
+                markdown.to_string()
+            } else {
+                process_references(&prepared_markdown, map)
+            }
+        }
+        ReferenceSource::FileSystem(base_dir) => resolve_and_process_references(markdown, base_dir),
+        ReferenceSource::Hybrid { memory, base_dir } => {
+            let candidates = extract_candidate_citekeys(markdown);
+            if candidates.is_empty() {
+                return markdown.to_string();
+            }
+
+            let mut resolved: HashMap<String, ReferenceNote> = HashMap::new();
+            for k in &candidates {
+                if let Some(note) = memory.get(k) {
+                    resolved.insert(k.clone(), note.clone());
+                }
+            }
+
+            let missing: Vec<String> = candidates
+                .into_iter()
+                .filter(|k| !resolved.contains_key(k))
+                .collect();
+
+            if !missing.is_empty() {
+                let base = base_dir.unwrap_or_else(|| Path::new("."));
+                let (custom_refs_dir, _) = parse_frontmatter_options(markdown);
+                let refs_folder_name = custom_refs_dir.as_deref().unwrap_or("refs");
+                let effective_refs_dir = base.join(refs_folder_name);
+                resolve_from_disk_dir(&missing, &effective_refs_dir, &mut resolved);
+            }
+
+            if resolved.is_empty() {
+                markdown.to_string()
+            } else {
+                process_references(&prepared_markdown, &resolved)
+            }
+        }
+    }
 }

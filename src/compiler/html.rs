@@ -26,18 +26,30 @@ pub fn compile_markdown_to_html_with_base_dir(
     markdown: &str,
     base_dir: Option<&std::path::Path>,
 ) -> Result<String, String> {
-    let with_refs = super::references::resolve_and_process_references(markdown, base_dir);
-    let s = joaju_markdown::preprocess_comments(&with_refs);
-    let s = joaju_markdown::preprocess_callouts(&s);
-    let s = joaju_markdown::preprocess_wikilinks(&s);
-    let preprocessed = joaju_markdown::preprocess_highlights(&s);
+    compile_markdown_to_html_with_source(
+        markdown,
+        Some(super::references::ReferenceSource::FileSystem(base_dir)),
+    )
+}
+
+/// Compila texto Markdown para HTML semântico a partir de uma fonte flexível de referências [`ReferenceSource`].
+pub fn compile_markdown_to_html_with_source(
+    markdown: &str,
+    source: Option<super::references::ReferenceSource>,
+) -> Result<String, String> {
+    let preprocessed = crate::prepare_markdown(markdown, source);
+    compile_preprocessed_markdown_to_html(&preprocessed)
+}
+
+/// Executa a compilação HTML de blocos Joaju sobre o Markdown já pré-processado.
+pub fn compile_preprocessed_markdown_to_html(preprocessed: &str) -> Result<String, String> {
     let mut replacements: Vec<(String, String)> = Vec::new();
     let mut counter = 0;
 
     // 1. Tabelas Joaju: ```table ... ```
     let re_table = Regex::new(r"(?s)```table\s*\n(.*?)```").map_err(|e| e.to_string())?;
     let mut intermediate = re_table
-        .replace_all(&preprocessed, |caps: &regex::Captures| {
+        .replace_all(preprocessed, |caps: &regex::Captures| {
             let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
