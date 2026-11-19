@@ -1,6 +1,4 @@
-use joaju::compiler::references::ReferenceSource;
-use joaju::prepare_markdown;
-use joaju_refs::ReferenceNote;
+use joaju::{prepare_markdown, ReferenceNote, ReferenceSource};
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
