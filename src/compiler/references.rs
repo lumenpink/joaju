@@ -1,4 +1,5 @@
-use joaju_refs::{parse_reference_note, process_references, ReferenceNote};
+pub use joaju_refs::ReferenceNote;
+use joaju_refs::{parse_reference_note, process_references};
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs;

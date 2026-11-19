@@ -9,7 +9,7 @@ pub use html::{
     compile_markdown_to_html_with_source, compile_preprocessed_markdown_to_html,
 };
 pub use references::{
-    resolve_and_process_references, resolve_references_with_source, ReferenceSource,
+    resolve_and_process_references, resolve_references_with_source, ReferenceNote, ReferenceSource,
 };
 
 pub use joaju_markdown::{

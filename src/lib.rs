@@ -30,7 +30,7 @@ pub use compiler::{
     compile_markdown_to_html, compile_markdown_to_html_with_base_dir,
     compile_markdown_to_html_with_source, compile_markdown_to_pdf,
     compile_markdown_to_pdf_with_options, compile_preprocessed_markdown_to_html,
-    compile_typst_to_pdf, CompileRequest, ReferenceSource,
+    compile_typst_to_pdf, CompileRequest, ReferenceNote, ReferenceSource,
 };
 pub use engine::chem;
 pub use engine::chem::render_chem;
