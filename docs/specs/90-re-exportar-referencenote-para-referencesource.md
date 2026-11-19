@@ -1,7 +1,7 @@
 # Especificação 90: Re-exportar ReferenceNote para ReferenceSource
 
 - **ID do Ticket:** #90
-- **Status:** Em Andamento (DD-TDD Fase 3)
+- **Status:** Concluído (DD-TDD Fase 9)
 - **Autora:** Lumen
 - **Alinhamento:** GOST 3.0.0 (Rust)
 
