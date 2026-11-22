@@ -1,0 +1,3 @@
+# Manifesto Declarativo de Continuous Deployment (CD) — joaju
+[binaries]
+target = "banca"

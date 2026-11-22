@@ -1,14 +1,14 @@
-# Especificação 40: Esteira Soberana Multi-arquitetura e Publicação na Banca para Joaju
+# Especificação 40: Esteira Autônoma Multi-arquitetura e Publicação na Banca para Joaju
 
 ## 1. Contexto e Objetivo
-O `joaju` é o compilador e orquestrador tipográfico soberano central do ecossistema Lumen.
+O `joaju` é o compilador e orquestrador tipográfico autônomo central do ecossistema Lumen.
 Atualmente, sua esteira de CI/CD utilizava um arquivo legado (`ci.yaml`), instalava ferramentas dinamicamente em runtime e continha dependências e referências ao Codeberg.
 
-O objetivo desta especificação é padronizar a automação de CI/CD no arquivo atômico canônico `.forgejo/workflows/ci.yml`, eliminando qualquer menção ou dependência do Codeberg e integrando a compilação multiarquitetura estática com publicação soberana direta no catálogo da Banca (`https://banca.2lp.in/downloads/joaju/`).
+O objetivo desta especificação é padronizar a automação de CI/CD no arquivo atômico canônico `.forgejo/workflows/ci.yml`, eliminando qualquer menção ou dependência do Codeberg e integrando a compilação multiarquitetura estática com publicação autônoma direta no catálogo da Banca (`https://banca.2lp.in/downloads/joaju/`).
 
 ## 2. Requisitos Técnicos
 
-### 2.1 Forja e Autenticação Soberana
+### 2.1 Forja e Autenticação Autônoma
 - O repositório canônico remoto é exclusivamente `git.2lp.in:lumen/joaju.git`.
 - Toda autenticação interna e chamadas de API ou git clones utilizam `GIT_2LP_TOKEN` e `https://git.2lp.in/`.
 - Fica estritamente vedada qualquer referência ao `codeberg.org` ou `CODEBERG_TOKEN`.
@@ -45,7 +45,7 @@ O objetivo desta especificação é padronizar a automação de CI/CD no arquivo
      - `--sha256 ${HASH}`
      - `--tarball ${PKG_FILE}`
      - `--app "joaju"`
-   - Commit e push soberano para o repositório da Banca.
+   - Commit e push autônomo para o repositório da Banca.
 
-### 2.4 Crate Registry Soberano
-- Publicação da crate no registry soberano Lumen (`sparse+https://git.2lp.in/api/packages/lumen/cargo/`) mantida no workflow de release.
+### 2.4 Crate Registry Autônomo
+- Publicação da crate no registry autônomo Lumen (`sparse+https://git.2lp.in/api/packages/lumen/cargo/`) mantida no workflow de release.

@@ -6,13 +6,13 @@ fn test_ci_workflow_has_kombinat_notification_and_no_latest() {
     let content = fs::read_to_string(ci_path).expect("ci.yml must exist");
 
     assert!(
-        content.contains("http://127.0.0.1:4040/api/cascade/dispatch"),
-        "ci.yml must notify Kombinat cascade endpoint"
+        !content.contains("127.0.0.1:4040"),
+        "ci.yml must not notify legacy Kombinat daemon on 4040"
     );
 
     assert!(
-        content.contains("joaju") && content.contains("cascade/dispatch"),
-        "Kombinat dispatch must notify for joaju"
+        content.contains("cargo publish --registry gambi"),
+        "ci.yml must publish to Gambi registry"
     );
 
     assert!(

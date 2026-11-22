@@ -8,13 +8,13 @@
 ## 1. Contexto & Motivação
 O compilador acadêmico Joaju (`joaju`) renderiza estruturas químicas e diagramas moleculares 2D a partir de blocos Markdown com notação SMILES (blocos ````openchemlib`` e ````openbabel``).
 
-Historicamente, o Joaju manteve o código de renderização molecular incorporado diretamente em `src/engine/chem.rs`, puxando diretamente as crates `chematic-smiles` e `chematic-depict` no `Cargo.toml`. Todas as demais engines do Joaju (heredogramas clínicos em `joaju-pedigree`, apresentações em `joaju-slides`, poesia e escansão em `joaju-lirica`, tabelas ABNT em `joaju-table`, e metadados web em `joaju-unfurl`) já foram extraídas para crates soberanas e independentes.
+Historicamente, o Joaju manteve o código de renderização molecular incorporado diretamente em `src/engine/chem.rs`, puxando diretamente as crates `chematic-smiles` e `chematic-depict` no `Cargo.toml`. Todas as demais engines do Joaju (heredogramas clínicos em `joaju-pedigree`, apresentações em `joaju-slides`, poesia e escansão em `joaju-lirica`, tabelas ABNT em `joaju-table`, e metadados web em `joaju-unfurl`) já foram extraídas para crates autônomas e independentes.
 
 Esta especificação definiu o desacoplamento do motor químico para a nova crate `joaju-chem`, eliminando `chematic-smiles` e `chematic-depict` como dependências diretas da raiz do Joaju e preservando total compatibilidade com a API pública `joaju::render_chem` e o pipeline do compilador.
 
 ## 2. Requisitos Técnicos
-1. **Criação da Crate Soberana `joaju-chem`:**
-   - Repositório `lumen/joaju-chem` na forja soberana `gambi.2lp.in`.
+1. **Criação da Crate Autônoma `joaju-chem`:**
+   - Repositório `lumen/joaju-chem` na forja autônoma `gambi.2lp.in`.
    - Exportação da função `render_chem(raw_code: &str, forced_format: Option<&str>) -> Result<(String, String), String>`.
    - Suporte a `rlib` e `staticlib` e CLI isolado via feature `cli`.
    - Dependências especializadas contidas em `joaju-chem`: `chematic-smiles`, `chematic-depict`, `regex`.

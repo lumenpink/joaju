@@ -18,7 +18,7 @@ Projetos clientes como `lauda`, `papeli` e `mandu` necessitam frequentemente des
 Esta especificação concluiu a extração completa dessa lógica para a crate desacoplada `joaju-markdown`, reexportando-a no `joaju` mantendo compatibilidade absoluta com a API pública.
 
 ## 2. Requisitos Técnicos
-1. **Crate Soberana `joaju-markdown`:**
+1. **Crate Autônoma `joaju-markdown`:**
    - Publicada no registro `gambi` (`v0.1.0`).
    - Exporta:
      - `preprocess_images`
@@ -40,7 +40,7 @@ Esta especificação concluiu a extração completa dessa lógica para a crate d
    - Suíte completa de testes aprovada: `preprocessor_spec`, `exhaustive_spec`, `cli_spec`, `compiler_spec`.
 
 ## 3. Critérios de Aceitação
-1. `joaju-markdown` listado nas dependências soberanas de `Cargo.toml`.
+1. `joaju-markdown` listado nas dependências autônomas de `Cargo.toml`.
 2. Todos os testes de pré-processamento e compilação passam com 100% de sucesso.
 3. `cargo fmt --check` e `cargo clippy --all-targets -- -D warnings` sem qualquer advertência.
 

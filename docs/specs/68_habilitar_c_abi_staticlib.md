@@ -6,7 +6,7 @@
 - **Alinhamento:** GOST 1.5.0 (Rust)
 
 ## 1. Contexto & Motivação
-A crate `joaju` é o compilador e orquestrador tipográfico principal. Ele agrega a pilha Typst (`typst-as-lib`, `typst-pdf`) e as extensões soberanas (`joaju-pedigree`, `joaju-chem`, `joaju-markdown`, `joaju-templates`, etc.). Devido ao peso e ao tempo de compilação da infraestrutura tipográfica (~15 minutos em compilações cruzadas), aplicações clientes como o editor `mandu` não devem recompilar o `joaju` e suas dependências a cada build de CI.
+A crate `joaju` é o compilador e orquestrador tipográfico principal. Ele agrega a pilha Typst (`typst-as-lib`, `typst-pdf`) e as extensões autônomas (`joaju-pedigree`, `joaju-chem`, `joaju-markdown`, `joaju-templates`, etc.). Devido ao peso e ao tempo de compilação da infraestrutura tipográfica (~15 minutos em compilações cruzadas), aplicações clientes como o editor `mandu` não devem recompilar o `joaju` e suas dependências a cada build de CI.
 
 Para solucionar isso de ponta a ponta:
 1. `joaju` expõe uma interface C-ABI pública estável para compilar Markdown/Typst para PDF e renderizar diagramas (pedigree, química).

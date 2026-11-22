@@ -42,7 +42,7 @@ jobs:
         run: rustup component add rustfmt clippy 2>/dev/null || true
 
       - name: "Format Check"
-        run: cargo fmt -- --check
+        run: cargo fmt --check
 
       - name: "Clippy Check (Zero Warnings)"
         run: cargo clippy --all-targets -- -D warnings
@@ -226,14 +226,6 @@ jobs:
               exit 1
             fi
           done
-
-      - name: "Notify Kombinat Cascade"
-        run: |
-          VERSION="${{ steps.meta.outputs.version }}"
-          echo "Notifying Kombinat cascade daemon..."
-          curl -s -X POST http://127.0.0.1:4040/api/cascade/dispatch \
-            -H "Content-Type: application/json" \
-            -d "{\"package\": \"joaju\", \"version\": \"${VERSION}\"}" || echo "Kombinat notification skipped or unreachable."
 
       - name: "Upload Artifacts to Cloudflare R2"
         env:

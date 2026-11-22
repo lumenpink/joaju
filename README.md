@@ -3,7 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/joaju.svg)](https://crates.io/crates/joaju)
 [![docs.rs](https://docs.rs/joaju/badge.svg)](https://docs.rs/joaju)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![GOST](https://img.shields.io/badge/GOST-1.5.0-emerald.svg)](https://codeberg.org/lumenpink/gost)
+[![GOST](https://img.shields.io/badge/GOST-v3.0.0-emerald.svg)](.gost/GOST.md)
 
 > **Joaju** (*Guarani*): Enlace, vínculo recíproco, conexão.  
 > Orquestrador e compilador acadêmico nativo em Rust para publicações tipográficas Typst, tabelas e heredogramas clínicos.
@@ -25,3 +25,8 @@ cargo build --release
 ```
 
 Para a documentação completa de arquitetura, pipeline e especificações, consulte [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## 📄 Licença
+
+Distribuído sob a licença [Apache-2.0](./LICENSE).
+Feito com amor travesti por [Lumen Pink](https://lumen.pink).

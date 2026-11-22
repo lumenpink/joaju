@@ -78,7 +78,7 @@ COPY --chown=node:node plot_pedtools.R /app/plot_pedtools.R
 COPY --chown=node:node public /app/public
 COPY --chown=node:node locales /app/locales
 
-USER node
+USER 1000:1000
 
 EXPOSE 3000
 

@@ -532,7 +532,7 @@ cccp serve
  
 This repository adheres to the **GOST v1.1.0** specification (`lumen` profile). Specification integrity and automation rules are audited and managed via the `cccp` CLI across `.gost/`.
  
-### Compilação Estática e Otimização Soberana (GOST 1.5.0)
+### Compilação Estática e Otimização Autônoma (GOST 1.5.0)
 - **Perfil de Release:** `opt-level = 3`, `lto = "fat"`, `codegen-units = 1`, `panic = "abort"` e `strip = true`.
 - **Linking Estático musl:** Suporte a `target-feature=+crt-static` para distribuição `static-pie` universal sem dependências de sistema.
 

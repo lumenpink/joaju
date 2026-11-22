@@ -1,0 +1,13 @@
+{
+  "abstract": "Projeto joaju governado conforme a norma técnica GOST v3.0.",
+  "schema_version": 1,
+  "site_type": "binary",
+  "slug": "joaju",
+  "summary": "Módulo joaju do ecossistema Gosplan",
+  "tagline": "Repositório joaju",
+  "tags": [
+    "gost",
+    "tulipa"
+  ],
+  "title": "joaju"
+}

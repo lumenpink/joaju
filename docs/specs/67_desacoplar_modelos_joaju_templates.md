@@ -10,10 +10,10 @@ O compilador acadêmico Joaju (`joaju`) incorpora modelos tipográficos em Typst
 
 Com a expansão de novos modelos acadêmicos e estilos de pós-graduação, manter esses assets acoplados no código do compilador incha a crate principal e impede o consumo independente de templates por outras ferramentas do ecossistema.
 
-Esta especificação concluiu a extração dos assets tipográficos para a crate soberana `joaju-templates`, consumida pelo Joaju via registro soberano `gambi`.
+Esta especificação concluiu a extração dos assets tipográficos para a crate autônoma `joaju-templates`, consumida pelo Joaju via registro autônomo `gambi`.
 
 ## 2. Requisitos Técnicos
-1. **Crate Soberana `joaju-templates`:**
+1. **Crate Autônoma `joaju-templates`:**
    - Publicada no registro `gambi` (`v0.1.0`).
    - Exporta:
      - `template_ufsc() -> &'static str`
