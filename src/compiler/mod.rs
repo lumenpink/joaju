@@ -30,10 +30,10 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
     let mut assets = Vec::new();
     let mut counter = 0;
 
-    let re_ped = Regex::new(r"(?s)```(pedtools|kinship2)\s*\n(.*?)```").unwrap();
+    let re_ped = Regex::new(r"(?s)```pedigree\s*\n(.*?)```").unwrap();
     let res1 = re_ped.replace_all(md, |caps: &regex::Captures| {
-        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
-        let fmt = caps.get(1).map(|m| m.as_str());
+        let code = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+        let fmt = Some("pedigree");
 
         let mut custom_height: Option<String> = None;
         let mut custom_width: Option<String> = None;
@@ -91,10 +91,10 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
         }
     });
 
-    let re_chem = Regex::new(r"(?s)```(openchemlib|openbabel)\s*\n(.*?)```").unwrap();
+    let re_chem = Regex::new(r"(?s)```chem\s*\n(.*?)```").unwrap();
     let res2 = re_chem.replace_all(&res1, |caps: &regex::Captures| {
-        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
-        let fmt = caps.get(1).map(|m| m.as_str());
+        let code = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+        let fmt = Some("chem");
         match engine::chem::render_chem(code, fmt) {
             Ok((_, svg)) => {
                 let filename = format!("asset_chem_{}.svg", counter);
@@ -115,27 +115,27 @@ pub fn preprocess_code_blocks(md: &str) -> (String, Vec<(String, Vec<u8>)>) {
         }
     });
 
-    let re_wireframe = Regex::new(r"(?s)```(wireframe|salt)\s*\n(.*?)```").unwrap();
+    let re_wireframe = Regex::new(r"(?s)```wireframe\s*\n(.*?)```").unwrap();
     let res4 = re_wireframe.replace_all(&res3, |caps: &regex::Captures| {
-        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+        let code = caps.get(1).map(|m| m.as_str()).unwrap_or("");
         match engine::wireframe::render_wireframe(code) {
             Ok(typst) => format!("\n{}\n", typst),
             Err(_) => caps.get(0).unwrap().as_str().to_string(),
         }
     });
 
-    let re_sequence = Regex::new(r"(?s)```(sequence|sequencediagram)\s*\n(.*?)```").unwrap();
+    let re_sequence = Regex::new(r"(?s)```sequence\s*\n(.*?)```").unwrap();
     let res5 = re_sequence.replace_all(&res4, |caps: &regex::Captures| {
-        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+        let code = caps.get(1).map(|m| m.as_str()).unwrap_or("");
         match engine::sequence::render_sequence(code) {
             Ok(typst) => format!("\n{}\n", typst),
             Err(_) => caps.get(0).unwrap().as_str().to_string(),
         }
     });
 
-    let re_graph = Regex::new(r"(?s)```(flowchart|graph)\s*\n(.*?)```").unwrap();
+    let re_graph = Regex::new(r"(?s)```graph\s*\n(.*?)```").unwrap();
     let res6 = re_graph.replace_all(&res5, |caps: &regex::Captures| {
-        let code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+        let code = caps.get(1).map(|m| m.as_str()).unwrap_or("");
         match engine::graph::render_graph(code) {
             Ok(typst) => format!("\n{}\n", typst),
             Err(_) => caps.get(0).unwrap().as_str().to_string(),

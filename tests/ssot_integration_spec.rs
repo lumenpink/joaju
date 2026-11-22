@@ -23,7 +23,7 @@ Este relatório utiliza uma Fonte Única de Dados (SSOT).
 
 ## Heredograma do Sistema ABO
 
-```pedtools
+```pedigree
 %% src={}
 %% select=id, pai, mae, sex, fenotipo_abo as fenotipo, proband, label_abo as label
 %% where=geracao <= 2
@@ -85,7 +85,7 @@ fn test_ssot_with_official_pedigree_headers() {
     let md = format!(
         r#"# Análise de Pedigree Oficial
 
-```pedtools
+```pedigree
 %% src={}
 %% select=id, fid as pai, mid as mae, sex, aff as fenotipo, proband
 %% where=geracao <= 2
@@ -120,7 +120,7 @@ fn test_ssot_combined_text_and_numeric_filters() {
     let md = format!(
         r#"# Estudo com Filtros Compostos
 
-```pedtools
+```pedigree
 %% src={}
 %% select=id, pai, mae, sex, fenotipo
 %% where=geracao <= 2 and status == ativo

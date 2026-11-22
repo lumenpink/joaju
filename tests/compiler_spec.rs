@@ -175,7 +175,7 @@ Fim."#;
 
 #[test]
 fn test_spec_pedtools_code_block_height_and_scale_directives() {
-    let md = r#"```pedtools
+    let md = r#"```pedigree
 %% height=16.5cm scale=85%
 1 0 0 1 0
 2 0 0 2 0

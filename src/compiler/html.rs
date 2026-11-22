@@ -46,7 +46,7 @@ pub fn compile_preprocessed_markdown_to_html(preprocessed: &str) -> Result<Strin
     let mut replacements: Vec<(String, String)> = Vec::new();
     let mut counter = 0;
 
-    // 1. Tabelas Joaju: ```table ... ```
+    // 1. Tabelas Joaju: ```table ... ``` (sem aliases)
     let re_table = Regex::new(r"(?s)```table\s*\n(.*?)```").map_err(|e| e.to_string())?;
     let mut intermediate = re_table
         .replace_all(preprocessed, |caps: &regex::Captures| {
@@ -55,129 +55,146 @@ pub fn compile_preprocessed_markdown_to_html(preprocessed: &str) -> Result<Strin
             counter += 1;
             let rendered = match crate::table::render_html_table(code) {
                 Ok(html) => html,
-                Err(_) => caps.get(0).unwrap().as_str().to_string(),
+                Err(err) => format!(
+                    "<div class=\"joaju-compile-error\" data-engine=\"table\">Erro ao compilar tabela: {}</div>",
+                    escape_html(&err.to_string())
+                ),
             };
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
         .to_string();
 
-    // 2. Pedigrees: ```pedtools ... ``` ou ```kinship2 ... ```
-    let re_ped =
-        Regex::new(r"(?s)```(pedtools|kinship2)\s*\n(.*?)```").map_err(|e| e.to_string())?;
+    // 2. Pedigrees: ```pedigree ... ``` (sem aliases)
+    let re_ped = Regex::new(r"(?s)```pedigree\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_ped
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let fmt = caps.get(1).map(|m| m.as_str());
-            let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
+            let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
-            let rendered = match engine::pedigree::render_pedigree(code, fmt) {
-                Ok((_, svg)) => svg,
-                Err(_) => caps.get(0).unwrap().as_str().to_string(),
+            let rendered = match engine::pedigree::render_pedigree(code, Some("pedigree")) {
+                Ok((_, svg)) => format!(
+                    "<div class=\"joaju-diagram-block joaju-pedigree-block\" data-engine=\"pedigree\">\n{svg}\n</div>"
+                ),
+                Err(err) => format!(
+                    "<div class=\"joaju-compile-error\" data-engine=\"pedigree\">Erro ao compilar pedigree: {}</div>",
+                    escape_html(&err)
+                ),
             };
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
         .to_string();
 
-    // 3. Química: ```chem ... ``` ou ```openchemlib ... ``` ou ```openbabel ... ```
-    let re_chem = Regex::new(r"(?s)```(chem|openchemlib|openbabel)\s*\n(.*?)```")
-        .map_err(|e| e.to_string())?;
+    // 3. Química: ```chem ... ``` (sem aliases)
+    let re_chem = Regex::new(r"(?s)```chem\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_chem
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let fmt = caps.get(1).map(|m| m.as_str());
-            let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
+            let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
-            let rendered = match engine::chem::render_chem(code, fmt) {
-                Ok((_, svg)) => svg,
-                Err(_) => caps.get(0).unwrap().as_str().to_string(),
+            let rendered = match engine::chem::render_chem(code, Some("chem")) {
+                Ok((_, svg)) => format!(
+                    "<div class=\"joaju-diagram-block joaju-chem-block\" data-engine=\"chem\">\n{svg}\n</div>"
+                ),
+                Err(err) => format!(
+                    "<div class=\"joaju-compile-error\" data-engine=\"chem\">Erro ao compilar chem: {}</div>",
+                    escape_html(&err)
+                ),
             };
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
         .to_string();
 
-    // 4. Lírica: ```lirica ... ``` ou ```poema ... ``` ou ```poesia ... ```
-    let re_lirica =
-        Regex::new(r"(?s)```(lirica|poema|poesia)\s*\n(.*?)```").map_err(|e| e.to_string())?;
+    // 4. Lírica: ```lirica ... ``` (sem aliases)
+    let re_lirica = Regex::new(r"(?s)```lirica\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_lirica
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
+            let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
             let rendered = match engine::lirica::render_lirica_html(code) {
                 Ok(html) => html,
-                Err(_) => caps.get(0).unwrap().as_str().to_string(),
+                Err(err) => format!(
+                    "<div class=\"joaju-compile-error\" data-engine=\"lirica\">Erro ao compilar lírica: {}</div>",
+                    escape_html(&err)
+                ),
             };
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
         .to_string();
 
-    // 5. Wireframe: ```wireframe ... ``` ou ```salt ... ``` ou ```ui ... ```
-    let re_wireframe =
-        Regex::new(r"(?s)```(wireframe|salt|ui)\s*\n(.*?)```").map_err(|e| e.to_string())?;
+    // 5. Wireframe: ```wireframe ... ``` (sem aliases)
+    let re_wireframe = Regex::new(r"(?s)```wireframe\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_wireframe
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
+            let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
             let rendered = match joaju_wireframe::render_wireframe_svg(code) {
                 Ok(svg) => format!(
-                    "<div class=\"joaju-diagram-block\" data-engine=\"wireframe\">\n{svg}\n</div>"
+                    "<div class=\"joaju-diagram-block joaju-wireframe-block\" data-engine=\"wireframe\">\n{svg}\n</div>"
                 ),
-                Err(_) => caps.get(0).unwrap().as_str().to_string(),
+                Err(err) => format!(
+                    "<div class=\"joaju-compile-error\" data-engine=\"wireframe\">Erro ao compilar wireframe: {}</div>",
+                    escape_html(&err)
+                ),
             };
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
         .to_string();
 
-    // 6. Sequence: ```sequence ... ``` ou ```sequencediagram ... ```
-    let re_sequence =
-        Regex::new(r"(?s)```(sequence|sequencediagram)\s*\n(.*?)```").map_err(|e| e.to_string())?;
+    // 6. Sequence: ```sequence ... ``` (sem aliases)
+    let re_sequence = Regex::new(r"(?s)```sequence\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_sequence
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
+            let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
             let rendered = match joaju_sequence::render_sequence_svg(code) {
                 Ok(svg) => format!(
-                    "<div class=\"joaju-diagram-block\" data-engine=\"sequence\">\n{svg}\n</div>"
+                    "<div class=\"joaju-diagram-block joaju-sequence-block\" data-engine=\"sequence\">\n{svg}\n</div>"
                 ),
-                Err(_) => caps.get(0).unwrap().as_str().to_string(),
+                Err(err) => format!(
+                    "<div class=\"joaju-compile-error\" data-engine=\"sequence\">Erro ao compilar sequence: {}</div>",
+                    escape_html(&err)
+                ),
             };
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
         .to_string();
 
-    // 7. Graph / Flowchart: ```graph ... ``` ou ```flowchart ... ```
-    let re_graph =
-        Regex::new(r"(?s)```(graph|flowchart)\s*\n(.*?)```").map_err(|e| e.to_string())?;
+    // 7. Graph: ```graph ... ``` (sem aliases)
+    let re_graph = Regex::new(r"(?s)```graph\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_graph
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
+            let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
             let rendered = match joaju_graph::render_graph_svg(code) {
                 Ok(svg) => format!(
-                    "<div class=\"joaju-diagram-block\" data-engine=\"graph\">\n{svg}\n</div>"
+                    "<div class=\"joaju-diagram-block joaju-graph-block\" data-engine=\"graph\">\n{svg}\n</div>"
                 ),
-                Err(_) => caps.get(0).unwrap().as_str().to_string(),
+                Err(err) => format!(
+                    "<div class=\"joaju-compile-error\" data-engine=\"graph\">Erro ao compilar graph: {}</div>",
+                    escape_html(&err)
+                ),
             };
             replacements.push((placeholder.clone(), rendered));
             format!("\n\n{}\n\n", placeholder)
         })
         .to_string();
 
-    // 8. Typst / Joaju: ```typst ... ``` ou ```joaju ... ```
-    let re_typst = Regex::new(r"(?s)```(typst|joaju)\s*\n(.*?)```").map_err(|e| e.to_string())?;
+    // 8. Typst: ```typst ... ``` (sem aliases)
+    let re_typst = Regex::new(r"(?s)```typst\s*\n(.*?)```").map_err(|e| e.to_string())?;
     intermediate = re_typst
         .replace_all(&intermediate, |caps: &regex::Captures| {
-            let lang = caps.get(1).map(|m| m.as_str()).unwrap_or("typst").trim();
-            let code = caps.get(2).map(|m| m.as_str()).unwrap_or("").trim();
+            let lang = "typst";
+            let code = caps.get(1).map(|m| m.as_str()).unwrap_or("").trim();
             let placeholder = format!("<!--JOAJU_REPLACEMENT_{}-->", counter);
             counter += 1;
             let escaped = escape_html(code);

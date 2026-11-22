@@ -25,7 +25,7 @@ fn test_ffi_chem_render() {
 
     let fmt_str = unsafe { CStr::from_ptr(out_fmt).to_str().unwrap() };
     let svg_str = unsafe { CStr::from_ptr(out_svg).to_str().unwrap() };
-    assert_eq!(fmt_str, "openchemlib");
+    assert_eq!(fmt_str, "chem");
     assert!(svg_str.contains("<svg"));
 
     unsafe {
@@ -58,7 +58,7 @@ fn test_ffi_pedigree_render() {
 
     let fmt_str = unsafe { CStr::from_ptr(out_fmt).to_str().unwrap() };
     let svg_str = unsafe { CStr::from_ptr(out_svg).to_str().unwrap() };
-    assert_eq!(fmt_str, "pedtools");
+    assert_eq!(fmt_str, "pedigree");
     assert!(svg_str.contains("<svg"));
 
     unsafe {

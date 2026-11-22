@@ -288,7 +288,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "joaju"
-version = "0.2.0-dev.138"
+version = "0.2.0-dev.139"
 dependencies = [
  "clap",
  "joaju-chem",
@@ -309,9 +309,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-chem"
-version = "0.1.0-dev.65+20261104.846a274"
+version = "0.1.0-dev.69+20261122.f964fff"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "14ea890d7bb012c5cb20e8149a3df2d4f9baf5fa252a248819138e215c43a0ef"
+checksum = "d833e45c31756718bf60057bef2fc839399c747d7bee979d39e3bfa83926cae3"
 dependencies = [
  "chematic-depict",
  "chematic-smiles",
@@ -375,9 +375,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-markdown"
-version = "0.1.0-dev.34+20261116.87951ac"
+version = "0.1.0-dev.38+20261122.5d20da7"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "d6216fa6ec1fb131e6779d804b6b6c5b7f3bd2ce7f95cd6886f886bcb599fb41"
+checksum = "2110730c7a1fb7dc81da27a11742ef64631d860e73855ba36205e8e5d26bcc6c"
 dependencies = [
  "clap",
  "joaju-table 0.1.0",
@@ -388,9 +388,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-pedigree"
-version = "0.2.0-dev.96+20261102.23f015c"
+version = "0.2.0-dev.100+20261122.43b24c1"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "68cb55d9201b1082bff3495f21f1d9fd8ee77a478871edb282df1ce8d06ee2f9"
+checksum = "a70035b5b81d27f77f3fd29919a40764cb6c045ccb43e6fa4f203105e6c5a702"
 dependencies = [
  "clap",
  "csv",

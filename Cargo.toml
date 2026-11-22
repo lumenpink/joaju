@@ -25,9 +25,9 @@ required-features = ["cli"]
 [dependencies]
 clap = { version = "4.5", features = ["derive"], optional = true }
 serde = { version = "1", features = ["derive"] }
-joaju-pedigree = { version = "=0.2.0-dev.96", registry = "gambi" }
+joaju-pedigree = { version = "=0.2.0-dev.100", registry = "gambi" }
 joaju-table = { version = "=0.2.0-dev.56", registry = "gambi" }
-joaju-markdown = { version = "=0.1.0-dev.34", registry = "gambi" }
+joaju-markdown = { version = "=0.1.0-dev.38", registry = "gambi" }
 joaju-refs = { version = "=0.1.0-dev.12", registry = "gambi" }
 joaju-templates = { version = "=0.0.2-dev.31", registry = "gambi" }
 joaju-lirica = { version = "=0.5.1-dev.31", registry = "gambi" }
@@ -36,7 +36,7 @@ joaju-wireframe = { version = "=0.1.0-dev.27", registry = "gambi" }
 joaju-sequence = { version = "=0.1.0-dev.32", registry = "gambi" }
 joaju-graph = { version = "=0.1.0-dev.31", registry = "gambi" }
 regex = "1"
-joaju-chem = { version = "=0.1.0-dev.65", registry = "gambi" }
+joaju-chem = { version = "=0.1.0-dev.69", registry = "gambi" }
 pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
 
 [dev-dependencies]

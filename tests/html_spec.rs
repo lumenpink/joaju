@@ -35,7 +35,7 @@ joaju,0.2.0
 fn test_compile_markdown_to_html_with_pedigree_svg() {
     let md = r#"# Heredograma
 
-```pedtools
+```pedigree
 id,dad,mom,sex
 1,0,0,1
 2,0,0,2

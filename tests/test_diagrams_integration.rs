@@ -28,7 +28,7 @@ fn test_wireframe_salt_preprocessing() {
 }
 
 #[test]
-fn test_salt_alias_preprocessing() {
+fn test_salt_alias_not_preprocessed() {
     let md = r#"# Exemplo Salt
 
 ```salt
@@ -38,12 +38,8 @@ fn test_salt_alias_preprocessing() {
 
     let (typst, assets) = preprocess_code_blocks(md);
     assert!(
-        !typst.contains("```salt"),
-        "Bloco ```salt deve ser pré-processado"
-    );
-    assert!(
-        typst.contains("table(") || typst.contains("#box"),
-        "Markup Typst de salt deve conter tabela ou caixas nativas"
+        typst.contains("```salt"),
+        "Bloco legado ```salt não deve ser pré-processado como wireframe"
     );
     assert!(assets.is_empty());
 }
@@ -71,25 +67,37 @@ Servidor --> Cliente: 200 OK
 }
 
 #[test]
-fn test_flowchart_preprocessing() {
-    let md = r#"# Fluxograma
+fn test_graph_preprocessing_and_flowchart_ignored() {
+    let md_graph = r#"# Fluxograma
 
-```flowchart
+```graph
 A[Início] --> B[Processar]
 B --> C[Fim]
 ```
 "#;
 
-    let (typst, assets) = preprocess_code_blocks(md);
+    let (typst, assets) = preprocess_code_blocks(md_graph);
     assert!(
-        !typst.contains("```flowchart"),
-        "Bloco ```flowchart deve ser pré-processado"
+        !typst.contains("```graph"),
+        "Bloco ```graph deve ser pré-processado"
     );
     assert!(
         typst.contains("#image") && typst.contains("<svg"),
         "Markup Typst de fluxograma deve conter elemento de imagem SVG nativo"
     );
-    assert!(assets.is_empty(), "Flowchart gera Typst inline");
+    assert!(assets.is_empty());
+
+    let md_flowchart = r#"# Fluxograma
+
+```flowchart
+A[Início] --> B[Processar]
+```
+"#;
+    let (typst_fc, _) = preprocess_code_blocks(md_flowchart);
+    assert!(
+        typst_fc.contains("```flowchart"),
+        "Bloco legado ```flowchart não deve ser pré-processado como graph"
+    );
 }
 
 #[cfg(feature = "pdf")]

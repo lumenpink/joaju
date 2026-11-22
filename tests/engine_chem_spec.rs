@@ -3,7 +3,7 @@ use joaju::engine::chem::render_chem;
 #[test]
 fn test_spec_render_openchemlib_fenced_block() {
     // Aspirin
-    let input_code = r#"```openchemlib
+    let input_code = r#"```chem
 CC(=O)Oc1ccccc1C(=O)O
 ```"#;
 
@@ -11,7 +11,7 @@ CC(=O)Oc1ccccc1C(=O)O
     assert!(result.is_ok(), "Rendering failed: {:?}", result.err());
 
     let (format, svg) = result.unwrap();
-    assert_eq!(format, "openchemlib");
+    assert_eq!(format, "chem");
     assert!(svg.contains("<svg"), "Response must contain svg tag");
     assert!(svg.contains("</svg>"), "Response must close svg tag");
 }
@@ -21,17 +21,17 @@ fn test_spec_render_openbabel_direct_smiles() {
     // Caffeine
     let input_code = "Cn1cnc2c1c(=O)n(c(=O)n2C)C";
 
-    let result = render_chem(input_code, Some("openbabel"));
+    let result = render_chem(input_code, Some("chem"));
     assert!(result.is_ok(), "Rendering failed: {:?}", result.err());
 
     let (format, svg) = result.unwrap();
-    assert_eq!(format, "openbabel");
+    assert_eq!(format, "chem");
     assert!(svg.contains("<svg"));
 }
 
 #[test]
 fn test_spec_render_invalid_smiles_returns_error() {
-    let input_code = r#"```openchemlib
+    let input_code = r#"```chem
 SMILES_TOTALMENTE_INVALIDO_XYZ!!!
 ```"#;
 
@@ -42,7 +42,7 @@ SMILES_TOTALMENTE_INVALIDO_XYZ!!!
 #[test]
 fn test_mutation_estradiol_structure() {
     // Estradiol with caption directive
-    let input_code = r#"```openchemlib
+    let input_code = r#"```chem
 %% caption=Estradiol
 C[C@]12CC[C@H]3[C@H]([C@@H]1CC[C@@H]2O)CCC4=C3C=CC(=C4)O
 ```"#;
