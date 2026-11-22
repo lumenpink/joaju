@@ -22,3 +22,4 @@ Além disso, para Natasha manter e evoluir o visualizador web/mobile sem surpres
 
 ## Validação
 - Testes de compilação HTML em `tests/html_compiler_spec.rs` cobrindo blocos `table`, `pedigree` e `chem`.
+
