@@ -81,8 +81,16 @@ fn test_specific_bumped_dependencies() {
     let content = fs::read_to_string(cargo_path).expect("Failed to read Cargo.toml");
 
     assert!(
-        content.contains("joaju-table = { version = \"=0.2.0-dev.56\", registry = \"gambi\" }"),
-        "joaju-table must be pinned to =0.2.0-dev.56"
+        content.contains("joaju-table = { version = \"=0.2.0-dev.62\", registry = \"gambi\" }"),
+        "joaju-table must be pinned to =0.2.0-dev.62"
+    );
+    assert!(
+        content.contains("joaju-pedigree = { version = \"=0.2.0-dev.108\", registry = \"gambi\" }"),
+        "joaju-pedigree must be pinned to =0.2.0-dev.108"
+    );
+    assert!(
+        content.contains("joaju-markdown = { version = \"=0.1.0-dev.47\", registry = \"gambi\" }"),
+        "joaju-markdown must be pinned to =0.1.0-dev.47"
     );
     assert!(
         content.contains("joaju-lirica = { version = \"=0.5.1-dev.31\", registry = \"gambi\" }"),
