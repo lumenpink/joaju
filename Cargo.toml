@@ -1,11 +1,10 @@
 [package]
 name = "joaju"
-version = "0.2.0-dev.251+20261123.a5cdcc0"
+version = "0.2.0-dev.252+20261123.428ad87"
 edition = "2021"
 description = "A scientific academic compiler and typographical orchestrator in Rust for Typst, clinical pedigrees, and tables"
 license = "Apache-2.0"
 repository = "https://gambi.2lp.in/lumen/joaju"
-homepage = "https://gambi.2lp.in/lumen/joaju"
 documentation = "https://docs.rs/joaju"
 readme = "README.md"
 keywords = ["typst", "compiler", "academic", "typesetting", "markdown"]
@@ -25,9 +24,9 @@ required-features = ["cli"]
 [dependencies]
 clap = { version = "4.5", features = ["derive"], optional = true }
 serde = { version = "1", features = ["derive"] }
-joaju-pedigree = { version = "=0.2.0-dev.100", registry = "gambi" }
-joaju-table = { version = "=0.2.0-dev.56", registry = "gambi" }
-joaju-markdown = { version = "=0.1.0-dev.42", registry = "gambi" }
+joaju-pedigree = { version = "=0.2.0-dev.108", registry = "gambi" }
+joaju-table = { version = "=0.2.0-dev.66", registry = "gambi" }
+joaju-markdown = { version = "=0.1.0-dev.51", registry = "gambi" }
 joaju-refs = { version = "=0.1.0-dev.12", registry = "gambi" }
 joaju-templates = { version = "=0.0.2-dev.31", registry = "gambi" }
 joaju-lirica = { version = "=0.5.1-dev.31", registry = "gambi" }
