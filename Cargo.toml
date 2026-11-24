@@ -1,6 +1,6 @@
 [package]
 name = "joaju"
-version = "0.2.0-dev.253+20261123.1da5856"
+version = "0.2.0-dev.254+20261123.e30db65"
 edition = "2021"
 description = "A scientific academic compiler and typographical orchestrator in Rust for Typst, clinical pedigrees, and tables"
 license = "Apache-2.0"
