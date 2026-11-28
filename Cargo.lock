@@ -337,9 +337,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-graph"
-version = "0.1.0-dev.31+20261104.6e9e4a6"
+version = "0.1.0-dev.32+20261103.36387fd"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "04f4d794aac35992e6d0822dc68b49513024e17a986f3072cc7304f78cbf7370"
+checksum = "f309c2507a1fb858dcfbe6ae15b2f5ec3d013a90a237d4d36a90fc8930ae5c60"
 dependencies = [
  "clap",
  "serde",
