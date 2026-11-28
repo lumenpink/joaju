@@ -309,9 +309,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-chem"
-version = "0.1.0-dev.70+20261122.30df8be"
+version = "0.1.0-dev.72+20261127.5521102"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "cedcc7d12570710f5033b45071b33cdffab5ed74ad3fc36e8f296cbeefffff77"
+checksum = "30e9dd768de9329c5a5cc9403472c1d77b2cfab70df161d8bcfc9da28ac816d4"
 dependencies = [
  "chematic-depict",
  "chematic-smiles",
