@@ -288,7 +288,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "joaju"
-version = "0.2.0-dev.251+20261123.a5cdcc0"
+version = "0.2.0-dev.254+20261123.e30db65"
 dependencies = [
  "clap",
  "joaju-chem",
@@ -309,9 +309,9 @@ dependencies = [
 
 [[package]]
 name = "joaju-chem"
-version = "0.1.0-dev.69+20261122.f964fff"
+version = "0.1.0-dev.70+20261122.30df8be"
 source = "sparse+https://gambi.2lp.in/api/packages/lumen/cargo/"
-checksum = "d833e45c31756718bf60057bef2fc839399c747d7bee979d39e3bfa83926cae3"
+checksum = "cedcc7d12570710f5033b45071b33cdffab5ed74ad3fc36e8f296cbeefffff77"
 dependencies = [
  "chematic-depict",
  "chematic-smiles",
